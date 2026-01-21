@@ -52,6 +52,8 @@ import {
   Download,
   Moon,
   Sun,
+  ArrowDownCircle,
+  ArrowUpCircle,
 } from 'lucide-react';
 
 interface MenuItem {
@@ -98,7 +100,8 @@ const menuData: MenuItem[] = [
       { id: 'funds', label: 'Danh muc Quy', icon: <CreditCard size={18} />, href: '/finance/funds' },
       { id: 'transactions', label: 'Giao dich & Xac thuc', icon: <Receipt size={18} />, href: '/finance/transactions' },
       { id: 'reconciliation', label: 'Doi soat (Audit)', icon: <CheckSquare size={18} />, href: '/finance/reconciliation' },
-      { id: 'receipts', label: 'Phieu thu', icon: <FileText size={18} />, href: '/finance/receipts' },
+      { id: 'incomes', label: 'Phieu thu', icon: <ArrowDownCircle size={18} />, href: '/finance/incomes' },
+      { id: 'expenses', label: 'Phieu chi', icon: <ArrowUpCircle size={18} />, href: '/finance/expenses' },
     ],
   },
   {

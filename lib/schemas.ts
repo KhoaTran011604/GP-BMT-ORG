@@ -88,6 +88,57 @@ export interface Fund {
   updatedAt: Date;
 }
 
+// Income Schema
+export interface Income {
+  _id?: ObjectId;
+  incomeCode: string;
+  parishId: ObjectId;
+  fundId: ObjectId;
+  amount: number;
+  paymentMethod: 'online' | 'offline';
+  bankAccount?: string;
+  payerName?: string;
+  description?: string;
+  fiscalYear: number;
+  fiscalPeriod: number;
+  incomeDate: Date;
+  images: string[];
+  status: 'pending' | 'approved' | 'rejected';
+  submittedBy: ObjectId;
+  verifiedBy?: ObjectId;
+  submittedAt: Date;
+  verifiedAt?: Date;
+  notes?: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+// Expense Schema
+export interface Expense {
+  _id?: ObjectId;
+  expenseCode: string;
+  parishId: ObjectId;
+  categoryId?: ObjectId;
+  fundId?: ObjectId;
+  amount: number;
+  paymentMethod: 'cash' | 'transfer';
+  bankAccount?: string;
+  payeeName?: string;
+  description?: string;
+  fiscalYear: number;
+  fiscalPeriod: number;
+  expenseDate: Date;
+  images: string[];
+  status: 'pending' | 'approved' | 'rejected';
+  requestedBy: ObjectId;
+  approvedBy?: ObjectId;
+  requestedAt: Date;
+  approvedAt?: Date;
+  notes?: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
 // Transaction Schema
 export interface Transaction {
   _id?: ObjectId;
@@ -232,17 +283,18 @@ export interface AuditLog {
   createdAt: Date;
 }
 
-// Receipt Schema
+// Receipt Schema (Auto-generated from approved incomes/expenses)
 export interface Receipt {
   _id?: ObjectId;
   receiptNo: string;
-  transactionId: string;
-  parishName: string;
-  fundName: string;
+  receiptType: 'income' | 'expense';
+  referenceId: ObjectId;
+  parishId: ObjectId;
   amount: number;
-  issuedBy: string;
-  issuedAt: Date;
-  status: 'draft' | 'issued' | 'cancelled';
+  receiptDate: Date;
+  payerPayee: string;
+  description?: string;
+  createdBy: ObjectId;
   createdAt: Date;
-  updatedAt?: Date;
+  printedAt?: Date;
 }
