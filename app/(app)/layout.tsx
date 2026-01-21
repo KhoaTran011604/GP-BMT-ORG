@@ -360,7 +360,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         {/* Header */}
         <div className="p-4 border-b border-white/10">
           <div className="flex items-center justify-between">
-            {sidebarOpen ? (
+            {sidebarOpen && (
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 bg-white/20 backdrop-blur rounded-xl flex items-center justify-center shadow-lg">
                   <Cross className="text-white" size={20} />
@@ -370,14 +370,10 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                   <p className="text-xs text-white/60">Giao phan Buon Ma Thuot</p>
                 </div>
               </div>
-            ) : (
-              <div className="w-10 h-10 bg-white/20 backdrop-blur rounded-xl flex items-center justify-center mx-auto shadow-lg">
-                <Cross className="text-white" size={20} />
-              </div>
             )}
             <button
               onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="p-2 hover:bg-white/10 rounded-lg transition-colors text-white/70 hover:text-white hidden lg:block"
+              className="m-auto p-2 hover:bg-white/10 rounded-lg transition-colors text-white/70 hover:text-white hidden lg:block"
             >
               {sidebarOpen ? <X size={20} /> : <Menu size={20} />}
             </button>

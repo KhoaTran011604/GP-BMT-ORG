@@ -8,6 +8,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+import { Pencil, Trash2 } from 'lucide-react';
 
 interface SubParish {
   _id: string;
@@ -32,6 +34,8 @@ export default function SubParishesPage() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [editingSubParish, setEditingSubParish] = useState<SubParish | null>(null);
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     subParishCode: '',
     subParishName: '',
@@ -58,7 +62,7 @@ export default function SubParishesPage() {
 
       if (parishRes.ok) {
         const data = await parishRes.json();
-        setParishes(Array.isArray(data) ? data : []);
+        setParishes(Array.isArray(data.data) ? data.data : []);
       }
     } catch (error) {
       console.error('Error fetching data:', error);
@@ -67,17 +71,35 @@ export default function SubParishesPage() {
     }
   };
 
+  const handleEdit = (subParish: SubParish) => {
+    setEditingSubParish(subParish);
+    setFormData({
+      subParishCode: subParish.subParishCode,
+      subParishName: subParish.subParishName,
+      parishId: subParish.parishId,
+      patronSaint: subParish.patronSaint || '',
+      address: subParish.address || '',
+    });
+    setIsDialogOpen(true);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const res = await fetch('/api/sub-parishes', {
-        method: 'POST',
+      const url = editingSubParish
+        ? `/api/sub-parishes/${editingSubParish._id}`
+        : '/api/sub-parishes';
+      const method = editingSubParish ? 'PUT' : 'POST';
+
+      const res = await fetch(url, {
+        method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
       });
 
       if (res.ok) {
         setIsDialogOpen(false);
+        setEditingSubParish(null);
         setFormData({
           subParishCode: '',
           subParishName: '',
@@ -88,8 +110,37 @@ export default function SubParishesPage() {
         fetchData();
       }
     } catch (error) {
-      console.error('Error creating sub-parish:', error);
+      console.error('Error saving sub-parish:', error);
     }
+  };
+
+  const handleDelete = async () => {
+    if (!deleteConfirmId) return;
+
+    try {
+      const res = await fetch(`/api/sub-parishes/${deleteConfirmId}`, {
+        method: 'DELETE',
+      });
+
+      if (res.ok) {
+        setDeleteConfirmId(null);
+        fetchData();
+      }
+    } catch (error) {
+      console.error('Error deleting sub-parish:', error);
+    }
+  };
+
+  const handleCloseDialog = () => {
+    setIsDialogOpen(false);
+    setEditingSubParish(null);
+    setFormData({
+      subParishCode: '',
+      subParishName: '',
+      parishId: '',
+      patronSaint: '',
+      address: '',
+    });
   };
 
   const filteredSubParishes = subParishes.filter(sp =>
@@ -118,7 +169,7 @@ export default function SubParishesPage() {
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Thêm Giáo họ mới</DialogTitle>
+              <DialogTitle>{editingSubParish ? 'Cập nhật Giáo họ' : 'Thêm Giáo họ mới'}</DialogTitle>
             </DialogHeader>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
@@ -128,6 +179,7 @@ export default function SubParishesPage() {
                     value={formData.subParishCode}
                     onChange={(e) => setFormData({ ...formData, subParishCode: e.target.value })}
                     placeholder="VD: GH001"
+                    disabled={!!editingSubParish}
                     required
                   />
                 </div>
@@ -176,10 +228,10 @@ export default function SubParishesPage() {
                 />
               </div>
               <div className="flex justify-end gap-2">
-                <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
+                <Button type="button" variant="outline" onClick={handleCloseDialog}>
                   Hủy
                 </Button>
-                <Button type="submit">Lưu</Button>
+                <Button type="submit">{editingSubParish ? 'Cập nhật' : 'Lưu'}</Button>
               </div>
             </form>
           </DialogContent>
@@ -235,7 +287,24 @@ export default function SubParishesPage() {
                       </span>
                     </TableCell>
                     <TableCell>
-                      <Button variant="ghost" size="sm">Chi tiết</Button>
+                      <div className="flex items-center gap-2">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleEdit(sp)}
+                          className="hover:bg-blue-50 hover:text-blue-600"
+                        >
+                          <Pencil size={16} />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setDeleteConfirmId(sp._id)}
+                          className="hover:bg-red-50 hover:text-red-600"
+                        >
+                          <Trash2 size={16} />
+                        </Button>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -244,6 +313,24 @@ export default function SubParishesPage() {
           )}
         </CardContent>
       </Card>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={!!deleteConfirmId} onOpenChange={() => setDeleteConfirmId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Xác nhận xóa</AlertDialogTitle>
+            <AlertDialogDescription>
+              Bạn có chắc chắn muốn xóa giáo họ này? Hành động này không thể hoàn tác.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Hủy</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete} className="bg-red-600 hover:bg-red-700">
+              Xóa
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

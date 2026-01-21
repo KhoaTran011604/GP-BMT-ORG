@@ -71,6 +71,7 @@ export interface Person {
   email?: string;
   occupation?: string;
   notes?: string;
+  status: 'active' | 'inactive' | 'moved' | 'deceased';
   createdAt: Date;
   updatedAt: Date;
 }

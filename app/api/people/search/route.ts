@@ -23,7 +23,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ data: [] });
     }
 
-    const peopleCollection = await getCollection('people');
+    const peopleCollection = await getCollection('parishioners');
     const familiesCollection = await getCollection('families');
 
     // Build search query based on type

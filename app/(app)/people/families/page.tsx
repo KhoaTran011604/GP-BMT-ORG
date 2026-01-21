@@ -8,6 +8,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+import { Pencil, Trash2 } from 'lucide-react';
 
 interface Family {
   _id: string;
@@ -29,6 +31,8 @@ export default function FamiliesPage() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [editingFamily, setEditingFamily] = useState<Family | null>(null);
+  const [deletingFamily, setDeletingFamily] = useState<Family | null>(null);
   const [formData, setFormData] = useState({
     familyCode: '',
     familyName: '',
@@ -67,18 +71,22 @@ export default function FamiliesPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const res = await fetch('/api/families', {
-        method: 'POST',
+      const isEditing = editingFamily !== null;
+      const url = '/api/families';
+      const method = isEditing ? 'PUT' : 'POST';
+      const body = isEditing
+        ? { _id: editingFamily._id, ...formData }
+        : { ...formData, registrationDate: new Date().toISOString(), status: 'active' };
+
+      const res = await fetch(url, {
+        method,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ...formData,
-          registrationDate: new Date().toISOString(),
-          status: 'active',
-        }),
+        body: JSON.stringify(body),
       });
 
       if (res.ok) {
         setIsDialogOpen(false);
+        setEditingFamily(null);
         setFormData({
           familyCode: '',
           familyName: '',
@@ -89,7 +97,50 @@ export default function FamiliesPage() {
         fetchData();
       }
     } catch (error) {
-      console.error('Error creating family:', error);
+      console.error('Error saving family:', error);
+    }
+  };
+
+  const handleEdit = (family: Family) => {
+    setEditingFamily(family);
+    setFormData({
+      familyCode: family.familyCode,
+      familyName: family.familyName,
+      parishId: family.parishId,
+      address: family.address,
+      phone: family.phone || '',
+    });
+    setIsDialogOpen(true);
+  };
+
+  const handleDelete = async () => {
+    if (!deletingFamily) return;
+
+    try {
+      const res = await fetch(`/api/families?id=${deletingFamily._id}`, {
+        method: 'DELETE',
+      });
+
+      if (res.ok) {
+        setDeletingFamily(null);
+        fetchData();
+      }
+    } catch (error) {
+      console.error('Error deleting family:', error);
+    }
+  };
+
+  const handleDialogClose = (open: boolean) => {
+    setIsDialogOpen(open);
+    if (!open) {
+      setEditingFamily(null);
+      setFormData({
+        familyCode: '',
+        familyName: '',
+        parishId: '',
+        address: '',
+        phone: '',
+      });
     }
   };
 
@@ -113,13 +164,13 @@ export default function FamiliesPage() {
           <h1 className="text-2xl font-bold">So Gia dinh Cong giao</h1>
           <p className="text-gray-600">Quan ly danh sach gia dinh trong Giao phan</p>
         </div>
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <Dialog open={isDialogOpen} onOpenChange={handleDialogClose}>
           <DialogTrigger asChild>
             <Button>+ Them Gia dinh</Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Dang ky Gia dinh moi</DialogTitle>
+              <DialogTitle>{editingFamily ? 'Chinh sua Gia dinh' : 'Dang ky Gia dinh moi'}</DialogTitle>
             </DialogHeader>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
@@ -178,10 +229,10 @@ export default function FamiliesPage() {
                 />
               </div>
               <div className="flex justify-end gap-2">
-                <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
+                <Button type="button" variant="outline" onClick={() => handleDialogClose(false)}>
                   Huy
                 </Button>
-                <Button type="submit">Luu</Button>
+                <Button type="submit">{editingFamily ? 'Cap nhat' : 'Luu'}</Button>
               </div>
             </form>
           </DialogContent>
@@ -251,7 +302,7 @@ export default function FamiliesPage() {
                   <TableHead>Dien thoai</TableHead>
                   <TableHead>Thanh vien</TableHead>
                   <TableHead>Trang thai</TableHead>
-                  <TableHead></TableHead>
+                  <TableHead className="text-right">Thao tac</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -275,8 +326,25 @@ export default function FamiliesPage() {
                          family.status === 'moved' ? 'Da chuyen' : 'Khac'}
                       </span>
                     </TableCell>
-                    <TableCell>
-                      <Button variant="ghost" size="sm">Chi tiet</Button>
+                    <TableCell className="text-right">
+                      <div className="flex justify-end gap-2">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleEdit(family)}
+                          className="h-8 w-8 p-0"
+                        >
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setDeletingFamily(family)}
+                          className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -285,6 +353,26 @@ export default function FamiliesPage() {
           )}
         </CardContent>
       </Card>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={!!deletingFamily} onOpenChange={(open) => !open && setDeletingFamily(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Xac nhan xoa</AlertDialogTitle>
+            <AlertDialogDescription>
+              Ban co chac chan muon xoa gia dinh <strong>{deletingFamily?.familyName}</strong> (Ma: {deletingFamily?.familyCode})?
+              <br />
+              Hanh dong nay khong the hoan tac.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Huy</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete} className="bg-red-600 hover:bg-red-700">
+              Xoa
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
