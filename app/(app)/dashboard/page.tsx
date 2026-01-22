@@ -48,11 +48,11 @@ export default function DashboardPage() {
   return (
     <div className="space-y-8">
       {/* Welcome Section */}
-      <div className="bg-blue-900 text-white rounded-lg p-8">
+      <div className="bg-gray-900 text-white rounded-lg p-8">
         <h1 className="text-3xl font-bold mb-2">
           Chào mừng, {user?.fullName}!
         </h1>
-        <p className="text-blue-200">
+        <p className="text-gray-200">
           Quản lý toàn diện Giáo phận Buôn Ma Thuột từ một nơi duy nhất
         </p>
       </div>

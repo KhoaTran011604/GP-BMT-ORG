@@ -100,9 +100,9 @@ const menuData: MenuItem[] = [
       { id: 'funds', label: 'Danh mục Quỹ', icon: <CreditCard size={18} />, href: '/finance/funds' },
       { id: 'expense-categories', label: 'Danh mục Chi', icon: <FolderOpen size={18} />, href: '/finance/expense-categories' },
       { id: 'transactions', label: 'Giao dịch & Xác thực', icon: <Receipt size={18} />, href: '/finance/transactions' },
-      { id: 'reconciliation', label: 'Đối soát (Audit)', icon: <CheckSquare size={18} />, href: '/finance/reconciliation' },
-      { id: 'incomes', label: 'Phiếu thu', icon: <ArrowDownCircle size={18} />, href: '/finance/incomes' },
-      { id: 'expenses', label: 'Phiếu chi', icon: <ArrowUpCircle size={18} />, href: '/finance/expenses' },
+      // { id: 'reconciliation', label: 'Đối soát (Audit)', icon: <CheckSquare size={18} />, href: '/finance/reconciliation' },
+      // { id: 'incomes', label: 'Phiếu thu', icon: <ArrowDownCircle size={18} />, href: '/finance/incomes' },
+      // { id: 'expenses', label: 'Phiếu chi', icon: <ArrowUpCircle size={18} />, href: '/finance/expenses' },
     ],
   },
   {
@@ -268,7 +268,7 @@ function MenuItem({
             isExpanded ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
           }`}
         >
-          <div className="ml-4 mt-1 pl-4 border-l border-blue-700 space-y-1">
+          <div className="ml-4 mt-1 pl-4 border-l border-gray-700 space-y-1">
             {item.children?.map((child) => {
               const isChildItemActive = child.href === pathname;
               return (
@@ -358,11 +358,11 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         className={`fixed lg:static inset-y-0 left-0 z-50 flex flex-col
           ${sidebarOpen ? 'w-72' : 'w-20'}
           ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
-          bg-blue-900
+          bg-gray-900
           transition-all duration-300 ease-in-out shadow-2xl`}
       >
         {/* Header */}
-        <div className="p-4 border-b border-blue-800">
+        <div className="p-4 border-b border-gray-800">
           <div className="flex items-center justify-between">
             {sidebarOpen && (
               <div className="flex items-center gap-3">
@@ -387,7 +387,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         {/* User Profile Card */}
         {sidebarOpen && (
           <div className="p-4">
-            <div className="bg-blue-800 rounded-xl p-3">
+            <div className="bg-gray-800 rounded-xl p-3">
               <div className="flex items-center gap-3">
                 <Avatar className="h-10 w-10 border-2 border-amber-400">
                   <AvatarFallback className="bg-amber-500 text-white font-semibold">
@@ -452,7 +452,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         </nav>
 
         {/* Footer */}
-        <div className="p-4 border-t border-blue-800">
+        <div className="p-4 border-t border-gray-800">
           {sidebarOpen ? (
             <div className="flex items-center justify-between text-xs text-white/40">
               <span>Version 1.0 MVP</span>
@@ -523,7 +523,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
               <DropdownMenuTrigger asChild>
                 <button className="hidden lg:flex items-center gap-2 p-2 hover:bg-gray-100 rounded-lg transition-colors">
                   <Avatar className="h-8 w-8">
-                    <AvatarFallback className="bg-blue-800 text-white text-sm">
+                    <AvatarFallback className="bg-gray-900 text-white text-sm">
                       {getInitials(user.fullName)}
                     </AvatarFallback>
                   </Avatar>
