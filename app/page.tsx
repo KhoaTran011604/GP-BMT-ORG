@@ -116,7 +116,7 @@ export default function Home() {
       {/* Footer */}
       <footer className="bg-blue-900 text-white mt-20 py-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <p>&copy; 2024 Hệ thống Quản lý Giáo phận Buôn Ma Thuột. All rights reserved.</p>
+          <p>&copy; 2026 Hệ thống Quản lý Giáo phận Buôn Ma Thuột. All rights reserved.</p>
           <p className="text-sm text-blue-200 mt-2">Phát triển bởi IT Division - Tòa Giám mục BMT</p>
         </div>
       </footer>

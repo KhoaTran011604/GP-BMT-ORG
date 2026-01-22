@@ -456,7 +456,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           {sidebarOpen ? (
             <div className="flex items-center justify-between text-xs text-white/40">
               <span>Version 1.0 MVP</span>
-              <span>© 2024 TGM BMT</span>
+              <span>© 2026 TGM BMT</span>
             </div>
           ) : (
             <div className="text-center text-xs text-white/40">v1.0</div>
