@@ -104,20 +104,20 @@ export default function AssociationsPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Quan ly Hoi doan</h1>
-          <p className="text-gray-600">Quan ly cac Hoi doan trong Giao phan</p>
+          <h1 className="text-2xl font-bold">Quản lý Hội đoàn</h1>
+          <p className="text-gray-600">Quản lý các Hội đoàn trong Giáo phận</p>
         </div>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
-            <Button>+ Them Hoi doan</Button>
+            <Button>+ Thêm Hội đoàn</Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Them Hoi doan moi</DialogTitle>
+              <DialogTitle>Thêm Hội đoàn mới</DialogTitle>
             </DialogHeader>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <Label>Ten Hoi doan *</Label>
+                <Label>Tên Hội đoàn *</Label>
                 <Input
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
@@ -126,16 +126,16 @@ export default function AssociationsPage() {
                 />
               </div>
               <div>
-                <Label>Bon mang</Label>
+                <Label>Bổn mạng</Label>
                 <Input
                   value={formData.patronSaint}
                   onChange={(e) => setFormData({ ...formData, patronSaint: e.target.value })}
-                  placeholder="VD: Duc Me"
+                  placeholder="VD: Đức Mẹ"
                 />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <Label>Ngay thanh lap</Label>
+                  <Label>Ngày thành lập</Label>
                   <Input
                     type="date"
                     value={formData.establishedDate}
@@ -143,7 +143,7 @@ export default function AssociationsPage() {
                   />
                 </div>
                 <div>
-                  <Label>So thanh vien</Label>
+                  <Label>Số thành viên</Label>
                   <Input
                     type="number"
                     value={formData.memberCount}
@@ -152,18 +152,18 @@ export default function AssociationsPage() {
                 </div>
               </div>
               <div>
-                <Label>Truong ban</Label>
+                <Label>Trưởng ban</Label>
                 <Input
                   value={formData.leaderName}
                   onChange={(e) => setFormData({ ...formData, leaderName: e.target.value })}
-                  placeholder="Ten truong ban"
+                  placeholder="Tên trưởng ban"
                 />
               </div>
               <div className="flex justify-end gap-2">
                 <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
-                  Huy
+                  Hủy
                 </Button>
-                <Button type="submit">Luu</Button>
+                <Button type="submit">Lưu</Button>
               </div>
             </form>
           </DialogContent>
@@ -175,7 +175,7 @@ export default function AssociationsPage() {
         <Card>
           <CardContent className="p-4">
             <div className="text-2xl font-bold text-blue-600">{associations.length}</div>
-            <p className="text-sm text-gray-600">Tong hoi doan</p>
+            <p className="text-sm text-gray-600">Tổng hội đoàn</p>
           </CardContent>
         </Card>
         <Card>
@@ -183,7 +183,7 @@ export default function AssociationsPage() {
             <div className="text-2xl font-bold text-green-600">
               {associations.filter(a => a.status === 'active').length}
             </div>
-            <p className="text-sm text-gray-600">Dang hoat dong</p>
+            <p className="text-sm text-gray-600">Đang hoạt động</p>
           </CardContent>
         </Card>
         <Card>
@@ -191,7 +191,7 @@ export default function AssociationsPage() {
             <div className="text-2xl font-bold text-purple-600">
               {associations.reduce((sum, a) => sum + a.memberCount, 0)}
             </div>
-            <p className="text-sm text-gray-600">Tong thanh vien</p>
+            <p className="text-sm text-gray-600">Tổng thành viên</p>
           </CardContent>
         </Card>
         <Card>
@@ -199,7 +199,7 @@ export default function AssociationsPage() {
             <div className="text-2xl font-bold text-orange-600">
               {new Set(associations.map(a => a.parishId)).size}
             </div>
-            <p className="text-sm text-gray-600">Giao xu</p>
+            <p className="text-sm text-gray-600">Giáo xứ</p>
           </CardContent>
         </Card>
       </div>
@@ -208,9 +208,9 @@ export default function AssociationsPage() {
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
-            <CardTitle>Danh sach Hoi doan ({filteredAssociations.length})</CardTitle>
+            <CardTitle>Danh sách Hội đoàn ({filteredAssociations.length})</CardTitle>
             <Input
-              placeholder="Tim kiem..."
+              placeholder="Tìm kiếm..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-64"
@@ -221,19 +221,19 @@ export default function AssociationsPage() {
           {filteredAssociations.length === 0 ? (
             <div className="text-center py-12 text-gray-500">
               <p className="text-4xl mb-4">👥</p>
-              <p>Chua co hoi doan nao</p>
+              <p>Chưa có hội đoàn nào</p>
             </div>
           ) : (
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Ten Hoi doan</TableHead>
-                  <TableHead>Giao xu</TableHead>
-                  <TableHead>Bon mang</TableHead>
-                  <TableHead>Truong ban</TableHead>
-                  <TableHead className="text-right">Thanh vien</TableHead>
-                  <TableHead className="text-right">Ngan sach</TableHead>
-                  <TableHead>Trang thai</TableHead>
+                  <TableHead>Tên Hội đoàn</TableHead>
+                  <TableHead>Giáo xứ</TableHead>
+                  <TableHead>Bổn mạng</TableHead>
+                  <TableHead>Trưởng ban</TableHead>
+                  <TableHead className="text-right">Thành viên</TableHead>
+                  <TableHead className="text-right">Ngân sách</TableHead>
+                  <TableHead>Trạng thái</TableHead>
                   <TableHead></TableHead>
                 </TableRow>
               </TableHeader>
@@ -252,11 +252,11 @@ export default function AssociationsPage() {
                           ? 'bg-green-100 text-green-800'
                           : 'bg-gray-100 text-gray-800'
                       }>
-                        {a.status === 'active' ? 'Hoat dong' : 'Ngung'}
+                        {a.status === 'active' ? 'Hoạt động' : 'Ngưng'}
                       </Badge>
                     </TableCell>
                     <TableCell>
-                      <Button variant="ghost" size="sm">Chi tiet</Button>
+                      <Button variant="ghost" size="sm">Chi tiết</Button>
                     </TableCell>
                   </TableRow>
                 ))}

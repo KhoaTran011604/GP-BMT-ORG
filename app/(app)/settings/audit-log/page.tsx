@@ -23,24 +23,24 @@ interface AuditLog {
 }
 
 const actionConfig = {
-  create: { label: 'Tao moi', color: 'bg-green-100 text-green-800' },
-  update: { label: 'Cap nhat', color: 'bg-blue-100 text-blue-800' },
-  delete: { label: 'Xoa', color: 'bg-red-100 text-red-800' },
-  approve: { label: 'Phe duyet', color: 'bg-purple-100 text-purple-800' },
-  reject: { label: 'Tu choi', color: 'bg-orange-100 text-orange-800' },
-  login: { label: 'Dang nhap', color: 'bg-cyan-100 text-cyan-800' },
-  logout: { label: 'Dang xuat', color: 'bg-gray-100 text-gray-800' },
+  create: { label: 'Tạo mới', color: 'bg-green-100 text-green-800' },
+  update: { label: 'Cập nhật', color: 'bg-blue-100 text-blue-800' },
+  delete: { label: 'Xóa', color: 'bg-red-100 text-red-800' },
+  approve: { label: 'Phê duyệt', color: 'bg-purple-100 text-purple-800' },
+  reject: { label: 'Từ chối', color: 'bg-orange-100 text-orange-800' },
+  login: { label: 'Đăng nhập', color: 'bg-cyan-100 text-cyan-800' },
+  logout: { label: 'Đăng xuất', color: 'bg-gray-100 text-gray-800' },
 };
 
 const moduleLabels: Record<string, string> = {
-  parish: 'Giao xu',
-  people: 'Giao dan',
-  finance: 'Tai chinh',
-  hr: 'Nhan su',
-  clergy: 'Linh muc',
-  sacraments: 'Bi tich',
-  auth: 'Xac thuc',
-  settings: 'Cai dat',
+  parish: 'Giáo xứ',
+  people: 'Giáo dân',
+  finance: 'Tài chính',
+  hr: 'Nhân sự',
+  clergy: 'Linh mục',
+  sacraments: 'Bí tích',
+  auth: 'Xác thực',
+  settings: 'Cài đặt',
 };
 
 export default function AuditLogPage() {
@@ -93,10 +93,10 @@ export default function AuditLogPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Nhat ky He thong</h1>
-          <p className="text-gray-600">Theo doi moi hoat dong trong he thong</p>
+          <h1 className="text-2xl font-bold">Nhật ký Hệ thống</h1>
+          <p className="text-gray-600">Theo dõi mọi hoạt động trong hệ thống</p>
         </div>
-        <Button variant="outline">Xuat bao cao</Button>
+        <Button variant="outline">Xuất báo cáo</Button>
       </div>
 
       {/* Stats */}
@@ -104,7 +104,7 @@ export default function AuditLogPage() {
         <Card>
           <CardContent className="p-4">
             <div className="text-2xl font-bold text-blue-600">{logs.length}</div>
-            <p className="text-sm text-gray-600">Tong su kien</p>
+            <p className="text-sm text-gray-600">Tổng sự kiện</p>
           </CardContent>
         </Card>
         <Card>
@@ -112,7 +112,7 @@ export default function AuditLogPage() {
             <div className="text-2xl font-bold text-green-600">
               {logs.filter(l => l.action === 'create').length}
             </div>
-            <p className="text-sm text-gray-600">Tao moi</p>
+            <p className="text-sm text-gray-600">Tạo mới</p>
           </CardContent>
         </Card>
         <Card>
@@ -120,7 +120,7 @@ export default function AuditLogPage() {
             <div className="text-2xl font-bold text-orange-600">
               {logs.filter(l => l.action === 'update').length}
             </div>
-            <p className="text-sm text-gray-600">Cap nhat</p>
+            <p className="text-sm text-gray-600">Cập nhật</p>
           </CardContent>
         </Card>
         <Card>
@@ -128,7 +128,7 @@ export default function AuditLogPage() {
             <div className="text-2xl font-bold text-red-600">
               {logs.filter(l => l.action === 'delete').length}
             </div>
-            <p className="text-sm text-gray-600">Xoa</p>
+            <p className="text-sm text-gray-600">Xóa</p>
           </CardContent>
         </Card>
       </div>
@@ -137,7 +137,7 @@ export default function AuditLogPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <Card>
           <CardHeader>
-            <CardTitle className="text-lg">Hoat dong theo Module</CardTitle>
+            <CardTitle className="text-lg">Hoạt động theo Module</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
@@ -162,7 +162,7 @@ export default function AuditLogPage() {
         </Card>
         <Card>
           <CardHeader>
-            <CardTitle className="text-lg">Hoat dong theo Hanh dong</CardTitle>
+            <CardTitle className="text-lg">Hoạt động theo Hành động</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
@@ -184,20 +184,20 @@ export default function AuditLogPage() {
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
-            <CardTitle>Chi tiet Nhat ky ({filteredLogs.length})</CardTitle>
+            <CardTitle>Chi tiết Nhật ký ({filteredLogs.length})</CardTitle>
             <div className="flex gap-2">
               <Input
-                placeholder="Tim kiem..."
+                placeholder="Tìm kiếm..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-48"
               />
               <Select value={actionFilter} onValueChange={setActionFilter}>
                 <SelectTrigger className="w-32">
-                  <SelectValue placeholder="Hanh dong" />
+                  <SelectValue placeholder="Hành động" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Tat ca</SelectItem>
+                  <SelectItem value="all">Tất cả</SelectItem>
                   {Object.entries(actionConfig).map(([key, config]) => (
                     <SelectItem key={key} value={key}>{config.label}</SelectItem>
                   ))}
@@ -208,7 +208,7 @@ export default function AuditLogPage() {
                   <SelectValue placeholder="Module" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Tat ca</SelectItem>
+                  <SelectItem value="all">Tất cả</SelectItem>
                   {Object.entries(moduleLabels).map(([key, label]) => (
                     <SelectItem key={key} value={key}>{label}</SelectItem>
                   ))}
@@ -221,15 +221,15 @@ export default function AuditLogPage() {
           {filteredLogs.length === 0 ? (
             <div className="text-center py-12 text-gray-500">
               <p className="text-4xl mb-4">📋</p>
-              <p>Chua co nhat ky nao</p>
+              <p>Chưa có nhật ký nào</p>
             </div>
           ) : (
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Thoi gian</TableHead>
-                  <TableHead>Nguoi dung</TableHead>
-                  <TableHead>Hanh dong</TableHead>
+                  <TableHead>Thời gian</TableHead>
+                  <TableHead>Người dùng</TableHead>
+                  <TableHead>Hành động</TableHead>
                   <TableHead>Module</TableHead>
                   <TableHead>IP</TableHead>
                   <TableHead></TableHead>
@@ -248,7 +248,7 @@ export default function AuditLogPage() {
                     <TableCell>{moduleLabels[log.module] || log.module}</TableCell>
                     <TableCell className="text-sm font-mono">{log.ipAddress || '-'}</TableCell>
                     <TableCell>
-                      <Button variant="ghost" size="sm">Chi tiet</Button>
+                      <Button variant="ghost" size="sm">Chi tiết</Button>
                     </TableCell>
                   </TableRow>
                 ))}

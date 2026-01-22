@@ -27,10 +27,10 @@ interface Asset {
 }
 
 const assetTypeConfig = {
-  land: { label: 'Dat dai', icon: '🏞️', color: 'bg-green-100 text-green-800' },
-  building: { label: 'Nha cua', icon: '🏛️', color: 'bg-blue-100 text-blue-800' },
-  vehicle: { label: 'Phuong tien', icon: '🚗', color: 'bg-purple-100 text-purple-800' },
-  equipment: { label: 'Thiet bi', icon: '⚙️', color: 'bg-orange-100 text-orange-800' },
+  land: { label: 'Đất đai', icon: '🏞️', color: 'bg-green-100 text-green-800' },
+  building: { label: 'Nhà cửa', icon: '🏛️', color: 'bg-blue-100 text-blue-800' },
+  vehicle: { label: 'Phương tiện', icon: '🚗', color: 'bg-purple-100 text-purple-800' },
+  equipment: { label: 'Thiết bị', icon: '⚙️', color: 'bg-orange-100 text-orange-800' },
 };
 
 export default function AssetsPage() {
@@ -93,10 +93,10 @@ export default function AssetsPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Quan ly Tai san</h1>
-          <p className="text-gray-600">Quan ly tai san cua Giao phan va cac Giao xu</p>
+          <h1 className="text-2xl font-bold">Quản lý Tài sản</h1>
+          <p className="text-gray-600">Quản lý tài sản của Giáo phận và các Giáo xứ</p>
         </div>
-        <Button>+ Them tai san</Button>
+        <Button>+ Thêm tài sản</Button>
       </div>
 
       {/* Stats by Type */}
@@ -123,15 +123,15 @@ export default function AssetsPage() {
         <CardContent className="p-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div>
-              <p className="text-sm text-gray-600">Tong so tai san</p>
+              <p className="text-sm text-gray-600">Tổng số tài sản</p>
               <p className="text-3xl font-bold text-blue-600">{assets.length}</p>
             </div>
             <div>
-              <p className="text-sm text-gray-600">Tong gia tri hien tai</p>
+              <p className="text-sm text-gray-600">Tổng giá trị hiện tại</p>
               <p className="text-3xl font-bold text-green-600">{formatCurrency(totalValue)}</p>
             </div>
             <div>
-              <p className="text-sm text-gray-600">So Giao xu co tai san</p>
+              <p className="text-sm text-gray-600">Số Giáo xứ có tài sản</p>
               <p className="text-3xl font-bold text-purple-600">
                 {new Set(assets.map(a => a.parishId)).size}
               </p>
@@ -144,10 +144,10 @@ export default function AssetsPage() {
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
-            <CardTitle>Danh sach Tai san ({filteredAssets.length})</CardTitle>
+            <CardTitle>Danh sách Tài sản ({filteredAssets.length})</CardTitle>
             <div className="flex gap-2">
               <Input
-                placeholder="Tim kiem..."
+                placeholder="Tìm kiếm..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-64"
@@ -157,11 +157,11 @@ export default function AssetsPage() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Tat ca</SelectItem>
-                  <SelectItem value="land">Dat dai</SelectItem>
-                  <SelectItem value="building">Nha cua</SelectItem>
-                  <SelectItem value="vehicle">Phuong tien</SelectItem>
-                  <SelectItem value="equipment">Thiet bi</SelectItem>
+                  <SelectItem value="all">Tất cả</SelectItem>
+                  <SelectItem value="land">Đất đai</SelectItem>
+                  <SelectItem value="building">Nhà cửa</SelectItem>
+                  <SelectItem value="vehicle">Phương tiện</SelectItem>
+                  <SelectItem value="equipment">Thiết bị</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -171,20 +171,20 @@ export default function AssetsPage() {
           {filteredAssets.length === 0 ? (
             <div className="text-center py-12 text-gray-500">
               <p className="text-4xl mb-4">📦</p>
-              <p>Chua co tai san nao</p>
+              <p>Chưa có tài sản nào</p>
             </div>
           ) : (
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Ma TS</TableHead>
-                  <TableHead>Ten tai san</TableHead>
-                  <TableHead>Loai</TableHead>
-                  <TableHead>Don vi</TableHead>
-                  <TableHead>Vi tri</TableHead>
-                  <TableHead>Dien tich</TableHead>
-                  <TableHead className="text-right">Gia tri</TableHead>
-                  <TableHead>Trang thai</TableHead>
+                  <TableHead>Mã TS</TableHead>
+                  <TableHead>Tên tài sản</TableHead>
+                  <TableHead>Loại</TableHead>
+                  <TableHead>Đơn vị</TableHead>
+                  <TableHead>Vị trí</TableHead>
+                  <TableHead>Diện tích</TableHead>
+                  <TableHead className="text-right">Giá trị</TableHead>
+                  <TableHead>Trạng thái</TableHead>
                   <TableHead></TableHead>
                 </TableRow>
               </TableHeader>
@@ -210,12 +210,12 @@ export default function AssetsPage() {
                         a.status === 'sold' ? 'bg-blue-100 text-blue-800' :
                         'bg-gray-100 text-gray-800'
                       }>
-                        {a.status === 'active' ? 'Dang su dung' :
-                         a.status === 'sold' ? 'Da ban' : 'Da thanh ly'}
+                        {a.status === 'active' ? 'Đang sử dụng' :
+                         a.status === 'sold' ? 'Đã bán' : 'Đã thanh lý'}
                       </Badge>
                     </TableCell>
                     <TableCell>
-                      <Button variant="ghost" size="sm">Chi tiet</Button>
+                      <Button variant="ghost" size="sm">Chi tiết</Button>
                     </TableCell>
                   </TableRow>
                 ))}

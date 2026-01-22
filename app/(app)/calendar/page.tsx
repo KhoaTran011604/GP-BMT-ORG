@@ -17,15 +17,15 @@ interface Event {
 }
 
 const mockEvents: Event[] = [
-  { id: '1', title: 'Chua nhat I Mua Vong', date: '2024-12-01', type: 'liturgical', liturgicalRank: 'Solemnity', color: 'purple' },
-  { id: '2', title: 'Le Duc Me Vo Nhiem', date: '2024-12-08', type: 'liturgical', liturgicalRank: 'Solemnity', color: 'blue' },
-  { id: '3', title: 'Hop Linh muc doan', date: '2024-12-10', type: 'diocesan', location: 'TGM' },
-  { id: '4', title: 'Le Giang sinh', date: '2024-12-25', type: 'liturgical', liturgicalRank: 'Solemnity', color: 'white' },
+  { id: '1', title: 'Chúa nhật I Mùa Vọng', date: '2024-12-01', type: 'liturgical', liturgicalRank: 'Solemnity', color: 'purple' },
+  { id: '2', title: 'Lễ Đức Mẹ Vô Nhiễm', date: '2024-12-08', type: 'liturgical', liturgicalRank: 'Solemnity', color: 'blue' },
+  { id: '3', title: 'Họp Linh mục đoàn', date: '2024-12-10', type: 'diocesan', location: 'TGM' },
+  { id: '4', title: 'Lễ Giáng sinh', date: '2024-12-25', type: 'liturgical', liturgicalRank: 'Solemnity', color: 'white' },
 ];
 
 const months = [
-  'Thang 1', 'Thang 2', 'Thang 3', 'Thang 4', 'Thang 5', 'Thang 6',
-  'Thang 7', 'Thang 8', 'Thang 9', 'Thang 10', 'Thang 11', 'Thang 12'
+  'Tháng 1', 'Tháng 2', 'Tháng 3', 'Tháng 4', 'Tháng 5', 'Tháng 6',
+  'Tháng 7', 'Tháng 8', 'Tháng 9', 'Tháng 10', 'Tháng 11', 'Tháng 12'
 ];
 
 const daysOfWeek = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
@@ -71,10 +71,10 @@ export default function CalendarPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Lich & Su kien</h1>
-          <p className="text-gray-600">Lich phung vu va su kien Giao phan</p>
+          <h1 className="text-2xl font-bold">Lịch & Sự kiện</h1>
+          <p className="text-gray-600">Lịch phụng vụ và sự kiện Giáo phận</p>
         </div>
-        <Button>+ Them su kien</Button>
+        <Button>+ Thêm sự kiện</Button>
       </div>
 
       {/* Filters */}
@@ -86,10 +86,10 @@ export default function CalendarPage() {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Tat ca su kien</SelectItem>
-                <SelectItem value="liturgical">Lich phung vu</SelectItem>
-                <SelectItem value="diocesan">Su kien Giao phan</SelectItem>
-                <SelectItem value="parish">Su kien Giao xu</SelectItem>
+                <SelectItem value="all">Tất cả sự kiện</SelectItem>
+                <SelectItem value="liturgical">Lịch phụng vụ</SelectItem>
+                <SelectItem value="diocesan">Sự kiện Giáo phận</SelectItem>
+                <SelectItem value="parish">Sự kiện Giáo xứ</SelectItem>
               </SelectContent>
             </Select>
             <div className="flex border rounded-lg overflow-hidden">
@@ -98,14 +98,14 @@ export default function CalendarPage() {
                 size="sm"
                 onClick={() => setViewMode('month')}
               >
-                Thang
+                Tháng
               </Button>
               <Button
                 variant={viewMode === 'list' ? 'default' : 'ghost'}
                 size="sm"
                 onClick={() => setViewMode('list')}
               >
-                Danh sach
+                Danh sách
               </Button>
             </div>
           </div>
@@ -117,7 +117,7 @@ export default function CalendarPage() {
           <CardHeader>
             <div className="flex items-center justify-between">
               <Button variant="outline" size="sm" onClick={prevMonth}>
-                &lt; Truoc
+                &lt; Trước
               </Button>
               <CardTitle>
                 {months[month]} {year}
@@ -191,13 +191,13 @@ export default function CalendarPage() {
       ) : (
         <Card>
           <CardHeader>
-            <CardTitle>Su kien sap toi</CardTitle>
+            <CardTitle>Sự kiện sắp tới</CardTitle>
           </CardHeader>
           <CardContent>
             {filteredEvents.length === 0 ? (
               <div className="text-center py-12 text-gray-500">
                 <p className="text-4xl mb-4">📅</p>
-                <p>Khong co su kien nao</p>
+                <p>Không có sự kiện nào</p>
               </div>
             ) : (
               <div className="space-y-4">
@@ -217,17 +217,17 @@ export default function CalendarPage() {
                     <div className="flex-1">
                       <h3 className="font-semibold">{event.title}</h3>
                       {event.location && (
-                        <p className="text-sm text-gray-600">Dia diem: {event.location}</p>
+                        <p className="text-sm text-gray-600">Địa điểm: {event.location}</p>
                       )}
                       {event.liturgicalRank && (
-                        <p className="text-sm text-gray-600">Bac le: {event.liturgicalRank}</p>
+                        <p className="text-sm text-gray-600">Bậc lễ: {event.liturgicalRank}</p>
                       )}
                     </div>
                     <Badge className={getEventTypeColor(event.type)}>
-                      {event.type === 'liturgical' ? 'Phung vu' :
-                       event.type === 'diocesan' ? 'Giao phan' : 'Giao xu'}
+                      {event.type === 'liturgical' ? 'Phụng vụ' :
+                       event.type === 'diocesan' ? 'Giáo phận' : 'Giáo xứ'}
                     </Badge>
-                    <Button variant="ghost" size="sm">Chi tiet</Button>
+                    <Button variant="ghost" size="sm">Chi tiết</Button>
                   </div>
                 ))}
               </div>
@@ -239,19 +239,19 @@ export default function CalendarPage() {
       {/* Legend */}
       <Card>
         <CardContent className="p-4">
-          <h3 className="font-semibold mb-3">Chu thich</h3>
+          <h3 className="font-semibold mb-3">Chú thích</h3>
           <div className="flex flex-wrap gap-4">
             <div className="flex items-center gap-2">
               <div className="w-4 h-4 bg-purple-200 rounded"></div>
-              <span className="text-sm">Lich phung vu</span>
+              <span className="text-sm">Lịch phụng vụ</span>
             </div>
             <div className="flex items-center gap-2">
               <div className="w-4 h-4 bg-blue-200 rounded"></div>
-              <span className="text-sm">Su kien Giao phan</span>
+              <span className="text-sm">Sự kiện Giáo phận</span>
             </div>
             <div className="flex items-center gap-2">
               <div className="w-4 h-4 bg-green-200 rounded"></div>
-              <span className="text-sm">Su kien Giao xu</span>
+              <span className="text-sm">Sự kiện Giáo xứ</span>
             </div>
           </div>
         </CardContent>

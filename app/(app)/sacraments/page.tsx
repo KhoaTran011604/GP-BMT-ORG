@@ -7,32 +7,32 @@ import Link from 'next/link';
 const sacraments = [
   {
     id: 'baptism',
-    title: 'Rua toi',
-    description: 'So bo Bi tich Rua toi',
+    title: 'Rửa tội',
+    description: 'Sổ bộ Bí tích Rửa tội',
     icon: '💧',
     color: 'from-blue-500 to-cyan-500',
     stats: { total: 0, thisYear: 0 }
   },
   {
     id: 'confirmation',
-    title: 'Them suc',
-    description: 'So bo Bi tich Them suc',
+    title: 'Thêm sức',
+    description: 'Sổ bộ Bí tích Thêm sức',
     icon: '🔥',
     color: 'from-red-500 to-orange-500',
     stats: { total: 0, thisYear: 0 }
   },
   {
     id: 'marriage',
-    title: 'Hon phoi',
-    description: 'So bo Bi tich Hon phoi',
+    title: 'Hôn phối',
+    description: 'Sổ bộ Bí tích Hôn phối',
     icon: '💒',
     color: 'from-pink-500 to-rose-500',
     stats: { total: 0, thisYear: 0 }
   },
   {
     id: 'funeral',
-    title: 'An tang',
-    description: 'So bo Nghi thuc An tang',
+    title: 'Ăn táng',
+    description: 'Sổ bộ Nghi thức Ăn táng',
     icon: '🕊️',
     color: 'from-gray-500 to-slate-500',
     stats: { total: 0, thisYear: 0 }
@@ -44,10 +44,10 @@ export default function SacramentsPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">So bo Bi tich</h1>
-          <p className="text-gray-600">Quan ly so bo cac Bi tich trong Giao phan</p>
+          <h1 className="text-2xl font-bold">Sổ bộ Bí tích</h1>
+          <p className="text-gray-600">Quản lý sổ bộ các Bí tích trong Giáo phận</p>
         </div>
-        <Button variant="outline">Xuat bao cao</Button>
+        <Button variant="outline">Xuất báo cáo</Button>
       </div>
 
       {/* Sacrament Cards */}
@@ -64,11 +64,11 @@ export default function SacramentsPage() {
                 <div className="grid grid-cols-2 gap-4 text-center">
                   <div>
                     <p className="text-2xl font-bold text-gray-800">{s.stats.total}</p>
-                    <p className="text-xs text-gray-500">Tong so</p>
+                    <p className="text-xs text-gray-500">Tổng số</p>
                   </div>
                   <div>
                     <p className="text-2xl font-bold text-green-600">{s.stats.thisYear}</p>
-                    <p className="text-xs text-gray-500">Nam nay</p>
+                    <p className="text-xs text-gray-500">Năm nay</p>
                   </div>
                 </div>
               </CardContent>
@@ -80,32 +80,32 @@ export default function SacramentsPage() {
       {/* Quick Actions */}
       <Card>
         <CardHeader>
-          <CardTitle>Thao tac nhanh</CardTitle>
+          <CardTitle>Thao tác nhanh</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <Link href="/sacraments/baptism/new">
               <Button variant="outline" className="w-full h-auto py-4 flex flex-col gap-2">
                 <span className="text-2xl">💧</span>
-                <span>Them Rua toi</span>
+                <span>Thêm Rửa tội</span>
               </Button>
             </Link>
             <Link href="/sacraments/confirmation/new">
               <Button variant="outline" className="w-full h-auto py-4 flex flex-col gap-2">
                 <span className="text-2xl">🔥</span>
-                <span>Them Them suc</span>
+                <span>Thêm Thêm sức</span>
               </Button>
             </Link>
             <Link href="/sacraments/marriage/new">
               <Button variant="outline" className="w-full h-auto py-4 flex flex-col gap-2">
                 <span className="text-2xl">💒</span>
-                <span>Them Hon phoi</span>
+                <span>Thêm Hôn phối</span>
               </Button>
             </Link>
             <Link href="/sacraments/funeral/new">
               <Button variant="outline" className="w-full h-auto py-4 flex flex-col gap-2">
                 <span className="text-2xl">🕊️</span>
-                <span>Them An tang</span>
+                <span>Thêm Ăn táng</span>
               </Button>
             </Link>
           </div>
@@ -115,13 +115,13 @@ export default function SacramentsPage() {
       {/* Recent Activity */}
       <Card>
         <CardHeader>
-          <CardTitle>Hoat dong gan day</CardTitle>
-          <CardDescription>Cac bi tich duoc ghi nhan gan day</CardDescription>
+          <CardTitle>Hoạt động gần đây</CardTitle>
+          <CardDescription>Các bí tích được ghi nhận gần đây</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="text-center py-8 text-gray-500">
             <p className="text-4xl mb-4">📖</p>
-            <p>Chua co hoat dong nao gan day</p>
+            <p>Chưa có hoạt động nào gần đây</p>
           </div>
         </CardContent>
       </Card>
@@ -129,11 +129,11 @@ export default function SacramentsPage() {
       {/* Info */}
       <Card className="bg-blue-50 border-blue-200">
         <CardContent className="p-4">
-          <h3 className="font-semibold text-blue-800 mb-2">Huong dan</h3>
+          <h3 className="font-semibold text-blue-800 mb-2">Hướng dẫn</h3>
           <ul className="text-sm text-blue-700 space-y-1">
-            <li>• Click vao tung loai Bi tich de xem danh sach chi tiet</li>
-            <li>• Su dung chuc nang tim kiem de tra cuu thong tin nhanh chong</li>
-            <li>• Moi ban ghi deu duoc luu voi so so va so thu tu de tien truy xuat</li>
+            <li>• Click vào từng loại Bí tích để xem danh sách chi tiết</li>
+            <li>• Sử dụng chức năng tìm kiếm để tra cứu thông tin nhanh chóng</li>
+            <li>• Mỗi bản ghi đều được lưu với số sổ và số thứ tự để tiện truy xuất</li>
           </ul>
         </CardContent>
       </Card>

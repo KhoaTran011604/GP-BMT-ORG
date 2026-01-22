@@ -30,7 +30,7 @@ interface Payroll {
 const currentYear = new Date().getFullYear();
 const months = Array.from({ length: 12 }, (_, i) => ({
   value: `${String(i + 1).padStart(2, '0')}/${currentYear}`,
-  label: `Thang ${i + 1}/${currentYear}`
+  label: `Tháng ${i + 1}/${currentYear}`
 }));
 
 export default function PayrollPage() {
@@ -87,8 +87,8 @@ export default function PayrollPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Bang luong</h1>
-          <p className="text-gray-600">Quan ly bang luong hang thang</p>
+          <h1 className="text-2xl font-bold">Bảng lương</h1>
+          <p className="text-gray-600">Quản lý bảng lương hàng tháng</p>
         </div>
         <div className="flex gap-2">
           <Select value={selectedPeriod} onValueChange={setSelectedPeriod}>
@@ -101,7 +101,7 @@ export default function PayrollPage() {
               ))}
             </SelectContent>
           </Select>
-          <Button>Tao bang luong</Button>
+          <Button>Tạo bảng lương</Button>
         </div>
       </div>
 
@@ -110,25 +110,25 @@ export default function PayrollPage() {
         <Card>
           <CardContent className="p-4">
             <div className="text-2xl font-bold text-blue-600">{filteredPayrolls.length}</div>
-            <p className="text-sm text-gray-600">Nhan vien</p>
+            <p className="text-sm text-gray-600">Nhân viên</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-4">
             <div className="text-2xl font-bold text-green-600">{formatCurrency(totals.basicSalary)}</div>
-            <p className="text-sm text-gray-600">Tong luong co ban</p>
+            <p className="text-sm text-gray-600">Tổng lương cơ bản</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-4">
             <div className="text-2xl font-bold text-purple-600">{formatCurrency(totals.allowances)}</div>
-            <p className="text-sm text-gray-600">Tong phu cap</p>
+            <p className="text-sm text-gray-600">Tổng phụ cấp</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-4">
             <div className="text-2xl font-bold text-orange-600">{formatCurrency(totals.netSalary)}</div>
-            <p className="text-sm text-gray-600">Tong thuc linh</p>
+            <p className="text-sm text-gray-600">Tổng thực lĩnh</p>
           </CardContent>
         </Card>
       </div>
@@ -138,8 +138,8 @@ export default function PayrollPage() {
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle>Bang luong ky {selectedPeriod}</CardTitle>
-              <CardDescription>Chi tiet luong tung nhan vien</CardDescription>
+              <CardTitle>Bảng lương kỳ {selectedPeriod}</CardTitle>
+              <CardDescription>Chi tiết lương từng nhân viên</CardDescription>
             </div>
             <div className="flex gap-2">
               <Select value={statusFilter} onValueChange={setStatusFilter}>
@@ -147,13 +147,13 @@ export default function PayrollPage() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Tat ca</SelectItem>
-                  <SelectItem value="draft">Ban nhap</SelectItem>
-                  <SelectItem value="approved">Da duyet</SelectItem>
-                  <SelectItem value="paid">Da chi</SelectItem>
+                  <SelectItem value="all">Tất cả</SelectItem>
+                  <SelectItem value="draft">Bản nháp</SelectItem>
+                  <SelectItem value="approved">Đã duyệt</SelectItem>
+                  <SelectItem value="paid">Đã chi</SelectItem>
                 </SelectContent>
               </Select>
-              <Button variant="outline">Xuat Excel</Button>
+              <Button variant="outline">Xuất Excel</Button>
             </div>
           </div>
         </CardHeader>
@@ -161,24 +161,24 @@ export default function PayrollPage() {
           {filteredPayrolls.length === 0 ? (
             <div className="text-center py-12 text-gray-500">
               <p className="text-4xl mb-4">💰</p>
-              <p>Chua co du lieu bang luong cho ky nay</p>
-              <Button className="mt-4">Tao bang luong moi</Button>
+              <p>Chưa có dữ liệu bảng lương cho kỳ này</p>
+              <Button className="mt-4">Tạo bảng lương mới</Button>
             </div>
           ) : (
             <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Ma NV</TableHead>
-                    <TableHead>Ho Ten</TableHead>
-                    <TableHead className="text-right">Luong CB</TableHead>
-                    <TableHead className="text-right">PC Trach nhiem</TableHead>
-                    <TableHead className="text-right">PC An uong</TableHead>
-                    <TableHead className="text-right">PC Xang xe</TableHead>
-                    <TableHead className="text-right">Tam ung</TableHead>
-                    <TableHead className="text-right">Khau tru</TableHead>
-                    <TableHead className="text-right">Thuc linh</TableHead>
-                    <TableHead>Trang thai</TableHead>
+                    <TableHead>Mã NV</TableHead>
+                    <TableHead>Họ Tên</TableHead>
+                    <TableHead className="text-right">Lương CB</TableHead>
+                    <TableHead className="text-right">PC Trách nhiệm</TableHead>
+                    <TableHead className="text-right">PC Ăn uống</TableHead>
+                    <TableHead className="text-right">PC Xăng xe</TableHead>
+                    <TableHead className="text-right">Tạm ứng</TableHead>
+                    <TableHead className="text-right">Khấu trừ</TableHead>
+                    <TableHead className="text-right">Thực lĩnh</TableHead>
+                    <TableHead>Trạng thái</TableHead>
                     <TableHead></TableHead>
                   </TableRow>
                 </TableHeader>
@@ -200,18 +200,18 @@ export default function PayrollPage() {
                           p.status === 'approved' ? 'bg-blue-100 text-blue-800' :
                           'bg-yellow-100 text-yellow-800'
                         }>
-                          {p.status === 'paid' ? 'Da chi' :
-                           p.status === 'approved' ? 'Da duyet' : 'Ban nhap'}
+                          {p.status === 'paid' ? 'Đã chi' :
+                           p.status === 'approved' ? 'Đã duyệt' : 'Bản nháp'}
                         </Badge>
                       </TableCell>
                       <TableCell>
-                        <Button variant="ghost" size="sm">Chi tiet</Button>
+                        <Button variant="ghost" size="sm">Chi tiết</Button>
                       </TableCell>
                     </TableRow>
                   ))}
                   {/* Totals Row */}
                   <TableRow className="bg-gray-50 font-bold">
-                    <TableCell colSpan={2}>TONG CONG</TableCell>
+                    <TableCell colSpan={2}>TỔNG CỘNG</TableCell>
                     <TableCell className="text-right">{formatCurrency(totals.basicSalary)}</TableCell>
                     <TableCell className="text-right" colSpan={3}>{formatCurrency(totals.allowances)}</TableCell>
                     <TableCell className="text-right text-red-600" colSpan={2}>-{formatCurrency(totals.deductions)}</TableCell>
@@ -231,14 +231,14 @@ export default function PayrollPage() {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="font-semibold">Phe duyet bang luong</h3>
+                <h3 className="font-semibold">Phê duyệt bảng lương</h3>
                 <p className="text-sm text-gray-600">
-                  {payrolls.filter(p => p.status === 'draft').length} phieu luong cho duyet
+                  {payrolls.filter(p => p.status === 'draft').length} phiếu lương chờ duyệt
                 </p>
               </div>
               <div className="flex gap-2">
-                <Button variant="outline">Xem truoc</Button>
-                <Button>Phe duyet tat ca</Button>
+                <Button variant="outline">Xem trước</Button>
+                <Button>Phê duyệt tất cả</Button>
               </div>
             </div>
           </CardContent>

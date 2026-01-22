@@ -189,27 +189,27 @@ export default function PeoplePage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Danh sach Giao dan</h1>
-          <p className="text-gray-600">Quan ly thong tin giao dan</p>
+          <h1 className="text-2xl font-bold">Danh sách Giáo dân</h1>
+          <p className="text-gray-600">Quản lý thông tin giáo dân</p>
         </div>
         <Dialog open={isDialogOpen} onOpenChange={handleDialogClose}>
           <DialogTrigger asChild>
-            <Button>+ Them Giao dan</Button>
+            <Button>+ Thêm Giáo dân</Button>
           </DialogTrigger>
           <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle>{editingPerson ? 'Chinh sua Giao dan' : 'Them Giao dan moi'}</DialogTitle>
+              <DialogTitle>{editingPerson ? 'Chỉnh sửa Giáo dân' : 'Thêm Giáo dân mới'}</DialogTitle>
             </DialogHeader>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div className="col-span-2">
-                  <Label>Gia dinh *</Label>
+                  <Label>Gia đình *</Label>
                   <Select
                     value={formData.familyId}
                     onValueChange={(value) => setFormData({ ...formData, familyId: value })}
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder="Chon Gia dinh" />
+                      <SelectValue placeholder="Chọn Gia đình" />
                     </SelectTrigger>
                     <SelectContent>
                       {families.map((family) => (
@@ -221,7 +221,7 @@ export default function PeoplePage() {
                   </Select>
                 </div>
                 <div>
-                  <Label>Ten thanh *</Label>
+                  <Label>Tên thánh *</Label>
                   <Input
                     value={formData.saintName}
                     onChange={(e) => setFormData({ ...formData, saintName: e.target.value })}
@@ -230,7 +230,7 @@ export default function PeoplePage() {
                   />
                 </div>
                 <div>
-                  <Label>Ho va ten *</Label>
+                  <Label>Họ và tên *</Label>
                   <Input
                     value={formData.fullName}
                     onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
@@ -239,7 +239,7 @@ export default function PeoplePage() {
                   />
                 </div>
                 <div>
-                  <Label>Gioi tinh *</Label>
+                  <Label>Giới tính *</Label>
                   <Select
                     value={formData.gender}
                     onValueChange={(value: 'male' | 'female') => setFormData({ ...formData, gender: value })}
@@ -249,12 +249,12 @@ export default function PeoplePage() {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="male">Nam</SelectItem>
-                      <SelectItem value="female">Nu</SelectItem>
+                      <SelectItem value="female">Nữ</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
                 <div>
-                  <Label>Ngay sinh *</Label>
+                  <Label>Ngày sinh *</Label>
                   <Input
                     type="date"
                     value={formData.dob}
@@ -263,15 +263,15 @@ export default function PeoplePage() {
                   />
                 </div>
                 <div>
-                  <Label>Noi sinh</Label>
+                  <Label>Nơi sinh</Label>
                   <Input
                     value={formData.birthplace}
                     onChange={(e) => setFormData({ ...formData, birthplace: e.target.value })}
-                    placeholder="Noi sinh"
+                    placeholder="Nơi sinh"
                   />
                 </div>
                 <div>
-                  <Label>Quan he *</Label>
+                  <Label>Quan hệ *</Label>
                   <Select
                     value={formData.relationship}
                     onValueChange={(value) => setFormData({ ...formData, relationship: value })}
@@ -280,21 +280,21 @@ export default function PeoplePage() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="chu_ho">Chu ho</SelectItem>
-                      <SelectItem value="vo_chong">Vo/Chong</SelectItem>
+                      <SelectItem value="chu_ho">Chủ hộ</SelectItem>
+                      <SelectItem value="vo_chong">Vợ/Chồng</SelectItem>
                       <SelectItem value="con">Con</SelectItem>
-                      <SelectItem value="cha_me">Cha/Me</SelectItem>
-                      <SelectItem value="anh_chi_em">Anh/Chi/Em</SelectItem>
-                      <SelectItem value="khac">Khac</SelectItem>
+                      <SelectItem value="cha_me">Cha/Mẹ</SelectItem>
+                      <SelectItem value="anh_chi_em">Anh/Chị/Em</SelectItem>
+                      <SelectItem value="khac">Khác</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
                 <div>
-                  <Label>Dien thoai</Label>
+                  <Label>Điện thoại</Label>
                   <Input
                     value={formData.phone}
                     onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                    placeholder="So dien thoai"
+                    placeholder="Số điện thoại"
                   />
                 </div>
                 <div>
@@ -307,27 +307,27 @@ export default function PeoplePage() {
                   />
                 </div>
                 <div>
-                  <Label>Nghe nghiep</Label>
+                  <Label>Nghề nghiệp</Label>
                   <Input
                     value={formData.occupation}
                     onChange={(e) => setFormData({ ...formData, occupation: e.target.value })}
-                    placeholder="Nghe nghiep"
+                    placeholder="Nghề nghiệp"
                   />
                 </div>
                 <div className="col-span-2">
-                  <Label>Ghi chu</Label>
+                  <Label>Ghi chú</Label>
                   <Input
                     value={formData.notes}
                     onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                    placeholder="Ghi chu"
+                    placeholder="Ghi chú"
                   />
                 </div>
               </div>
               <div className="flex justify-end gap-2">
                 <Button type="button" variant="outline" onClick={() => handleDialogClose(false)}>
-                  Huy
+                  Hủy
                 </Button>
-                <Button type="submit">{editingPerson ? 'Cap nhat' : 'Luu'}</Button>
+                <Button type="submit">{editingPerson ? 'Cập nhật' : 'Lưu'}</Button>
               </div>
             </form>
           </DialogContent>
@@ -339,7 +339,7 @@ export default function PeoplePage() {
         <Card>
           <CardContent className="p-4">
             <div className="text-2xl font-bold text-blue-600">{people.length}</div>
-            <p className="text-sm text-gray-600">Tong so giao dan</p>
+            <p className="text-sm text-gray-600">Tổng số giáo dân</p>
           </CardContent>
         </Card>
         <Card>
@@ -347,7 +347,7 @@ export default function PeoplePage() {
             <div className="text-2xl font-bold text-green-600">
               {people.filter(p => p.status === 'active').length}
             </div>
-            <p className="text-sm text-gray-600">Dang hoat dong</p>
+            <p className="text-sm text-gray-600">Đang hoạt động</p>
           </CardContent>
         </Card>
         <Card>
@@ -363,7 +363,7 @@ export default function PeoplePage() {
             <div className="text-2xl font-bold text-purple-600">
               {people.filter(p => p.gender === 'female').length}
             </div>
-            <p className="text-sm text-gray-600">Nu</p>
+            <p className="text-sm text-gray-600">Nữ</p>
           </CardContent>
         </Card>
       </div>
@@ -371,9 +371,9 @@ export default function PeoplePage() {
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
-            <CardTitle>Danh sach Giao dan ({filteredPeople.length})</CardTitle>
+            <CardTitle>Danh sách Giáo dân ({filteredPeople.length})</CardTitle>
             <Input
-              placeholder="Tim kiem..."
+              placeholder="Tìm kiếm..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-64"
@@ -384,21 +384,21 @@ export default function PeoplePage() {
           {filteredPeople.length === 0 ? (
             <div className="text-center py-12 text-gray-500">
               <p className="text-4xl mb-4">👤</p>
-              <p>Chua co giao dan nao duoc dang ky</p>
+              <p>Chưa có giáo dân nào được đăng ký</p>
             </div>
           ) : (
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Ten thanh</TableHead>
-                  <TableHead>Ho va ten</TableHead>
-                  <TableHead>Gia dinh</TableHead>
-                  <TableHead>Gioi tinh</TableHead>
-                  <TableHead>Ngay sinh</TableHead>
-                  <TableHead>Quan he</TableHead>
-                  <TableHead>Dien thoai</TableHead>
-                  <TableHead>Trang thai</TableHead>
-                  <TableHead className="text-right">Thao tac</TableHead>
+                  <TableHead>Tên thánh</TableHead>
+                  <TableHead>Họ và tên</TableHead>
+                  <TableHead>Gia đình</TableHead>
+                  <TableHead>Giới tính</TableHead>
+                  <TableHead>Ngày sinh</TableHead>
+                  <TableHead>Quan hệ</TableHead>
+                  <TableHead>Điện thoại</TableHead>
+                  <TableHead>Trạng thái</TableHead>
+                  <TableHead className="text-right">Thao tác</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -407,14 +407,14 @@ export default function PeoplePage() {
                     <TableCell className="font-medium">{person.saintName}</TableCell>
                     <TableCell>{person.fullName}</TableCell>
                     <TableCell>{person.familyName || '-'}</TableCell>
-                    <TableCell>{person.gender === 'male' ? 'Nam' : 'Nu'}</TableCell>
+                    <TableCell>{person.gender === 'male' ? 'Nam' : 'Nữ'}</TableCell>
                     <TableCell>{person.dob ? new Date(person.dob).toLocaleDateString('vi-VN') : '-'}</TableCell>
                     <TableCell>
-                      {person.relationship === 'chu_ho' ? 'Chu ho' :
-                       person.relationship === 'vo_chong' ? 'Vo/Chong' :
+                      {person.relationship === 'chu_ho' ? 'Chủ hộ' :
+                       person.relationship === 'vo_chong' ? 'Vợ/Chồng' :
                        person.relationship === 'con' ? 'Con' :
-                       person.relationship === 'cha_me' ? 'Cha/Me' :
-                       person.relationship === 'anh_chi_em' ? 'Anh/Chi/Em' : 'Khac'}
+                       person.relationship === 'cha_me' ? 'Cha/Mẹ' :
+                       person.relationship === 'anh_chi_em' ? 'Anh/Chị/Em' : 'Khác'}
                     </TableCell>
                     <TableCell>{person.phone || '-'}</TableCell>
                     <TableCell>
@@ -427,9 +427,9 @@ export default function PeoplePage() {
                           ? 'bg-gray-100 text-gray-800'
                           : 'bg-blue-100 text-blue-800'
                       }`}>
-                        {person.status === 'active' ? 'Hoat dong' :
-                         person.status === 'moved' ? 'Da chuyen' :
-                         person.status === 'deceased' ? 'Da mat' : 'Khac'}
+                        {person.status === 'active' ? 'Hoạt động' :
+                         person.status === 'moved' ? 'Đã chuyển' :
+                         person.status === 'deceased' ? 'Đã mất' : 'Khác'}
                       </span>
                     </TableCell>
                     <TableCell className="text-right">
@@ -464,17 +464,17 @@ export default function PeoplePage() {
       <AlertDialog open={!!deletingPerson} onOpenChange={(open) => !open && setDeletingPerson(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Xac nhan xoa</AlertDialogTitle>
+            <AlertDialogTitle>Xác nhận xóa</AlertDialogTitle>
             <AlertDialogDescription>
-              Ban co chac chan muon xoa giao dan <strong>{deletingPerson?.saintName} {deletingPerson?.fullName}</strong>?
+              Bạn có chắc chắn muốn xóa giáo dân <strong>{deletingPerson?.saintName} {deletingPerson?.fullName}</strong>?
               <br />
-              Hanh dong nay khong the hoan tac.
+              Hành động này không thể hoàn tác.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Huy</AlertDialogCancel>
+            <AlertDialogCancel>Hủy</AlertDialogCancel>
             <AlertDialogAction onClick={handleDelete} className="bg-red-600 hover:bg-red-700">
-              Xoa
+              Xóa
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

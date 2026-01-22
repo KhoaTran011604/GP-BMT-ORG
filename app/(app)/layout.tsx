@@ -68,106 +68,106 @@ interface MenuItem {
 const menuData: MenuItem[] = [
   {
     id: 'dashboard',
-    label: 'Tong quan',
+    label: 'Tổng quan',
     icon: <LayoutDashboard size={20} />,
     href: '/dashboard',
   },
   {
     id: 'parish',
-    label: 'Giao xu & Giao ho',
+    label: 'Giáo xứ & Giáo họ',
     icon: <Church size={20} />,
     children: [
-      { id: 'parish-list', label: 'Danh sach Giao xu', icon: <Building size={18} />, href: '/parish' },
-      { id: 'sub-parish', label: 'Giao ho truc thuoc', icon: <Home size={18} />, href: '/parish/sub-parishes' },
+      { id: 'parish-list', label: 'Danh sách Giáo xứ', icon: <Building size={18} />, href: '/parish' },
+      { id: 'sub-parish', label: 'Giáo họ trực thuộc', icon: <Home size={18} />, href: '/parish/sub-parishes' },
     ],
   },
   {
     id: 'people',
-    label: 'Giao dan',
+    label: 'Giáo dân',
     icon: <Users size={20} />,
     children: [
-      { id: 'families', label: 'So Gia dinh', icon: <Users size={18} />, href: '/people/families' },
-      { id: 'people-list', label: 'Danh sach Giao dan', icon: <User size={18} />, href: '/people' },
-      { id: 'people-search', label: 'Tra cuu', icon: <Search size={18} />, href: '/people/search' },
+      { id: 'families', label: 'Sổ Gia đình', icon: <Users size={18} />, href: '/people/families' },
+      { id: 'people-list', label: 'Danh sách Giáo dân', icon: <User size={18} />, href: '/people' },
+      { id: 'people-search', label: 'Tra cứu', icon: <Search size={18} />, href: '/people/search' },
     ],
   },
   {
     id: 'finance',
-    label: 'Quan ly Tai chinh',
+    label: 'Quản lý Tài chính',
     icon: <Wallet size={20} />,
-    badge: '11 quy',
+    badge: '11 quỹ',
     children: [
-      { id: 'funds', label: 'Danh muc Quy', icon: <CreditCard size={18} />, href: '/finance/funds' },
-      { id: 'expense-categories', label: 'Danh muc Chi', icon: <FolderOpen size={18} />, href: '/finance/expense-categories' },
-      { id: 'transactions', label: 'Giao dich & Xac thuc', icon: <Receipt size={18} />, href: '/finance/transactions' },
-      { id: 'reconciliation', label: 'Doi soat (Audit)', icon: <CheckSquare size={18} />, href: '/finance/reconciliation' },
-      { id: 'incomes', label: 'Phieu thu', icon: <ArrowDownCircle size={18} />, href: '/finance/incomes' },
-      { id: 'expenses', label: 'Phieu chi', icon: <ArrowUpCircle size={18} />, href: '/finance/expenses' },
+      { id: 'funds', label: 'Danh mục Quỹ', icon: <CreditCard size={18} />, href: '/finance/funds' },
+      { id: 'expense-categories', label: 'Danh mục Chi', icon: <FolderOpen size={18} />, href: '/finance/expense-categories' },
+      { id: 'transactions', label: 'Giao dịch & Xác thực', icon: <Receipt size={18} />, href: '/finance/transactions' },
+      { id: 'reconciliation', label: 'Đối soát (Audit)', icon: <CheckSquare size={18} />, href: '/finance/reconciliation' },
+      { id: 'incomes', label: 'Phiếu thu', icon: <ArrowDownCircle size={18} />, href: '/finance/incomes' },
+      { id: 'expenses', label: 'Phiếu chi', icon: <ArrowUpCircle size={18} />, href: '/finance/expenses' },
     ],
   },
   {
     id: 'hr',
-    label: 'Nhan su & Tien luong',
+    label: 'Nhân sự & Tiền lương',
     icon: <Briefcase size={20} />,
     children: [
-      { id: 'staff', label: 'Quan ly Nhan vien', icon: <UserCog size={18} />, href: '/hr/staff' },
-      { id: 'contracts', label: 'Hop dong Lao dong', icon: <FileSignature size={18} />, href: '/hr/contracts' },
-      { id: 'payroll', label: 'Bang luong', icon: <DollarSign size={18} />, href: '/hr/payroll' },
+      { id: 'staff', label: 'Quản lý Nhân viên', icon: <UserCog size={18} />, href: '/hr/staff' },
+      { id: 'contracts', label: 'Hợp đồng Lao động', icon: <FileSignature size={18} />, href: '/hr/contracts' },
+      { id: 'payroll', label: 'Bảng lương', icon: <DollarSign size={18} />, href: '/hr/payroll' },
     ],
   },
   {
     id: 'pastoral',
-    label: 'Muc vu & Linh muc',
+    label: 'Mục vụ & Linh mục',
     icon: <Cross size={20} />,
     children: [
-      { id: 'clergy-dir', label: 'Danh ba Linh muc', icon: <User size={18} />, href: '/clergy/directory' },
-      { id: 'clergy-assign', label: 'Lich su Bo nhiem', icon: <History size={18} />, href: '/clergy/assignments' },
-      { id: 'sacraments', label: 'So bo Bi tich', icon: <BookOpen size={18} />, href: '/sacraments' },
-      { id: 'baptism', label: 'Rua toi', icon: <Heart size={18} />, href: '/sacraments/baptism' },
-      { id: 'marriage', label: 'Hon phoi', icon: <Heart size={18} />, href: '/sacraments/marriage' },
+      { id: 'clergy-dir', label: 'Danh bạ Linh mục', icon: <User size={18} />, href: '/clergy/directory' },
+      { id: 'clergy-assign', label: 'Lịch sử Bổ nhiệm', icon: <History size={18} />, href: '/clergy/assignments' },
+      { id: 'sacraments', label: 'Sổ bộ Bí tích', icon: <BookOpen size={18} />, href: '/sacraments' },
+      { id: 'baptism', label: 'Rửa tội', icon: <Heart size={18} />, href: '/sacraments/baptism' },
+      { id: 'marriage', label: 'Hôn phối', icon: <Heart size={18} />, href: '/sacraments/marriage' },
     ],
   },
   {
     id: 'calendar',
-    label: 'Lich & Su kien',
+    label: 'Lịch & Sự kiện',
     icon: <Calendar size={20} />,
     href: '/calendar',
   },
   {
     id: 'admin',
-    label: 'Hanh chinh & Tai san',
+    label: 'Hành chính & Tài sản',
     icon: <FolderOpen size={20} />,
     children: [
-      { id: 'e-office', label: 'E-Office (Don tu)', icon: <ClipboardList size={18} />, href: '/admin/e-office' },
-      { id: 'associations', label: 'Quan ly Hoi doan', icon: <Users size={18} />, href: '/admin/associations' },
-      { id: 'projects', label: 'Cong trinh & Du an', icon: <Building size={18} />, href: '/admin/projects' },
-      { id: 'assets', label: 'Quan ly Tai san', icon: <Landmark size={18} />, href: '/admin/assets' },
+      { id: 'e-office', label: 'E-Office (Đơn từ)', icon: <ClipboardList size={18} />, href: '/admin/e-office' },
+      { id: 'associations', label: 'Quản lý Hội đoàn', icon: <Users size={18} />, href: '/admin/associations' },
+      { id: 'projects', label: 'Công trình & Dự án', icon: <Building size={18} />, href: '/admin/projects' },
+      { id: 'assets', label: 'Quản lý Tài sản', icon: <Landmark size={18} />, href: '/admin/assets' },
     ],
   },
   {
     id: 'reports',
-    label: 'Bao cao & Thong ke',
+    label: 'Báo cáo & Thống kê',
     icon: <BarChart3 size={20} />,
     href: '/reports',
   },
   {
     id: 'settings',
-    label: 'Cai dat He thong',
+    label: 'Cài đặt Hệ thống',
     icon: <Settings size={20} />,
     children: [
-      { id: 'users', label: 'Phan quyen (RBAC)', icon: <Shield size={18} />, href: '/settings/users' },
-      { id: 'audit-log', label: 'Nhat ky He thong', icon: <History size={18} />, href: '/settings/audit-log' },
-      { id: 'import', label: 'Import Du lieu', icon: <Download size={18} />, href: '/settings/import' },
+      { id: 'users', label: 'Phân quyền (RBAC)', icon: <Shield size={18} />, href: '/settings/users' },
+      { id: 'audit-log', label: 'Nhật kí Hệ thống', icon: <History size={18} />, href: '/settings/audit-log' },
+      { id: 'import', label: 'Import dữ liệu', icon: <Download size={18} />, href: '/settings/import' },
     ],
   },
 ];
 
 const roleLabels: Record<string, string> = {
   super_admin: 'Super Admin',
-  cha_quan_ly: 'Cha Quan ly',
-  cha_xu: 'Cha xu',
-  ke_toan: 'Ke toan VP',
-  thu_ky: 'Thu ky GX',
+  cha_quan_ly: 'Cha Quản lý',
+  cha_xu: 'Cha xứ',
+  ke_toan: 'Kế toán VP',
+  thu_ky: 'Thư ký GX',
 };
 
 function MenuItem({
@@ -337,7 +337,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       <div className="flex items-center justify-center min-h-screen bg-blue-900">
         <div className="text-center text-white">
           <div className="w-16 h-16 border-4 border-white/30 border-t-white rounded-full animate-spin mx-auto mb-4"></div>
-          <h2 className="text-xl font-semibold">Dang tai...</h2>
+          <h2 className="text-xl font-semibold">Đang tải...</h2>
         </div>
       </div>
     );
@@ -371,7 +371,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                 </div>
                 <div>
                   <h1 className="font-bold text-white text-lg">GPBMT.ORG</h1>
-                  <p className="text-xs text-white/60">Giao phan Buon Ma Thuot</p>
+                  <p className="text-xs text-white/60">Giáo phận Buôn Ma Thuột</p>
                 </div>
               </div>
             )}
@@ -406,14 +406,14 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-48">
                     <DropdownMenuItem>
-                      <User size={16} className="mr-2" /> Ho so ca nhan
+                      <User size={16} className="mr-2" /> Hồ sơ cá nhân
                     </DropdownMenuItem>
                     <DropdownMenuItem>
-                      <Settings size={16} className="mr-2" /> Cai dat
+                      <Settings size={16} className="mr-2" /> Cài đặt
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={handleLogout} className="text-red-600">
-                      <LogOut size={16} className="mr-2" /> Dang xuat
+                      <LogOut size={16} className="mr-2" /> Đăng xuất
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
@@ -428,7 +428,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             <div className="relative">
               <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40" />
               <Input
-                placeholder="Tim kiem..."
+                placeholder="Tìm kiếm..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-9 bg-white/10 border-white/10 text-white placeholder:text-white/40 focus:bg-white/15 focus:border-white/20"
@@ -480,7 +480,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             {/* Breadcrumb / Page Title */}
             <div>
               <h2 className="text-lg font-semibold text-gray-800">
-                He thong Quan ly Giao phan Buon Ma Thuot
+                Hệ thống Quản lý Giáo phận Buôn Ma Thuột
               </h2>
               <p className="text-sm text-gray-500 hidden sm:block">
                 {new Date().toLocaleDateString('vi-VN', {
@@ -497,7 +497,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             {/* Search (Desktop) */}
             <div className="hidden md:block relative">
               <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-              <Input placeholder="Tim kiem nhanh..." className="pl-9 w-64 bg-gray-50" />
+              <Input placeholder="Tìm kiếm nhanh..." className="pl-9 w-64 bg-gray-50" />
             </div>
 
             {/* Notifications */}
@@ -510,10 +510,10 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-80">
                 <div className="p-3 border-b">
-                  <h3 className="font-semibold">Thong bao</h3>
+                  <h3 className="font-semibold">Thông báo</h3>
                 </div>
                 <div className="p-4 text-center text-gray-500 text-sm">
-                  Khong co thong bao moi
+                  Không có thông báo mới
                 </div>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -540,14 +540,14 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                   <p className="text-sm text-gray-500">{user.email}</p>
                 </div>
                 <DropdownMenuItem>
-                  <User size={16} className="mr-2" /> Ho so ca nhan
+                  <User size={16} className="mr-2" /> Hồ sơ cá nhân
                 </DropdownMenuItem>
                 <DropdownMenuItem>
-                  <Settings size={16} className="mr-2" /> Cai dat tai khoan
+                  <Settings size={16} className="mr-2" /> Cài đặt tài khoản
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleLogout} className="text-red-600">
-                  <LogOut size={16} className="mr-2" /> Dang xuat
+                  <LogOut size={16} className="mr-2" /> Đăng xuất
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>

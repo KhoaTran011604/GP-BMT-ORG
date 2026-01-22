@@ -161,21 +161,21 @@ export default function FamiliesPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">So Gia dinh Cong giao</h1>
-          <p className="text-gray-600">Quan ly danh sach gia dinh trong Giao phan</p>
+          <h1 className="text-2xl font-bold">Sổ Gia đình Công giáo</h1>
+          <p className="text-gray-600">Quản lý danh sách gia đình trong Giáo phận</p>
         </div>
         <Dialog open={isDialogOpen} onOpenChange={handleDialogClose}>
           <DialogTrigger asChild>
-            <Button>+ Them Gia dinh</Button>
+            <Button>+ Thêm Gia đình</Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>{editingFamily ? 'Chinh sua Gia dinh' : 'Dang ky Gia dinh moi'}</DialogTitle>
+              <DialogTitle>{editingFamily ? 'Chỉnh sửa Gia đình' : 'Đăng ký Gia đình mới'}</DialogTitle>
             </DialogHeader>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <Label>Ma Gia dinh *</Label>
+                  <Label>Mã Gia đình *</Label>
                   <Input
                     value={formData.familyCode}
                     onChange={(e) => setFormData({ ...formData, familyCode: e.target.value })}
@@ -184,7 +184,7 @@ export default function FamiliesPage() {
                   />
                 </div>
                 <div>
-                  <Label>Ten Chu ho *</Label>
+                  <Label>Tên Chủ hộ *</Label>
                   <Input
                     value={formData.familyName}
                     onChange={(e) => setFormData({ ...formData, familyName: e.target.value })}
@@ -194,13 +194,13 @@ export default function FamiliesPage() {
                 </div>
               </div>
               <div>
-                <Label>Thuoc Giao xu *</Label>
+                <Label>Thuộc Giáo xứ *</Label>
                 <Select
                   value={formData.parishId}
                   onValueChange={(value) => setFormData({ ...formData, parishId: value })}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Chon Giao xu" />
+                    <SelectValue placeholder="Chọn Giáo xứ" />
                   </SelectTrigger>
                   <SelectContent>
                     {(parishes || []).map((parish) => (
@@ -212,27 +212,27 @@ export default function FamiliesPage() {
                 </Select>
               </div>
               <div>
-                <Label>Dia chi *</Label>
+                <Label>Địa chỉ *</Label>
                 <Input
                   value={formData.address}
                   onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                  placeholder="Dia chi cu the"
+                  placeholder="Địa chỉ cụ thể"
                   required
                 />
               </div>
               <div>
-                <Label>Dien thoai</Label>
+                <Label>Điện thoại</Label>
                 <Input
                   value={formData.phone}
                   onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                  placeholder="So dien thoai"
+                  placeholder="Số điện thoại"
                 />
               </div>
               <div className="flex justify-end gap-2">
                 <Button type="button" variant="outline" onClick={() => handleDialogClose(false)}>
-                  Huy
+                  Hủy
                 </Button>
-                <Button type="submit">{editingFamily ? 'Cap nhat' : 'Luu'}</Button>
+                <Button type="submit">{editingFamily ? 'Cập nhật' : 'Lưu'}</Button>
               </div>
             </form>
           </DialogContent>
@@ -244,7 +244,7 @@ export default function FamiliesPage() {
         <Card>
           <CardContent className="p-4">
             <div className="text-2xl font-bold text-blue-600">{families.length}</div>
-            <p className="text-sm text-gray-600">Tong so gia dinh</p>
+            <p className="text-sm text-gray-600">Tổng số gia đình</p>
           </CardContent>
         </Card>
         <Card>
@@ -252,7 +252,7 @@ export default function FamiliesPage() {
             <div className="text-2xl font-bold text-green-600">
               {families.filter(f => f.status === 'active').length}
             </div>
-            <p className="text-sm text-gray-600">Dang hoat dong</p>
+            <p className="text-sm text-gray-600">Đang hoạt động</p>
           </CardContent>
         </Card>
         <Card>
@@ -260,7 +260,7 @@ export default function FamiliesPage() {
             <div className="text-2xl font-bold text-orange-600">
               {families.reduce((sum, f) => sum + (f.memberCount || 0), 0)}
             </div>
-            <p className="text-sm text-gray-600">Tong thanh vien</p>
+            <p className="text-sm text-gray-600">Tổng thành viên</p>
           </CardContent>
         </Card>
         <Card>
@@ -268,7 +268,7 @@ export default function FamiliesPage() {
             <div className="text-2xl font-bold text-purple-600">
               {new Set(families.map(f => f.parishId)).size}
             </div>
-            <p className="text-sm text-gray-600">Giao xu co gia dinh</p>
+            <p className="text-sm text-gray-600">Giáo xứ có gia đình</p>
           </CardContent>
         </Card>
       </div>
@@ -276,9 +276,9 @@ export default function FamiliesPage() {
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
-            <CardTitle>Danh sach Gia dinh ({filteredFamilies.length})</CardTitle>
+            <CardTitle>Danh sách Gia đình ({filteredFamilies.length})</CardTitle>
             <Input
-              placeholder="Tim kiem..."
+              placeholder="Tìm kiếm..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-64"
@@ -289,20 +289,20 @@ export default function FamiliesPage() {
           {filteredFamilies.length === 0 ? (
             <div className="text-center py-12 text-gray-500">
               <p className="text-4xl mb-4">👨‍👩‍👧‍👦</p>
-              <p>Chua co gia dinh nao duoc dang ky</p>
+              <p>Chưa có gia đình nào được đăng ký</p>
             </div>
           ) : (
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Ma</TableHead>
-                  <TableHead>Ten Chu ho</TableHead>
-                  <TableHead>Giao xu</TableHead>
-                  <TableHead>Dia chi</TableHead>
-                  <TableHead>Dien thoai</TableHead>
-                  <TableHead>Thanh vien</TableHead>
-                  <TableHead>Trang thai</TableHead>
-                  <TableHead className="text-right">Thao tac</TableHead>
+                  <TableHead>Mã</TableHead>
+                  <TableHead>Tên Chủ hộ</TableHead>
+                  <TableHead>Giáo xứ</TableHead>
+                  <TableHead>Địa chỉ</TableHead>
+                  <TableHead>Điện thoại</TableHead>
+                  <TableHead>Thành viên</TableHead>
+                  <TableHead>Trạng thái</TableHead>
+                  <TableHead className="text-right">Thao tác</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -322,8 +322,8 @@ export default function FamiliesPage() {
                           ? 'bg-yellow-100 text-yellow-800'
                           : 'bg-gray-100 text-gray-800'
                       }`}>
-                        {family.status === 'active' ? 'Hoat dong' :
-                         family.status === 'moved' ? 'Da chuyen' : 'Khac'}
+                        {family.status === 'active' ? 'Hoạt động' :
+                         family.status === 'moved' ? 'Đã chuyển' : 'Khác'}
                       </span>
                     </TableCell>
                     <TableCell className="text-right">
@@ -358,17 +358,17 @@ export default function FamiliesPage() {
       <AlertDialog open={!!deletingFamily} onOpenChange={(open) => !open && setDeletingFamily(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Xac nhan xoa</AlertDialogTitle>
+            <AlertDialogTitle>Xác nhận xóa</AlertDialogTitle>
             <AlertDialogDescription>
-              Ban co chac chan muon xoa gia dinh <strong>{deletingFamily?.familyName}</strong> (Ma: {deletingFamily?.familyCode})?
+              Bạn có chắc chắn muốn xóa gia đình <strong>{deletingFamily?.familyName}</strong> (Mã: {deletingFamily?.familyCode})?
               <br />
-              Hanh dong nay khong the hoan tac.
+              Hành động này không thể hoàn tác.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Huy</AlertDialogCancel>
+            <AlertDialogCancel>Hủy</AlertDialogCancel>
             <AlertDialogAction onClick={handleDelete} className="bg-red-600 hover:bg-red-700">
-              Xoa
+              Xóa
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

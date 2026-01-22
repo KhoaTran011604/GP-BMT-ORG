@@ -64,27 +64,27 @@ export default function PeopleSearchPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold">Tra cuu Giao dan</h1>
-        <p className="text-gray-600">Tim kiem thong tin giao dan trong toan Giao phan</p>
+        <h1 className="text-2xl font-bold">Tra cứu Giáo dân</h1>
+        <p className="text-gray-600">Tìm kiếm thông tin giáo dân trong toàn Giáo phận</p>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Bo loc tim kiem</CardTitle>
+          <CardTitle>Bộ lọc tìm kiếm</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div className="md:col-span-2">
-              <Label>Tu khoa tim kiem</Label>
+              <Label>Từ khóa tìm kiếm</Label>
               <Input
                 value={searchParams.keyword}
                 onChange={(e) => setSearchParams({ ...searchParams, keyword: e.target.value })}
-                placeholder="Nhap ten, ten thanh, so dien thoai..."
+                placeholder="Nhập tên, tên thánh, số điện thoại..."
                 onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
               />
             </div>
             <div>
-              <Label>Tim theo</Label>
+              <Label>Tìm theo</Label>
               <Select
                 value={searchParams.searchType}
                 onValueChange={(value) => setSearchParams({ ...searchParams, searchType: value })}
@@ -93,16 +93,16 @@ export default function PeopleSearchPage() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="name">Ho ten</SelectItem>
-                  <SelectItem value="saint_name">Ten thanh</SelectItem>
-                  <SelectItem value="phone">So dien thoai</SelectItem>
-                  <SelectItem value="family_code">Ma gia dinh</SelectItem>
+                  <SelectItem value="name">Họ tên</SelectItem>
+                  <SelectItem value="saint_name">Tên thánh</SelectItem>
+                  <SelectItem value="phone">Số điện thoại</SelectItem>
+                  <SelectItem value="family_code">Mã gia đình</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <div className="flex items-end">
               <Button onClick={handleSearch} disabled={loading} className="w-full">
-                {loading ? 'Dang tim...' : 'Tim kiem'}
+                {loading ? 'Đang tìm...' : 'Tìm kiếm'}
               </Button>
             </div>
           </div>
@@ -112,7 +112,7 @@ export default function PeopleSearchPage() {
       {searched && (
         <Card>
           <CardHeader>
-            <CardTitle>Ket qua tim kiem ({results.length} ket qua)</CardTitle>
+            <CardTitle>Kết quả tìm kiếm ({results.length} kết quả)</CardTitle>
           </CardHeader>
           <CardContent>
             {loading ? (
@@ -122,20 +122,20 @@ export default function PeopleSearchPage() {
             ) : results.length === 0 ? (
               <div className="text-center py-12 text-gray-500">
                 <p className="text-4xl mb-4">🔍</p>
-                <p>Khong tim thay ket qua phu hop</p>
-                <p className="text-sm mt-2">Thu thay doi tu khoa hoac bo loc</p>
+                <p>Không tìm thấy kết quả phù hợp</p>
+                <p className="text-sm mt-2">Thử thay đổi từ khóa hoặc bộ lọc</p>
               </div>
             ) : (
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Ten Thanh</TableHead>
-                    <TableHead>Ho va Ten</TableHead>
-                    <TableHead>Gioi tinh</TableHead>
-                    <TableHead>Ngay sinh</TableHead>
-                    <TableHead>Gia dinh</TableHead>
-                    <TableHead>Giao xu</TableHead>
-                    <TableHead>Dien thoai</TableHead>
+                    <TableHead>Tên Thánh</TableHead>
+                    <TableHead>Họ và Tên</TableHead>
+                    <TableHead>Giới tính</TableHead>
+                    <TableHead>Ngày sinh</TableHead>
+                    <TableHead>Gia đình</TableHead>
+                    <TableHead>Giáo xứ</TableHead>
+                    <TableHead>Điện thoại</TableHead>
                     <TableHead></TableHead>
                   </TableRow>
                 </TableHeader>
@@ -145,7 +145,7 @@ export default function PeopleSearchPage() {
                       <TableCell className="font-medium">{person.saintName}</TableCell>
                       <TableCell>{person.fullName}</TableCell>
                       <TableCell>
-                        {person.gender === 'male' ? 'Nam' : 'Nu'}
+                        {person.gender === 'male' ? 'Nam' : 'Nữ'}
                       </TableCell>
                       <TableCell>{formatDate(person.dob)}</TableCell>
                       <TableCell>{person.familyName || '-'}</TableCell>
@@ -167,29 +167,29 @@ export default function PeopleSearchPage() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card className="bg-blue-50">
           <CardContent className="p-4">
-            <h3 className="font-semibold text-blue-800">Huong dan</h3>
+            <h3 className="font-semibold text-blue-800">Hướng dẫn</h3>
             <ul className="text-sm text-blue-700 mt-2 space-y-1">
-              <li>- Tim theo ho ten: Nhap day du hoac mot phan ten</li>
-              <li>- Tim theo ten thanh: Nhap ten thanh bo mang</li>
-              <li>- Tim theo SDT: Nhap so dien thoai</li>
+              <li>- Tìm theo họ tên: Nhập đầy đủ hoặc một phần tên</li>
+              <li>- Tìm theo tên thánh: Nhập tên thánh bổ mạng</li>
+              <li>- Tìm theo SDT: Nhập số điện thoại</li>
             </ul>
           </CardContent>
         </Card>
         <Card className="bg-green-50">
           <CardContent className="p-4">
-            <h3 className="font-semibold text-green-800">Meo tim kiem</h3>
+            <h3 className="font-semibold text-green-800">Mẹo tìm kiếm</h3>
             <ul className="text-sm text-green-700 mt-2 space-y-1">
-              <li>- Su dung dau * de tim kiem mo rong</li>
-              <li>- Ket hop voi bo loc Giao xu de thu hep</li>
-              <li>- Kiem tra chinh ta neu khong tim thay</li>
+              <li>- Sử dụng dấu * để tìm kiếm mở rộng</li>
+              <li>- Kết hợp với bộ lọc Giáo xứ để thu hẹp</li>
+              <li>- Kiểm tra chính tả nếu không tìm thấy</li>
             </ul>
           </CardContent>
         </Card>
         <Card className="bg-purple-50">
           <CardContent className="p-4">
-            <h3 className="font-semibold text-purple-800">Lien he ho tro</h3>
+            <h3 className="font-semibold text-purple-800">Liên hệ hỗ trợ</h3>
             <p className="text-sm text-purple-700 mt-2">
-              Neu can ho tro them, lien he Van phong TGM
+              Nếu cần hỗ trợ thêm, liên hệ Văn phòng TGM
               <br />
               Email: support@gpbmt.org
             </p>

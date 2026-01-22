@@ -107,21 +107,21 @@ export default function BaptismPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">So Rua toi</h1>
-          <p className="text-gray-600">Quan ly so bo Bi tich Rua toi</p>
+          <h1 className="text-2xl font-bold">Sổ Rửa tội</h1>
+          <p className="text-gray-600">Quản lý sổ bộ Bí tích Rửa tội</p>
         </div>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
-            <Button>+ Them ban ghi</Button>
+            <Button>+ Thêm bản ghi</Button>
           </DialogTrigger>
           <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle>Them ban ghi Rua toi</DialogTitle>
+              <DialogTitle>Thêm bản ghi Rửa tội</DialogTitle>
             </DialogHeader>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <Label>Ten thanh Rua toi *</Label>
+                  <Label>Tên thánh Rửa tội *</Label>
                   <Input
                     value={formData.baptismName}
                     onChange={(e) => setFormData({ ...formData, baptismName: e.target.value })}
@@ -130,18 +130,18 @@ export default function BaptismPage() {
                   />
                 </div>
                 <div>
-                  <Label>Ho va Ten *</Label>
+                  <Label>Họ và Tên *</Label>
                   <Input
                     value={formData.fullName}
                     onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
-                    placeholder="Ho va ten day du"
+                    placeholder="Họ và tên đầy đủ"
                     required
                   />
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <Label>Ngay sinh *</Label>
+                  <Label>Ngày sinh *</Label>
                   <Input
                     type="date"
                     value={formData.dob}
@@ -150,7 +150,7 @@ export default function BaptismPage() {
                   />
                 </div>
                 <div>
-                  <Label>Ngay Rua toi *</Label>
+                  <Label>Ngày Rửa tội *</Label>
                   <Input
                     type="date"
                     value={formData.baptismDate}
@@ -161,65 +161,65 @@ export default function BaptismPage() {
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <Label>Noi Rua toi *</Label>
+                  <Label>Nơi Rửa tội *</Label>
                   <Input
                     value={formData.baptismPlace}
                     onChange={(e) => setFormData({ ...formData, baptismPlace: e.target.value })}
-                    placeholder="VD: Nha tho Chinh toa"
+                    placeholder="VD: Nhà thờ Chính tòa"
                     required
                   />
                 </div>
                 <div>
-                  <Label>Linh muc cu hanh *</Label>
+                  <Label>Linh mục cử hành *</Label>
                   <Input
                     value={formData.minister}
                     onChange={(e) => setFormData({ ...formData, minister: e.target.value })}
-                    placeholder="Ten Linh muc"
+                    placeholder="Tên Linh mục"
                     required
                   />
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <Label>Cha do dau</Label>
+                  <Label>Cha đỡ đầu</Label>
                   <Input
                     value={formData.godfather}
                     onChange={(e) => setFormData({ ...formData, godfather: e.target.value })}
-                    placeholder="Ten cha do dau"
+                    placeholder="Tên cha đỡ đầu"
                   />
                 </div>
                 <div>
-                  <Label>Me do dau</Label>
+                  <Label>Mẹ đỡ đầu</Label>
                   <Input
                     value={formData.godmother}
                     onChange={(e) => setFormData({ ...formData, godmother: e.target.value })}
-                    placeholder="Ten me do dau"
+                    placeholder="Tên mẹ đỡ đầu"
                   />
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <Label>Ten cha *</Label>
+                  <Label>Tên cha *</Label>
                   <Input
                     value={formData.fatherName}
                     onChange={(e) => setFormData({ ...formData, fatherName: e.target.value })}
-                    placeholder="Ten cha ruot"
+                    placeholder="Tên cha ruột"
                     required
                   />
                 </div>
                 <div>
-                  <Label>Ten me *</Label>
+                  <Label>Tên mẹ *</Label>
                   <Input
                     value={formData.motherName}
                     onChange={(e) => setFormData({ ...formData, motherName: e.target.value })}
-                    placeholder="Ten me ruot"
+                    placeholder="Tên mẹ ruột"
                     required
                   />
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <Label>So so *</Label>
+                  <Label>Số sổ *</Label>
                   <Input
                     value={formData.registerBook}
                     onChange={(e) => setFormData({ ...formData, registerBook: e.target.value })}
@@ -228,7 +228,7 @@ export default function BaptismPage() {
                   />
                 </div>
                 <div>
-                  <Label>So thu tu *</Label>
+                  <Label>Số thứ tự *</Label>
                   <Input
                     value={formData.registerNo}
                     onChange={(e) => setFormData({ ...formData, registerNo: e.target.value })}
@@ -239,9 +239,9 @@ export default function BaptismPage() {
               </div>
               <div className="flex justify-end gap-2">
                 <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
-                  Huy
+                  Hủy
                 </Button>
-                <Button type="submit">Luu</Button>
+                <Button type="submit">Lưu</Button>
               </div>
             </form>
           </DialogContent>
@@ -253,7 +253,7 @@ export default function BaptismPage() {
         <Card className="bg-gradient-to-br from-blue-500 to-cyan-500 text-white">
           <CardContent className="p-4">
             <div className="text-3xl font-bold">{records.length}</div>
-            <p className="text-sm text-white/80">Tong so ban ghi</p>
+            <p className="text-sm text-white/80">Tổng số bản ghi</p>
           </CardContent>
         </Card>
         <Card>
@@ -261,7 +261,7 @@ export default function BaptismPage() {
             <div className="text-2xl font-bold text-green-600">
               {records.filter(r => new Date(r.baptismDate).getFullYear() === new Date().getFullYear()).length}
             </div>
-            <p className="text-sm text-gray-600">Rua toi nam nay</p>
+            <p className="text-sm text-gray-600">Rửa tội năm nay</p>
           </CardContent>
         </Card>
         <Card>
@@ -269,7 +269,7 @@ export default function BaptismPage() {
             <div className="text-2xl font-bold text-purple-600">
               {new Set(records.map(r => r.parishName)).size}
             </div>
-            <p className="text-sm text-gray-600">Giao xu co ban ghi</p>
+            <p className="text-sm text-gray-600">Giáo xứ có bản ghi</p>
           </CardContent>
         </Card>
       </div>
@@ -278,9 +278,9 @@ export default function BaptismPage() {
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
-            <CardTitle>Danh sach ban ghi ({filteredRecords.length})</CardTitle>
+            <CardTitle>Danh sách bản ghi ({filteredRecords.length})</CardTitle>
             <Input
-              placeholder="Tim kiem theo ten, so..."
+              placeholder="Tìm kiếm theo tên, số..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-64"
@@ -291,19 +291,19 @@ export default function BaptismPage() {
           {filteredRecords.length === 0 ? (
             <div className="text-center py-12 text-gray-500">
               <p className="text-4xl mb-4">💧</p>
-              <p>Chua co ban ghi Rua toi nao</p>
+              <p>Chưa có bản ghi Rửa tội nào</p>
             </div>
           ) : (
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>So so/STT</TableHead>
-                  <TableHead>Ten thanh</TableHead>
-                  <TableHead>Ho ten</TableHead>
-                  <TableHead>Ngay sinh</TableHead>
-                  <TableHead>Ngay Rua toi</TableHead>
-                  <TableHead>Noi Rua toi</TableHead>
-                  <TableHead>Linh muc</TableHead>
+                  <TableHead>Số sổ/STT</TableHead>
+                  <TableHead>Tên thánh</TableHead>
+                  <TableHead>Họ tên</TableHead>
+                  <TableHead>Ngày sinh</TableHead>
+                  <TableHead>Ngày Rửa tội</TableHead>
+                  <TableHead>Nơi Rửa tội</TableHead>
+                  <TableHead>Linh mục</TableHead>
                   <TableHead></TableHead>
                 </TableRow>
               </TableHeader>
@@ -318,7 +318,7 @@ export default function BaptismPage() {
                     <TableCell>{r.baptismPlace}</TableCell>
                     <TableCell>{r.minister}</TableCell>
                     <TableCell>
-                      <Button variant="ghost" size="sm">Chi tiet</Button>
+                      <Button variant="ghost" size="sm">Chi tiết</Button>
                     </TableCell>
                   </TableRow>
                 ))}

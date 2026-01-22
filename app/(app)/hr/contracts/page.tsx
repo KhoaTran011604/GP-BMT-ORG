@@ -21,10 +21,10 @@ interface Contract {
 }
 
 const contractTypes = {
-  full_time: { label: 'Khong xac dinh thoi han', color: 'bg-green-100 text-green-800' },
-  part_time: { label: 'Ban thoi gian', color: 'bg-blue-100 text-blue-800' },
-  fixed_term: { label: 'Xac dinh thoi han', color: 'bg-purple-100 text-purple-800' },
-  seasonal: { label: 'Thoi vu', color: 'bg-orange-100 text-orange-800' },
+  full_time: { label: 'Không xác định thời hạn', color: 'bg-green-100 text-green-800' },
+  part_time: { label: 'Bán thời gian', color: 'bg-blue-100 text-blue-800' },
+  fixed_term: { label: 'Xác định thời hạn', color: 'bg-purple-100 text-purple-800' },
+  seasonal: { label: 'Thời vụ', color: 'bg-orange-100 text-orange-800' },
 };
 
 export default function ContractsPage() {
@@ -92,10 +92,10 @@ export default function ContractsPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Hop dong Lao dong</h1>
-          <p className="text-gray-600">Quan ly hop dong lao dong cua nhan vien</p>
+          <h1 className="text-2xl font-bold">Hợp đồng Lao động</h1>
+          <p className="text-gray-600">Quản lý hợp đồng lao động của nhân viên</p>
         </div>
-        <Button>+ Tao Hop dong moi</Button>
+        <Button>+ Tạo Hợp đồng mới</Button>
       </div>
 
       {/* Alert for expiring contracts */}
@@ -106,10 +106,10 @@ export default function ContractsPage() {
               <span className="text-xl">⚠️</span>
               <div>
                 <h3 className="font-semibold text-amber-800">
-                  Co {expiringContracts.length} hop dong sap het han (trong 30 ngay)
+                  Có {expiringContracts.length} hợp đồng sắp hết hạn (trong 30 ngày)
                 </h3>
                 <p className="text-sm text-amber-700">
-                  Vui long kiem tra va gia han neu can thiet
+                  Vui lòng kiểm tra và gia hạn nếu cần thiết
                 </p>
               </div>
             </div>
@@ -122,7 +122,7 @@ export default function ContractsPage() {
         <Card>
           <CardContent className="p-4">
             <div className="text-2xl font-bold text-blue-600">{contracts.length}</div>
-            <p className="text-sm text-gray-600">Tong hop dong</p>
+            <p className="text-sm text-gray-600">Tổng hợp đồng</p>
           </CardContent>
         </Card>
         <Card>
@@ -130,13 +130,13 @@ export default function ContractsPage() {
             <div className="text-2xl font-bold text-green-600">
               {contracts.filter(c => c.status === 'active').length}
             </div>
-            <p className="text-sm text-gray-600">Dang hieu luc</p>
+            <p className="text-sm text-gray-600">Đang hiệu lực</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-4">
             <div className="text-2xl font-bold text-yellow-600">{expiringContracts.length}</div>
-            <p className="text-sm text-gray-600">Sap het han</p>
+            <p className="text-sm text-gray-600">Sắp hết hạn</p>
           </CardContent>
         </Card>
         <Card>
@@ -144,7 +144,7 @@ export default function ContractsPage() {
             <div className="text-2xl font-bold text-gray-600">
               {contracts.filter(c => c.status === 'expired').length}
             </div>
-            <p className="text-sm text-gray-600">Da het han</p>
+            <p className="text-sm text-gray-600">Đã hết hạn</p>
           </CardContent>
         </Card>
       </div>
@@ -153,10 +153,10 @@ export default function ContractsPage() {
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
-            <CardTitle>Danh sach Hop dong ({filteredContracts.length})</CardTitle>
+            <CardTitle>Danh sách Hợp đồng ({filteredContracts.length})</CardTitle>
             <div className="flex gap-2">
               <Input
-                placeholder="Tim kiem..."
+                placeholder="Tìm kiếm..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-64"
@@ -166,10 +166,10 @@ export default function ContractsPage() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Tat ca</SelectItem>
-                  <SelectItem value="active">Dang hieu luc</SelectItem>
-                  <SelectItem value="expired">Da het han</SelectItem>
-                  <SelectItem value="terminated">Da cham dut</SelectItem>
+                  <SelectItem value="all">Tất cả</SelectItem>
+                  <SelectItem value="active">Đang hiệu lực</SelectItem>
+                  <SelectItem value="expired">Đã hết hạn</SelectItem>
+                  <SelectItem value="terminated">Đã chấm dứt</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -179,19 +179,19 @@ export default function ContractsPage() {
           {filteredContracts.length === 0 ? (
             <div className="text-center py-12 text-gray-500">
               <p className="text-4xl mb-4">📄</p>
-              <p>Chua co hop dong nao</p>
+              <p>Chưa có hợp đồng nào</p>
             </div>
           ) : (
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>So Hop dong</TableHead>
-                  <TableHead>Nhan vien</TableHead>
-                  <TableHead>Loai HD</TableHead>
-                  <TableHead>Ngay bat dau</TableHead>
-                  <TableHead>Ngay ket thuc</TableHead>
-                  <TableHead className="text-right">Luong co ban</TableHead>
-                  <TableHead>Trang thai</TableHead>
+                  <TableHead>Số Hợp đồng</TableHead>
+                  <TableHead>Nhân viên</TableHead>
+                  <TableHead>Loại HĐ</TableHead>
+                  <TableHead>Ngày bắt đầu</TableHead>
+                  <TableHead>Ngày kết thúc</TableHead>
+                  <TableHead className="text-right">Lương cơ bản</TableHead>
+                  <TableHead>Trạng thái</TableHead>
                   <TableHead></TableHead>
                 </TableRow>
               </TableHeader>
@@ -216,12 +216,12 @@ export default function ContractsPage() {
                         c.status === 'expired' ? 'bg-gray-100 text-gray-800' :
                         'bg-red-100 text-red-800'
                       }>
-                        {c.status === 'active' ? 'Hieu luc' :
-                         c.status === 'expired' ? 'Het han' : 'Cham dut'}
+                        {c.status === 'active' ? 'Hiệu lực' :
+                         c.status === 'expired' ? 'Hết hạn' : 'Chấm dứt'}
                       </Badge>
                     </TableCell>
                     <TableCell>
-                      <Button variant="ghost" size="sm">Chi tiet</Button>
+                      <Button variant="ghost" size="sm">Chi tiết</Button>
                     </TableCell>
                   </TableRow>
                 ))}

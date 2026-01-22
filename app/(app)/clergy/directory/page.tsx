@@ -79,10 +79,10 @@ export default function ClergyDirectoryPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Danh ba Linh muc</h1>
-          <p className="text-gray-600">Danh sach Linh muc doan Giao phan Buon Ma Thuot</p>
+          <h1 className="text-2xl font-bold">Danh bạ Linh mục</h1>
+          <p className="text-gray-600">Danh sách Linh mục đoàn Giáo phận Buôn Ma Thuột</p>
         </div>
-        <Button>+ Them Linh muc</Button>
+        <Button>+ Thêm Linh mục</Button>
       </div>
 
       {/* Stats */}
@@ -90,7 +90,7 @@ export default function ClergyDirectoryPage() {
         <Card>
           <CardContent className="p-4">
             <div className="text-2xl font-bold text-blue-600">{clergy.length}</div>
-            <p className="text-sm text-gray-600">Tong so Linh muc</p>
+            <p className="text-sm text-gray-600">Tổng số Linh mục</p>
           </CardContent>
         </Card>
         <Card>
@@ -98,7 +98,7 @@ export default function ClergyDirectoryPage() {
             <div className="text-2xl font-bold text-green-600">
               {clergy.filter(c => c.status === 'active').length}
             </div>
-            <p className="text-sm text-gray-600">Dang phuc vu</p>
+            <p className="text-sm text-gray-600">Đang phục vụ</p>
           </CardContent>
         </Card>
         <Card>
@@ -106,7 +106,7 @@ export default function ClergyDirectoryPage() {
             <div className="text-2xl font-bold text-purple-600">
               {clergy.filter(c => c.status === 'retired').length}
             </div>
-            <p className="text-sm text-gray-600">Huu duong</p>
+            <p className="text-sm text-gray-600">Hưu dưỡng</p>
           </CardContent>
         </Card>
         <Card>
@@ -114,7 +114,7 @@ export default function ClergyDirectoryPage() {
             <div className="text-2xl font-bold text-orange-600">
               {new Set(clergy.map(c => c.trainingClass)).size}
             </div>
-            <p className="text-sm text-gray-600">Khoa/Lop</p>
+            <p className="text-sm text-gray-600">Khóa/Lớp</p>
           </CardContent>
         </Card>
       </div>
@@ -124,7 +124,7 @@ export default function ClergyDirectoryPage() {
         <CardContent className="p-4">
           <div className="flex items-center gap-4">
             <Input
-              placeholder="Tim kiem theo ten, giao xu..."
+              placeholder="Tìm kiếm theo tên, giáo xứ..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="flex-1"
@@ -134,10 +134,10 @@ export default function ClergyDirectoryPage() {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Tat ca</SelectItem>
-                <SelectItem value="active">Dang phuc vu</SelectItem>
-                <SelectItem value="retired">Huu duong</SelectItem>
-                <SelectItem value="deceased">Da qua doi</SelectItem>
+                <SelectItem value="all">Tất cả</SelectItem>
+                <SelectItem value="active">Đang phục vụ</SelectItem>
+                <SelectItem value="retired">Hưu dưỡng</SelectItem>
+                <SelectItem value="deceased">Đã qua đời</SelectItem>
               </SelectContent>
             </Select>
             <div className="flex border rounded-lg overflow-hidden">
@@ -165,7 +165,7 @@ export default function ClergyDirectoryPage() {
         <Card>
           <CardContent className="p-12 text-center text-gray-500">
             <p className="text-4xl mb-4">⛪</p>
-            <p>Khong tim thay Linh muc nao</p>
+            <p>Không tìm thấy Linh mục nào</p>
           </CardContent>
         </Card>
       ) : viewMode === 'grid' ? (
@@ -181,21 +181,21 @@ export default function ClergyDirectoryPage() {
                     </AvatarFallback>
                   </Avatar>
                   <h3 className="font-semibold text-lg">{c.saintName} {c.fullName}</h3>
-                  <p className="text-sm text-gray-600 mb-2">{c.parishName || 'Chua bo nhiem'}</p>
+                  <p className="text-sm text-gray-600 mb-2">{c.parishName || 'Chưa bổ nhiệm'}</p>
                   <Badge className={
                     c.status === 'active' ? 'bg-green-100 text-green-800' :
                     c.status === 'retired' ? 'bg-purple-100 text-purple-800' :
                     'bg-gray-100 text-gray-800'
                   }>
-                    {c.status === 'active' ? 'Dang phuc vu' :
-                     c.status === 'retired' ? 'Huu duong' : 'Da qua doi'}
+                    {c.status === 'active' ? 'Đang phục vụ' :
+                     c.status === 'retired' ? 'Hưu dưỡng' : 'Đã qua đời'}
                   </Badge>
                   <div className="mt-3 text-xs text-gray-500">
-                    <p>Thu phong: {formatDate(c.ordinationDate)}</p>
-                    <p>Lop: {c.trainingClass}</p>
+                    <p>Thụ phong: {formatDate(c.ordinationDate)}</p>
+                    <p>Lớp: {c.trainingClass}</p>
                   </div>
                   <Button variant="outline" size="sm" className="mt-3 w-full">
-                    Xem chi tiet
+                    Xem chi tiết
                   </Button>
                 </div>
               </CardContent>
@@ -216,21 +216,21 @@ export default function ClergyDirectoryPage() {
                   </Avatar>
                   <div className="flex-1">
                     <h3 className="font-semibold">{c.saintName} {c.fullName}</h3>
-                    <p className="text-sm text-gray-600">{c.parishName || 'Chua bo nhiem'}</p>
+                    <p className="text-sm text-gray-600">{c.parishName || 'Chưa bổ nhiệm'}</p>
                   </div>
                   <div className="text-sm text-gray-500">
-                    <p>Lop {c.trainingClass}</p>
-                    <p>Thu phong: {formatDate(c.ordinationDate)}</p>
+                    <p>Lớp {c.trainingClass}</p>
+                    <p>Thụ phong: {formatDate(c.ordinationDate)}</p>
                   </div>
                   <Badge className={
                     c.status === 'active' ? 'bg-green-100 text-green-800' :
                     c.status === 'retired' ? 'bg-purple-100 text-purple-800' :
                     'bg-gray-100 text-gray-800'
                   }>
-                    {c.status === 'active' ? 'Dang phuc vu' :
-                     c.status === 'retired' ? 'Huu duong' : 'Da qua doi'}
+                    {c.status === 'active' ? 'Đang phục vụ' :
+                     c.status === 'retired' ? 'Hưu dưỡng' : 'Đã qua đời'}
                   </Badge>
-                  <Button variant="ghost" size="sm">Chi tiet</Button>
+                  <Button variant="ghost" size="sm">Chi tiết</Button>
                 </div>
               ))}
             </div>

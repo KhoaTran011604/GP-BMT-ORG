@@ -24,11 +24,11 @@ interface User {
 }
 
 const roleConfig = {
-  super_admin: { label: 'Super Admin', color: 'bg-red-100 text-red-800', desc: 'Toan quyen he thong' },
-  cha_quan_ly: { label: 'Cha Quan ly', color: 'bg-purple-100 text-purple-800', desc: 'Phe duyet, doi soat' },
-  cha_xu: { label: 'Cha xu', color: 'bg-blue-100 text-blue-800', desc: 'Quan ly Giao xu' },
-  ke_toan: { label: 'Ke toan VP', color: 'bg-green-100 text-green-800', desc: 'Nhap lieu, bao cao' },
-  thu_ky: { label: 'Thu ky GX', color: 'bg-orange-100 text-orange-800', desc: 'Nhap lieu co ban' },
+  super_admin: { label: 'Super Admin', color: 'bg-red-100 text-red-800', desc: 'Toàn quyền hệ thống' },
+  cha_quan_ly: { label: 'Cha Quản lý', color: 'bg-purple-100 text-purple-800', desc: 'Phê duyệt, đối soát' },
+  cha_xu: { label: 'Cha xứ', color: 'bg-blue-100 text-blue-800', desc: 'Quản lý Giáo xứ' },
+  ke_toan: { label: 'Kế toán VP', color: 'bg-green-100 text-green-800', desc: 'Nhập liệu, báo cáo' },
+  thu_ky: { label: 'Thư ký GX', color: 'bg-orange-100 text-orange-800', desc: 'Nhập liệu cơ bản' },
 };
 
 export default function UsersPage() {
@@ -110,24 +110,24 @@ export default function UsersPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Phan quyen (RBAC)</h1>
-          <p className="text-gray-600">Quan ly nguoi dung va phan quyen truy cap</p>
+          <h1 className="text-2xl font-bold">Phân quyền (RBAC)</h1>
+          <p className="text-gray-600">Quản lý người dùng và phân quyền truy cập</p>
         </div>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
-            <Button>+ Them nguoi dung</Button>
+            <Button>+ Thêm người dùng</Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Them nguoi dung moi</DialogTitle>
+              <DialogTitle>Thêm người dùng mới</DialogTitle>
             </DialogHeader>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <Label>Ho va Ten *</Label>
+                <Label>Họ và Tên *</Label>
                 <Input
                   value={formData.fullName}
                   onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
-                  placeholder="Nhap ho va ten"
+                  placeholder="Nhập họ và tên"
                   required
                 />
               </div>
@@ -142,17 +142,17 @@ export default function UsersPage() {
                 />
               </div>
               <div>
-                <Label>Mat khau *</Label>
+                <Label>Mật khẩu *</Label>
                 <Input
                   type="password"
                   value={formData.password}
                   onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                  placeholder="Nhap mat khau"
+                  placeholder="Nhập mật khẩu"
                   required
                 />
               </div>
               <div>
-                <Label>Vai tro *</Label>
+                <Label>Vai trò *</Label>
                 <Select
                   value={formData.role}
                   onValueChange={(value) => setFormData({ ...formData, role: value })}
@@ -171,9 +171,9 @@ export default function UsersPage() {
               </div>
               <div className="flex justify-end gap-2">
                 <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
-                  Huy
+                  Hủy
                 </Button>
-                <Button type="submit">Luu</Button>
+                <Button type="submit">Lưu</Button>
               </div>
             </form>
           </DialogContent>
@@ -199,10 +199,10 @@ export default function UsersPage() {
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
-            <CardTitle>Danh sach nguoi dung ({filteredUsers.length})</CardTitle>
+            <CardTitle>Danh sách người dùng ({filteredUsers.length})</CardTitle>
             <div className="flex gap-2">
               <Input
-                placeholder="Tim kiem..."
+                placeholder="Tìm kiếm..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-64"
@@ -212,7 +212,7 @@ export default function UsersPage() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Tat ca</SelectItem>
+                  <SelectItem value="all">Tất cả</SelectItem>
                   {Object.entries(roleConfig).map(([key, config]) => (
                     <SelectItem key={key} value={key}>{config.label}</SelectItem>
                   ))}
@@ -225,17 +225,17 @@ export default function UsersPage() {
           {filteredUsers.length === 0 ? (
             <div className="text-center py-12 text-gray-500">
               <p className="text-4xl mb-4">👤</p>
-              <p>Chua co nguoi dung nao</p>
+              <p>Chưa có người dùng nào</p>
             </div>
           ) : (
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Nguoi dung</TableHead>
-                  <TableHead>Vai tro</TableHead>
-                  <TableHead>Don vi</TableHead>
-                  <TableHead>Dang nhap gan nhat</TableHead>
-                  <TableHead>Trang thai</TableHead>
+                  <TableHead>Người dùng</TableHead>
+                  <TableHead>Vai trò</TableHead>
+                  <TableHead>Đơn vị</TableHead>
+                  <TableHead>Đăng nhập gần nhất</TableHead>
+                  <TableHead>Trạng thái</TableHead>
                   <TableHead></TableHead>
                 </TableRow>
               </TableHeader>
@@ -268,11 +268,11 @@ export default function UsersPage() {
                           ? 'bg-green-100 text-green-800'
                           : 'bg-gray-100 text-gray-800'
                       }>
-                        {u.status === 'active' ? 'Hoat dong' : 'Vo hieu'}
+                        {u.status === 'active' ? 'Hoạt động' : 'Vô hiệu'}
                       </Badge>
                     </TableCell>
                     <TableCell>
-                      <Button variant="ghost" size="sm">Sua</Button>
+                      <Button variant="ghost" size="sm">Sửa</Button>
                     </TableCell>
                   </TableRow>
                 ))}

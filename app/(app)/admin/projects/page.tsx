@@ -27,16 +27,16 @@ interface Project {
 }
 
 const statusConfig = {
-  planning: { label: 'Dang lap ke hoach', color: 'bg-gray-100 text-gray-800' },
-  in_progress: { label: 'Dang thi cong', color: 'bg-blue-100 text-blue-800' },
-  completed: { label: 'Hoan thanh', color: 'bg-green-100 text-green-800' },
-  cancelled: { label: 'Da huy', color: 'bg-red-100 text-red-800' },
+  planning: { label: 'Đang lập kế hoạch', color: 'bg-gray-100 text-gray-800' },
+  in_progress: { label: 'Đang thi công', color: 'bg-blue-100 text-blue-800' },
+  completed: { label: 'Hoàn thành', color: 'bg-green-100 text-green-800' },
+  cancelled: { label: 'Đã hủy', color: 'bg-red-100 text-red-800' },
 };
 
 const permitConfig = {
-  pending: { label: 'Cho duyet', color: 'bg-yellow-100 text-yellow-800' },
-  approved: { label: 'Da co phep', color: 'bg-green-100 text-green-800' },
-  rejected: { label: 'Tu choi', color: 'bg-red-100 text-red-800' },
+  pending: { label: 'Chờ duyệt', color: 'bg-yellow-100 text-yellow-800' },
+  approved: { label: 'Đã có phép', color: 'bg-green-100 text-green-800' },
+  rejected: { label: 'Từ chối', color: 'bg-red-100 text-red-800' },
 };
 
 export default function ProjectsPage() {
@@ -98,10 +98,10 @@ export default function ProjectsPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Cong trinh & Du an</h1>
-          <p className="text-gray-600">Quan ly cac cong trinh xay dung trong Giao phan</p>
+          <h1 className="text-2xl font-bold">Công trình & Dự án</h1>
+          <p className="text-gray-600">Quản lý các công trình xây dựng trong Giáo phận</p>
         </div>
-        <Button>+ Them du an</Button>
+        <Button>+ Thêm dự án</Button>
       </div>
 
       {/* Stats */}
@@ -109,7 +109,7 @@ export default function ProjectsPage() {
         <Card>
           <CardContent className="p-4">
             <div className="text-2xl font-bold text-blue-600">{projects.length}</div>
-            <p className="text-sm text-gray-600">Tong du an</p>
+            <p className="text-sm text-gray-600">Tổng dự án</p>
           </CardContent>
         </Card>
         <Card>
@@ -117,19 +117,19 @@ export default function ProjectsPage() {
             <div className="text-2xl font-bold text-yellow-600">
               {projects.filter(p => p.status === 'in_progress').length}
             </div>
-            <p className="text-sm text-gray-600">Dang thi cong</p>
+            <p className="text-sm text-gray-600">Đang thi công</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-4">
             <div className="text-2xl font-bold text-green-600">{formatCurrency(totalBudget)}</div>
-            <p className="text-sm text-gray-600">Tong ngan sach</p>
+            <p className="text-sm text-gray-600">Tổng ngân sách</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-4">
             <div className="text-2xl font-bold text-purple-600">{formatCurrency(totalActualCost)}</div>
-            <p className="text-sm text-gray-600">Tong chi thuc te</p>
+            <p className="text-sm text-gray-600">Tổng chi thực tế</p>
           </CardContent>
         </Card>
       </div>
@@ -138,10 +138,10 @@ export default function ProjectsPage() {
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
-            <CardTitle>Danh sach Du an ({filteredProjects.length})</CardTitle>
+            <CardTitle>Danh sách Dự án ({filteredProjects.length})</CardTitle>
             <div className="flex gap-2">
               <Input
-                placeholder="Tim kiem..."
+                placeholder="Tìm kiếm..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-64"
@@ -151,11 +151,11 @@ export default function ProjectsPage() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Tat ca</SelectItem>
-                  <SelectItem value="planning">Lap ke hoach</SelectItem>
-                  <SelectItem value="in_progress">Dang thi cong</SelectItem>
-                  <SelectItem value="completed">Hoan thanh</SelectItem>
-                  <SelectItem value="cancelled">Da huy</SelectItem>
+                  <SelectItem value="all">Tất cả</SelectItem>
+                  <SelectItem value="planning">Lập kế hoạch</SelectItem>
+                  <SelectItem value="in_progress">Đang thi công</SelectItem>
+                  <SelectItem value="completed">Hoàn thành</SelectItem>
+                  <SelectItem value="cancelled">Đã hủy</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -165,19 +165,19 @@ export default function ProjectsPage() {
           {filteredProjects.length === 0 ? (
             <div className="text-center py-12 text-gray-500">
               <p className="text-4xl mb-4">🏗️</p>
-              <p>Chua co du an nao</p>
+              <p>Chưa có dự án nào</p>
             </div>
           ) : (
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Ten du an</TableHead>
-                  <TableHead>Giao xu</TableHead>
-                  <TableHead>Loai</TableHead>
-                  <TableHead className="text-right">Ngan sach</TableHead>
-                  <TableHead>Tien do</TableHead>
-                  <TableHead>Phep XD</TableHead>
-                  <TableHead>Trang thai</TableHead>
+                  <TableHead>Tên dự án</TableHead>
+                  <TableHead>Giáo xứ</TableHead>
+                  <TableHead>Loại</TableHead>
+                  <TableHead className="text-right">Ngân sách</TableHead>
+                  <TableHead>Tiến độ</TableHead>
+                  <TableHead>Phép XD</TableHead>
+                  <TableHead>Trạng thái</TableHead>
                   <TableHead></TableHead>
                 </TableRow>
               </TableHeader>
@@ -188,7 +188,7 @@ export default function ProjectsPage() {
                     <TableCell>{p.parishName || '-'}</TableCell>
                     <TableCell>
                       <Badge variant="outline">
-                        {p.projectType === 'construction' ? 'Xay moi' : 'Sua chua'}
+                        {p.projectType === 'construction' ? 'Xây mới' : 'Sửa chữa'}
                       </Badge>
                     </TableCell>
                     <TableCell className="text-right">{formatCurrency(p.budget)}</TableCell>
@@ -209,7 +209,7 @@ export default function ProjectsPage() {
                       </Badge>
                     </TableCell>
                     <TableCell>
-                      <Button variant="ghost" size="sm">Chi tiet</Button>
+                      <Button variant="ghost" size="sm">Chi tiết</Button>
                     </TableCell>
                   </TableRow>
                 ))}

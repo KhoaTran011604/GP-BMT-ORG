@@ -104,57 +104,57 @@ export default function MarriagePage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">So Hon phoi</h1>
-          <p className="text-gray-600">Quan ly so bo Bi tich Hon phoi</p>
+          <h1 className="text-2xl font-bold">Sổ Hôn phối</h1>
+          <p className="text-gray-600">Quản lý sổ bộ Bí tích Hôn phối</p>
         </div>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
-            <Button>+ Them ban ghi</Button>
+            <Button>+ Thêm bản ghi</Button>
           </DialogTrigger>
           <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle>Them ban ghi Hon phoi</DialogTitle>
+              <DialogTitle>Thêm bản ghi Hôn phối</DialogTitle>
             </DialogHeader>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-4 p-4 bg-blue-50 rounded-lg">
-                  <h3 className="font-semibold text-blue-800">Chu re</h3>
+                  <h3 className="font-semibold text-blue-800">Chú rể</h3>
                   <div>
-                    <Label>Ho va Ten *</Label>
+                    <Label>Họ và Tên *</Label>
                     <Input
                       value={formData.groomName}
                       onChange={(e) => setFormData({ ...formData, groomName: e.target.value })}
-                      placeholder="Ten chu re"
+                      placeholder="Tên chú rể"
                       required
                     />
                   </div>
                   <div>
-                    <Label>Giao xu *</Label>
+                    <Label>Giáo xứ *</Label>
                     <Input
                       value={formData.groomParish}
                       onChange={(e) => setFormData({ ...formData, groomParish: e.target.value })}
-                      placeholder="Giao xu chu re"
+                      placeholder="Giáo xứ chú rể"
                       required
                     />
                   </div>
                 </div>
                 <div className="space-y-4 p-4 bg-pink-50 rounded-lg">
-                  <h3 className="font-semibold text-pink-800">Co dau</h3>
+                  <h3 className="font-semibold text-pink-800">Cô dâu</h3>
                   <div>
-                    <Label>Ho va Ten *</Label>
+                    <Label>Họ và Tên *</Label>
                     <Input
                       value={formData.brideName}
                       onChange={(e) => setFormData({ ...formData, brideName: e.target.value })}
-                      placeholder="Ten co dau"
+                      placeholder="Tên cô dâu"
                       required
                     />
                   </div>
                   <div>
-                    <Label>Giao xu *</Label>
+                    <Label>Giáo xứ *</Label>
                     <Input
                       value={formData.brideParish}
                       onChange={(e) => setFormData({ ...formData, brideParish: e.target.value })}
-                      placeholder="Giao xu co dau"
+                      placeholder="Giáo xứ cô dâu"
                       required
                     />
                   </div>
@@ -162,7 +162,7 @@ export default function MarriagePage() {
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <Label>Ngay cu hanh *</Label>
+                  <Label>Ngày cử hành *</Label>
                   <Input
                     type="date"
                     value={formData.marriageDate}
@@ -171,55 +171,55 @@ export default function MarriagePage() {
                   />
                 </div>
                 <div>
-                  <Label>Noi cu hanh *</Label>
+                  <Label>Nơi cử hành *</Label>
                   <Input
                     value={formData.marriagePlace}
                     onChange={(e) => setFormData({ ...formData, marriagePlace: e.target.value })}
-                    placeholder="VD: Nha tho Chinh toa"
+                    placeholder="VD: Nhà thờ Chính tòa"
                     required
                   />
                 </div>
               </div>
               <div>
-                <Label>Linh muc chung hon *</Label>
+                <Label>Linh mục chứng hôn *</Label>
                 <Input
                   value={formData.minister}
                   onChange={(e) => setFormData({ ...formData, minister: e.target.value })}
-                  placeholder="Ten Linh muc"
+                  placeholder="Tên Linh mục"
                   required
                 />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <Label>Nguoi chung 1 *</Label>
+                  <Label>Người chứng 1 *</Label>
                   <Input
                     value={formData.witness1}
                     onChange={(e) => setFormData({ ...formData, witness1: e.target.value })}
-                    placeholder="Ten nguoi chung 1"
+                    placeholder="Tên người chứng 1"
                     required
                   />
                 </div>
                 <div>
-                  <Label>Nguoi chung 2 *</Label>
+                  <Label>Người chứng 2 *</Label>
                   <Input
                     value={formData.witness2}
                     onChange={(e) => setFormData({ ...formData, witness2: e.target.value })}
-                    placeholder="Ten nguoi chung 2"
+                    placeholder="Tên người chứng 2"
                     required
                   />
                 </div>
               </div>
               <div>
-                <Label>Phep chuan (neu co)</Label>
+                <Label>Phép chuẩn (nếu có)</Label>
                 <Textarea
                   value={formData.dispensation}
                   onChange={(e) => setFormData({ ...formData, dispensation: e.target.value })}
-                  placeholder="Ghi chu ve phep chuan neu co"
+                  placeholder="Ghi chú về phép chuẩn nếu có"
                 />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <Label>So so *</Label>
+                  <Label>Số sổ *</Label>
                   <Input
                     value={formData.registerBook}
                     onChange={(e) => setFormData({ ...formData, registerBook: e.target.value })}
@@ -228,7 +228,7 @@ export default function MarriagePage() {
                   />
                 </div>
                 <div>
-                  <Label>So thu tu *</Label>
+                  <Label>Số thứ tự *</Label>
                   <Input
                     value={formData.registerNo}
                     onChange={(e) => setFormData({ ...formData, registerNo: e.target.value })}
@@ -239,9 +239,9 @@ export default function MarriagePage() {
               </div>
               <div className="flex justify-end gap-2">
                 <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
-                  Huy
+                  Hủy
                 </Button>
-                <Button type="submit">Luu</Button>
+                <Button type="submit">Lưu</Button>
               </div>
             </form>
           </DialogContent>
@@ -253,7 +253,7 @@ export default function MarriagePage() {
         <Card className="bg-gradient-to-br from-pink-500 to-rose-500 text-white">
           <CardContent className="p-4">
             <div className="text-3xl font-bold">{records.length}</div>
-            <p className="text-sm text-white/80">Tong so ban ghi</p>
+            <p className="text-sm text-white/80">Tổng số bản ghi</p>
           </CardContent>
         </Card>
         <Card>
@@ -261,7 +261,7 @@ export default function MarriagePage() {
             <div className="text-2xl font-bold text-green-600">
               {records.filter(r => new Date(r.marriageDate).getFullYear() === new Date().getFullYear()).length}
             </div>
-            <p className="text-sm text-gray-600">Hon phoi nam nay</p>
+            <p className="text-sm text-gray-600">Hôn phối năm nay</p>
           </CardContent>
         </Card>
         <Card>
@@ -269,7 +269,7 @@ export default function MarriagePage() {
             <div className="text-2xl font-bold text-purple-600">
               {records.filter(r => r.dispensation).length}
             </div>
-            <p className="text-sm text-gray-600">Co phep chuan</p>
+            <p className="text-sm text-gray-600">Có phép chuẩn</p>
           </CardContent>
         </Card>
       </div>
@@ -278,9 +278,9 @@ export default function MarriagePage() {
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
-            <CardTitle>Danh sach ban ghi ({filteredRecords.length})</CardTitle>
+            <CardTitle>Danh sách bản ghi ({filteredRecords.length})</CardTitle>
             <Input
-              placeholder="Tim kiem theo ten, so..."
+              placeholder="Tìm kiếm theo tên, số..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-64"
@@ -291,19 +291,19 @@ export default function MarriagePage() {
           {filteredRecords.length === 0 ? (
             <div className="text-center py-12 text-gray-500">
               <p className="text-4xl mb-4">💒</p>
-              <p>Chua co ban ghi Hon phoi nao</p>
+              <p>Chưa có bản ghi Hôn phối nào</p>
             </div>
           ) : (
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>So so/STT</TableHead>
-                  <TableHead>Chu re</TableHead>
-                  <TableHead>Co dau</TableHead>
-                  <TableHead>Ngay cu hanh</TableHead>
-                  <TableHead>Noi cu hanh</TableHead>
-                  <TableHead>Linh muc</TableHead>
-                  <TableHead>Phep chuan</TableHead>
+                  <TableHead>Số sổ/STT</TableHead>
+                  <TableHead>Chú rể</TableHead>
+                  <TableHead>Cô dâu</TableHead>
+                  <TableHead>Ngày cử hành</TableHead>
+                  <TableHead>Nơi cử hành</TableHead>
+                  <TableHead>Linh mục</TableHead>
+                  <TableHead>Phép chuẩn</TableHead>
                   <TableHead></TableHead>
                 </TableRow>
               </TableHeader>
@@ -324,13 +324,13 @@ export default function MarriagePage() {
                     <TableCell>{r.minister}</TableCell>
                     <TableCell>
                       {r.dispensation ? (
-                        <span className="text-xs text-orange-600">Co</span>
+                        <span className="text-xs text-orange-600">Có</span>
                       ) : (
                         <span className="text-xs text-gray-400">-</span>
                       )}
                     </TableCell>
                     <TableCell>
-                      <Button variant="ghost" size="sm">Chi tiet</Button>
+                      <Button variant="ghost" size="sm">Chi tiết</Button>
                     </TableCell>
                   </TableRow>
                 ))}

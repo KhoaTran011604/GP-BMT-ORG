@@ -122,21 +122,21 @@ export default function StaffPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Quan ly Nhan vien</h1>
-          <p className="text-gray-600">Quan ly thong tin nhan vien trong Giao phan</p>
+          <h1 className="text-2xl font-bold">Quản lý Nhân viên</h1>
+          <p className="text-gray-600">Quản lý thông tin nhân viên trong Giáo phận</p>
         </div>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
-            <Button>+ Them Nhan vien</Button>
+            <Button>+ Thêm Nhân viên</Button>
           </DialogTrigger>
           <DialogContent className="max-w-2xl">
             <DialogHeader>
-              <DialogTitle>Them Nhan vien moi</DialogTitle>
+              <DialogTitle>Thêm Nhân viên mới</DialogTitle>
             </DialogHeader>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <Label>Ma Nhan vien *</Label>
+                  <Label>Mã Nhân viên *</Label>
                   <Input
                     value={formData.staffCode}
                     onChange={(e) => setFormData({ ...formData, staffCode: e.target.value })}
@@ -145,18 +145,18 @@ export default function StaffPage() {
                   />
                 </div>
                 <div>
-                  <Label>Ho va Ten *</Label>
+                  <Label>Họ và Tên *</Label>
                   <Input
                     value={formData.fullName}
                     onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
-                    placeholder="Nhap ho va ten"
+                    placeholder="Nhập họ và tên"
                     required
                   />
                 </div>
               </div>
               <div className="grid grid-cols-3 gap-4">
                 <div>
-                  <Label>Gioi tinh *</Label>
+                  <Label>Giới tính *</Label>
                   <Select
                     value={formData.gender}
                     onValueChange={(value) => setFormData({ ...formData, gender: value })}
@@ -166,12 +166,12 @@ export default function StaffPage() {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="male">Nam</SelectItem>
-                      <SelectItem value="female">Nu</SelectItem>
+                      <SelectItem value="female">Nữ</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
                 <div>
-                  <Label>Ngay sinh *</Label>
+                  <Label>Ngày sinh *</Label>
                   <Input
                     type="date"
                     value={formData.dob}
@@ -184,18 +184,18 @@ export default function StaffPage() {
                   <Input
                     value={formData.idNumber}
                     onChange={(e) => setFormData({ ...formData, idNumber: e.target.value })}
-                    placeholder="So CCCD"
+                    placeholder="Số CCCD"
                     required
                   />
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <Label>Dien thoai *</Label>
+                  <Label>Điện thoại *</Label>
                   <Input
                     value={formData.phone}
                     onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                    placeholder="So dien thoai"
+                    placeholder="Số điện thoại"
                     required
                   />
                 </div>
@@ -210,23 +210,23 @@ export default function StaffPage() {
                 </div>
               </div>
               <div>
-                <Label>Dia chi *</Label>
+                <Label>Địa chỉ *</Label>
                 <Input
                   value={formData.address}
                   onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                  placeholder="Dia chi thuong tru"
+                  placeholder="Địa chỉ thường trú"
                   required
                 />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <Label>Chuc vu *</Label>
+                  <Label>Chức vụ *</Label>
                   <Select
                     value={formData.position}
                     onValueChange={(value) => setFormData({ ...formData, position: value })}
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder="Chon chuc vu" />
+                      <SelectValue placeholder="Chọn chức vụ" />
                     </SelectTrigger>
                     <SelectContent>
                       {positions.map((pos) => (
@@ -236,13 +236,13 @@ export default function StaffPage() {
                   </Select>
                 </div>
                 <div>
-                  <Label>Bo phan *</Label>
+                  <Label>Bộ phận *</Label>
                   <Select
                     value={formData.department}
                     onValueChange={(value) => setFormData({ ...formData, department: value })}
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder="Chon bo phan" />
+                      <SelectValue placeholder="Chọn bộ phận" />
                     </SelectTrigger>
                     <SelectContent>
                       {departments.map((dept) => (
@@ -254,7 +254,7 @@ export default function StaffPage() {
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <Label>Ngay vao lam *</Label>
+                  <Label>Ngày vào làm *</Label>
                   <Input
                     type="date"
                     value={formData.hireDate}
@@ -263,7 +263,7 @@ export default function StaffPage() {
                   />
                 </div>
                 <div>
-                  <Label>Loai hop dong *</Label>
+                  <Label>Loại hợp đồng *</Label>
                   <Select
                     value={formData.contractType}
                     onValueChange={(value) => setFormData({ ...formData, contractType: value })}
@@ -272,18 +272,18 @@ export default function StaffPage() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="full_time">Toan thoi gian</SelectItem>
-                      <SelectItem value="part_time">Ban thoi gian</SelectItem>
-                      <SelectItem value="contract">Hop dong</SelectItem>
+                      <SelectItem value="full_time">Toàn thời gian</SelectItem>
+                      <SelectItem value="part_time">Bán thời gian</SelectItem>
+                      <SelectItem value="contract">Hợp đồng</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
               </div>
               <div className="flex justify-end gap-2">
                 <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
-                  Huy
+                  Hủy
                 </Button>
-                <Button type="submit">Luu</Button>
+                <Button type="submit">Lưu</Button>
               </div>
             </form>
           </DialogContent>
@@ -295,7 +295,7 @@ export default function StaffPage() {
         <Card>
           <CardContent className="p-4">
             <div className="text-2xl font-bold text-blue-600">{staff.length}</div>
-            <p className="text-sm text-gray-600">Tong nhan vien</p>
+            <p className="text-sm text-gray-600">Tổng nhân viên</p>
           </CardContent>
         </Card>
         <Card>
@@ -303,7 +303,7 @@ export default function StaffPage() {
             <div className="text-2xl font-bold text-green-600">
               {staff.filter(s => s.status === 'active').length}
             </div>
-            <p className="text-sm text-gray-600">Dang lam viec</p>
+            <p className="text-sm text-gray-600">Đang làm việc</p>
           </CardContent>
         </Card>
         <Card>
@@ -311,7 +311,7 @@ export default function StaffPage() {
             <div className="text-2xl font-bold text-purple-600">
               {new Set(staff.map(s => s.department)).size}
             </div>
-            <p className="text-sm text-gray-600">Bo phan</p>
+            <p className="text-sm text-gray-600">Bộ phận</p>
           </CardContent>
         </Card>
         <Card>
@@ -319,7 +319,7 @@ export default function StaffPage() {
             <div className="text-2xl font-bold text-orange-600">
               {new Set(staff.map(s => s.position)).size}
             </div>
-            <p className="text-sm text-gray-600">Chuc vu</p>
+            <p className="text-sm text-gray-600">Chức vụ</p>
           </CardContent>
         </Card>
       </div>
@@ -328,9 +328,9 @@ export default function StaffPage() {
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
-            <CardTitle>Danh sach Nhan vien ({filteredStaff.length})</CardTitle>
+            <CardTitle>Danh sách Nhân viên ({filteredStaff.length})</CardTitle>
             <Input
-              placeholder="Tim kiem..."
+              placeholder="Tìm kiếm..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-64"
@@ -341,19 +341,19 @@ export default function StaffPage() {
           {filteredStaff.length === 0 ? (
             <div className="text-center py-12 text-gray-500">
               <p className="text-4xl mb-4">👥</p>
-              <p>Chua co nhan vien nao</p>
+              <p>Chưa có nhân viên nào</p>
             </div>
           ) : (
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Ma NV</TableHead>
-                  <TableHead>Ho Ten</TableHead>
-                  <TableHead>Chuc vu</TableHead>
-                  <TableHead>Bo phan</TableHead>
-                  <TableHead>Dien thoai</TableHead>
-                  <TableHead>Ngay vao</TableHead>
-                  <TableHead>Trang thai</TableHead>
+                  <TableHead>Mã NV</TableHead>
+                  <TableHead>Họ Tên</TableHead>
+                  <TableHead>Chức vụ</TableHead>
+                  <TableHead>Bộ phận</TableHead>
+                  <TableHead>Điện thoại</TableHead>
+                  <TableHead>Ngày vào</TableHead>
+                  <TableHead>Trạng thái</TableHead>
                   <TableHead></TableHead>
                 </TableRow>
               </TableHeader>
@@ -372,11 +372,11 @@ export default function StaffPage() {
                           ? 'bg-green-100 text-green-800'
                           : 'bg-gray-100 text-gray-800'
                       }>
-                        {s.status === 'active' ? 'Dang lam' : 'Da nghi'}
+                        {s.status === 'active' ? 'Đang làm' : 'Đã nghỉ'}
                       </Badge>
                     </TableCell>
                     <TableCell>
-                      <Button variant="ghost" size="sm">Chi tiet</Button>
+                      <Button variant="ghost" size="sm">Chi tiết</Button>
                     </TableCell>
                   </TableRow>
                 ))}

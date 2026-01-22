@@ -23,12 +23,12 @@ interface ImportHistory {
 }
 
 const importTypes = [
-  { id: 'parishes', label: 'Giao xu', icon: '🏛️', fields: ['parish_code', 'parish_name', 'address', 'phone'] },
-  { id: 'families', label: 'Gia dinh', icon: '👨‍👩‍👧‍👦', fields: ['family_code', 'family_name', 'parish_code', 'address'] },
-  { id: 'people', label: 'Giao dan', icon: '👤', fields: ['saint_name', 'full_name', 'dob', 'gender', 'family_code'] },
-  { id: 'clergy', label: 'Linh muc', icon: '⛪', fields: ['saint_name', 'full_name', 'ordination_date', 'training_class'] },
-  { id: 'baptism', label: 'So Rua toi', icon: '💧', fields: ['baptism_name', 'full_name', 'dob', 'baptism_date', 'register_no'] },
-  { id: 'marriage', label: 'So Hon phoi', icon: '💒', fields: ['groom_name', 'bride_name', 'marriage_date', 'register_no'] },
+  { id: 'parishes', label: 'Giáo xứ', icon: '🏛️', fields: ['parish_code', 'parish_name', 'address', 'phone'] },
+  { id: 'families', label: 'Gia đình', icon: '👨‍👩‍👧‍👦', fields: ['family_code', 'family_name', 'parish_code', 'address'] },
+  { id: 'people', label: 'Giáo dân', icon: '👤', fields: ['saint_name', 'full_name', 'dob', 'gender', 'family_code'] },
+  { id: 'clergy', label: 'Linh mục', icon: '⛪', fields: ['saint_name', 'full_name', 'ordination_date', 'training_class'] },
+  { id: 'baptism', label: 'Sổ Rửa tội', icon: '💧', fields: ['baptism_name', 'full_name', 'dob', 'baptism_date', 'register_no'] },
+  { id: 'marriage', label: 'Sổ Hôn phối', icon: '💒', fields: ['groom_name', 'bride_name', 'marriage_date', 'register_no'] },
 ];
 
 export default function ImportPage() {
@@ -70,24 +70,24 @@ export default function ImportPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Import Du lieu Lich su</h1>
-          <p className="text-gray-600">Nhap du lieu tu file Excel hoac CSV</p>
+          <h1 className="text-2xl font-bold">Import Dữ liệu Lịch sử</h1>
+          <p className="text-gray-600">Nhập dữ liệu từ file Excel hoặc CSV</p>
         </div>
       </div>
 
       <Tabs defaultValue="import">
         <TabsList>
-          <TabsTrigger value="import">Import moi</TabsTrigger>
-          <TabsTrigger value="history">Lich su Import</TabsTrigger>
-          <TabsTrigger value="templates">Mau file</TabsTrigger>
+          <TabsTrigger value="import">Import mới</TabsTrigger>
+          <TabsTrigger value="history">Lịch sử Import</TabsTrigger>
+          <TabsTrigger value="templates">Mẫu file</TabsTrigger>
         </TabsList>
 
         <TabsContent value="import" className="space-y-6">
           {/* Step 1: Select Type */}
           <Card>
             <CardHeader>
-              <CardTitle>Buoc 1: Chon loai du lieu</CardTitle>
-              <CardDescription>Chon loai du lieu ban muon import</CardDescription>
+              <CardTitle>Bước 1: Chọn loại dữ liệu</CardTitle>
+              <CardDescription>Chọn loại dữ liệu bạn muốn import</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
@@ -113,9 +113,9 @@ export default function ImportPage() {
           {selectedType && (
             <Card>
               <CardHeader>
-                <CardTitle>Buoc 2: Tai len file</CardTitle>
+                <CardTitle>Bước 2: Tải lên file</CardTitle>
                 <CardDescription>
-                  Chon file Excel (.xlsx) hoac CSV de import {selectedTypeInfo?.label}
+                  Chọn file Excel (.xlsx) hoặc CSV để import {selectedTypeInfo?.label}
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -130,10 +130,10 @@ export default function ImportPage() {
                   <label htmlFor="file-upload" className="cursor-pointer">
                     <div className="text-4xl mb-4">📁</div>
                     <p className="text-gray-600 mb-2">
-                      Keo tha file vao day hoac click de chon file
+                      Kéo thả file vào đây hoặc click để chọn file
                     </p>
                     <p className="text-sm text-gray-400">
-                      Ho tro: .xlsx, .xls, .csv (Toi da 10MB)
+                      Hỗ trợ: .xlsx, .xls, .csv (Tối đa 10MB)
                     </p>
                   </label>
                 </div>
@@ -148,14 +148,14 @@ export default function ImportPage() {
                       </p>
                     </div>
                     <Button variant="outline" size="sm" onClick={() => setSelectedFile(null)}>
-                      Xoa
+                      Xóa
                     </Button>
                   </div>
                 )}
 
                 {selectedTypeInfo && (
                   <div className="p-4 bg-blue-50 rounded-lg">
-                    <h4 className="font-medium text-blue-800 mb-2">Cac truong bat buoc:</h4>
+                    <h4 className="font-medium text-blue-800 mb-2">Các trường bắt buộc:</h4>
                     <div className="flex flex-wrap gap-2">
                       {selectedTypeInfo.fields.map((field) => (
                         <Badge key={field} variant="outline" className="bg-white">
@@ -173,21 +173,21 @@ export default function ImportPage() {
           {selectedFile && (
             <Card>
               <CardHeader>
-                <CardTitle>Buoc 3: Thuc hien Import</CardTitle>
-                <CardDescription>Xem truoc va thuc hien import du lieu</CardDescription>
+                <CardTitle>Bước 3: Thực hiện Import</CardTitle>
+                <CardDescription>Xem trước và thực hiện import dữ liệu</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 {importing ? (
                   <div className="space-y-4">
                     <Progress value={progress} />
                     <p className="text-center text-gray-600">
-                      Dang import... {progress}%
+                      Đang import... {progress}%
                     </p>
                   </div>
                 ) : (
                   <div className="flex gap-4">
-                    <Button variant="outline">Xem truoc du lieu</Button>
-                    <Button onClick={handleImport}>Bat dau Import</Button>
+                    <Button variant="outline">Xem trước dữ liệu</Button>
+                    <Button onClick={handleImport}>Bắt đầu Import</Button>
                   </div>
                 )}
               </CardContent>
@@ -198,14 +198,14 @@ export default function ImportPage() {
         <TabsContent value="history">
           <Card>
             <CardHeader>
-              <CardTitle>Lich su Import</CardTitle>
-              <CardDescription>Cac lan import truoc do</CardDescription>
+              <CardTitle>Lịch sử Import</CardTitle>
+              <CardDescription>Các lần import trước đó</CardDescription>
             </CardHeader>
             <CardContent>
               {importHistory.length === 0 ? (
                 <div className="text-center py-12 text-gray-500">
                   <p className="text-4xl mb-4">📋</p>
-                  <p>Chua co lich su import nao</p>
+                  <p>Chưa có lịch sử import nào</p>
                 </div>
               ) : (
                 <div className="space-y-4">
@@ -219,8 +219,8 @@ export default function ImportPage() {
                       </div>
                       <div className="text-right">
                         <p className="text-sm">
-                          <span className="text-green-600">{h.successRows}</span> thanh cong /
-                          <span className="text-red-600"> {h.failedRows}</span> loi
+                          <span className="text-green-600">{h.successRows}</span> thành công /
+                          <span className="text-red-600"> {h.failedRows}</span> lỗi
                         </p>
                       </div>
                       <Badge className={
@@ -228,8 +228,8 @@ export default function ImportPage() {
                         h.status === 'failed' ? 'bg-red-100 text-red-800' :
                         'bg-yellow-100 text-yellow-800'
                       }>
-                        {h.status === 'completed' ? 'Hoan thanh' :
-                         h.status === 'failed' ? 'Loi' : 'Dang xu ly'}
+                        {h.status === 'completed' ? 'Hoàn thành' :
+                         h.status === 'failed' ? 'Lỗi' : 'Đang xử lý'}
                       </Badge>
                     </div>
                   ))}
@@ -242,8 +242,8 @@ export default function ImportPage() {
         <TabsContent value="templates">
           <Card>
             <CardHeader>
-              <CardTitle>Tai mau file</CardTitle>
-              <CardDescription>Tai mau file Excel de dien du lieu</CardDescription>
+              <CardTitle>Tải mẫu file</CardTitle>
+              <CardDescription>Tải mẫu file Excel để điền dữ liệu</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -254,10 +254,10 @@ export default function ImportPage() {
                       <h3 className="font-medium">{type.label}</h3>
                     </div>
                     <p className="text-sm text-gray-500 mb-3">
-                      Cac truong: {type.fields.join(', ')}
+                      Các trường: {type.fields.join(', ')}
                     </p>
                     <Button variant="outline" size="sm" className="w-full">
-                      Tai mau .xlsx
+                      Tải mẫu .xlsx
                     </Button>
                   </div>
                 ))}
@@ -270,12 +270,12 @@ export default function ImportPage() {
       {/* Instructions */}
       <Card className="bg-amber-50 border-amber-200">
         <CardContent className="p-4">
-          <h3 className="font-semibold text-amber-800 mb-2">Luu y quan trong</h3>
+          <h3 className="font-semibold text-amber-800 mb-2">Lưu ý quan trọng</h3>
           <ul className="text-sm text-amber-700 space-y-1">
-            <li>• Dam bao du lieu dung dinh dang truoc khi import</li>
-            <li>• Kiem tra ky cac truong bat buoc</li>
-            <li>• Sao luu du lieu hien tai truoc khi import</li>
-            <li>• Neu co loi, he thong se tu dong rollback</li>
+            <li>• Đảm bảo dữ liệu đúng định dạng trước khi import</li>
+            <li>• Kiểm tra kỹ các trường bắt buộc</li>
+            <li>• Sao lưu dữ liệu hiện tại trước khi import</li>
+            <li>• Nếu có lỗi, hệ thống sẽ tự động rollback</li>
           </ul>
         </CardContent>
       </Card>

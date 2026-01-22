@@ -23,10 +23,10 @@ interface Assignment {
 }
 
 const roleLabels = {
-  cha_xu: { label: 'Cha xu', color: 'bg-green-100 text-green-800' },
-  cha_pho: { label: 'Cha pho', color: 'bg-blue-100 text-blue-800' },
-  quan_nhiem: { label: 'Quan nhiem', color: 'bg-purple-100 text-purple-800' },
-  dac_trach: { label: 'Dac trach', color: 'bg-orange-100 text-orange-800' },
+  cha_xu: { label: 'Cha xứ', color: 'bg-green-100 text-green-800' },
+  cha_pho: { label: 'Cha phó', color: 'bg-blue-100 text-blue-800' },
+  quan_nhiem: { label: 'Quản nhiệm', color: 'bg-purple-100 text-purple-800' },
+  dac_trach: { label: 'Đặc trách', color: 'bg-orange-100 text-orange-800' },
 };
 
 export default function AssignmentsPage() {
@@ -80,10 +80,10 @@ export default function AssignmentsPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Lich su Bo nhiem</h1>
-          <p className="text-gray-600">Quan ly bo nhiem Linh muc tai cac Giao xu</p>
+          <h1 className="text-2xl font-bold">Lịch sử Bổ nhiệm</h1>
+          <p className="text-gray-600">Quản lý bổ nhiệm Linh mục tại các Giáo xứ</p>
         </div>
-        <Button>+ Them Bo nhiem</Button>
+        <Button>+ Thêm Bổ nhiệm</Button>
       </div>
 
       {/* Stats */}
@@ -93,7 +93,7 @@ export default function AssignmentsPage() {
             <div className="text-2xl font-bold text-blue-600">
               {assignments.filter(a => a.isCurrent).length}
             </div>
-            <p className="text-sm text-gray-600">Bo nhiem hien tai</p>
+            <p className="text-sm text-gray-600">Bổ nhiệm hiện tại</p>
           </CardContent>
         </Card>
         <Card>
@@ -101,7 +101,7 @@ export default function AssignmentsPage() {
             <div className="text-2xl font-bold text-green-600">
               {assignments.filter(a => a.isCurrent && a.role === 'cha_xu').length}
             </div>
-            <p className="text-sm text-gray-600">Cha xu</p>
+            <p className="text-sm text-gray-600">Cha xứ</p>
           </CardContent>
         </Card>
         <Card>
@@ -109,7 +109,7 @@ export default function AssignmentsPage() {
             <div className="text-2xl font-bold text-purple-600">
               {assignments.filter(a => a.isCurrent && a.role === 'cha_pho').length}
             </div>
-            <p className="text-sm text-gray-600">Cha pho</p>
+            <p className="text-sm text-gray-600">Cha phó</p>
           </CardContent>
         </Card>
         <Card>
@@ -117,7 +117,7 @@ export default function AssignmentsPage() {
             <div className="text-2xl font-bold text-orange-600">
               {assignments.filter(a => a.isCurrent && (a.role === 'quan_nhiem' || a.role === 'dac_trach')).length}
             </div>
-            <p className="text-sm text-gray-600">Quan nhiem/Dac trach</p>
+            <p className="text-sm text-gray-600">Quản nhiệm/Đặc trách</p>
           </CardContent>
         </Card>
       </div>
@@ -127,28 +127,28 @@ export default function AssignmentsPage() {
         <CardContent className="p-4">
           <div className="flex items-center gap-4">
             <Input
-              placeholder="Tim kiem Linh muc, Giao xu..."
+              placeholder="Tìm kiếm Linh mục, Giáo xứ..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="flex-1"
             />
             <Select value={roleFilter} onValueChange={setRoleFilter}>
               <SelectTrigger className="w-40">
-                <SelectValue placeholder="Chuc vu" />
+                <SelectValue placeholder="Chức vụ" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Tat ca</SelectItem>
-                <SelectItem value="cha_xu">Cha xu</SelectItem>
-                <SelectItem value="cha_pho">Cha pho</SelectItem>
-                <SelectItem value="quan_nhiem">Quan nhiem</SelectItem>
-                <SelectItem value="dac_trach">Dac trach</SelectItem>
+                <SelectItem value="all">Tất cả</SelectItem>
+                <SelectItem value="cha_xu">Cha xứ</SelectItem>
+                <SelectItem value="cha_pho">Cha phó</SelectItem>
+                <SelectItem value="quan_nhiem">Quản nhiệm</SelectItem>
+                <SelectItem value="dac_trach">Đặc trách</SelectItem>
               </SelectContent>
             </Select>
             <Button
               variant={showCurrent ? 'default' : 'outline'}
               onClick={() => setShowCurrent(!showCurrent)}
             >
-              {showCurrent ? 'Chi hien tai' : 'Tat ca'}
+              {showCurrent ? 'Chỉ hiện tại' : 'Tất cả'}
             </Button>
           </div>
         </CardContent>
@@ -157,28 +157,28 @@ export default function AssignmentsPage() {
       {/* Assignment Table */}
       <Card>
         <CardHeader>
-          <CardTitle>Danh sach Bo nhiem ({filteredAssignments.length})</CardTitle>
+          <CardTitle>Danh sách Bổ nhiệm ({filteredAssignments.length})</CardTitle>
           <CardDescription>
-            {showCurrent ? 'Chi hien thi bo nhiem hien tai' : 'Hien thi tat ca lich su bo nhiem'}
+            {showCurrent ? 'Chỉ hiển thị bổ nhiệm hiện tại' : 'Hiển thị tất cả lịch sử bổ nhiệm'}
           </CardDescription>
         </CardHeader>
         <CardContent>
           {filteredAssignments.length === 0 ? (
             <div className="text-center py-12 text-gray-500">
               <p className="text-4xl mb-4">📋</p>
-              <p>Khong co du lieu bo nhiem</p>
+              <p>Không có dữ liệu bổ nhiệm</p>
             </div>
           ) : (
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Linh muc</TableHead>
-                  <TableHead>Giao xu</TableHead>
-                  <TableHead>Chuc vu</TableHead>
-                  <TableHead>Ngay bat dau</TableHead>
-                  <TableHead>Ngay ket thuc</TableHead>
-                  <TableHead>So QD</TableHead>
-                  <TableHead>Trang thai</TableHead>
+                  <TableHead>Linh mục</TableHead>
+                  <TableHead>Giáo xứ</TableHead>
+                  <TableHead>Chức vụ</TableHead>
+                  <TableHead>Ngày bắt đầu</TableHead>
+                  <TableHead>Ngày kết thúc</TableHead>
+                  <TableHead>Số QD</TableHead>
+                  <TableHead>Trạng thái</TableHead>
                   <TableHead></TableHead>
                 </TableRow>
               </TableHeader>
@@ -197,11 +197,11 @@ export default function AssignmentsPage() {
                     <TableCell className="font-mono">{a.decreeNo || '-'}</TableCell>
                     <TableCell>
                       <Badge className={a.isCurrent ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}>
-                        {a.isCurrent ? 'Hien tai' : 'Da ket thuc'}
+                        {a.isCurrent ? 'Hiện tại' : 'Đã kết thúc'}
                       </Badge>
                     </TableCell>
                     <TableCell>
-                      <Button variant="ghost" size="sm">Chi tiet</Button>
+                      <Button variant="ghost" size="sm">Chi tiết</Button>
                     </TableCell>
                   </TableRow>
                 ))}
