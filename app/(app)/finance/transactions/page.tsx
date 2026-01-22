@@ -39,7 +39,7 @@ import { Plus, Pencil, Trash2, Eye, ArrowDownCircle, ArrowUpCircle } from 'lucid
 import { ImageUpload } from '@/components/finance/ImageUpload';
 import { ImageGallery } from '@/components/finance/ImageGallery';
 import { StatusBadge } from '@/components/finance/StatusBadge';
-import { Income, Expense, Fund, Parish } from '@/lib/schemas';
+import { Income, Expense, Fund, Parish, ExpenseCategory } from '@/lib/schemas';
 
 type TransactionType = 'income' | 'expense';
 
@@ -64,6 +64,7 @@ export default function TransactionsPage() {
   const [transactions, setTransactions] = useState<TransactionItem[]>([]);
   const [funds, setFunds] = useState<Fund[]>([]);
   const [parishes, setParishes] = useState<Parish[]>([]);
+  const [expenseCategories, setExpenseCategories] = useState<ExpenseCategory[]>([]);
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState('all');
 
@@ -98,9 +99,10 @@ export default function TransactionsPage() {
 
   const fetchFundsAndParishes = async () => {
     try {
-      const [fundsRes, parishesRes] = await Promise.all([
+      const [fundsRes, parishesRes, categoriesRes] = await Promise.all([
         fetch('/api/funds'),
-        fetch('/api/parishes')
+        fetch('/api/parishes'),
+        fetch('/api/expense-categories?isActive=true')
       ]);
 
       if (fundsRes.ok) {
@@ -112,8 +114,13 @@ export default function TransactionsPage() {
         const parishesData = await parishesRes.json();
         setParishes(parishesData.data || parishesData || []);
       }
+
+      if (categoriesRes.ok) {
+        const categoriesData = await categoriesRes.json();
+        setExpenseCategories(categoriesData.data || []);
+      }
     } catch (error) {
-      console.error('Error fetching funds/parishes:', error);
+      console.error('Error fetching funds/parishes/categories:', error);
     }
   };
 
@@ -559,8 +566,8 @@ export default function TransactionsPage() {
                     <SelectValue placeholder="Chọn giáo xứ" />
                   </SelectTrigger>
                   <SelectContent>
-                    {parishes.map((p) => (
-                      <SelectItem key={p._id?.toString()} value={p._id?.toString() || ''}>
+                    {parishes.filter(p => p._id).map((p) => (
+                      <SelectItem key={p._id!.toString()} value={p._id!.toString()}>
                         {p.parishName}
                       </SelectItem>
                     ))}
@@ -578,14 +585,35 @@ export default function TransactionsPage() {
                     <SelectValue placeholder="Chọn quỹ" />
                   </SelectTrigger>
                   <SelectContent>
-                    {funds.map((f) => (
-                      <SelectItem key={f._id?.toString()} value={f._id?.toString() || ''}>
+                    {funds.filter(f => f._id).map((f) => (
+                      <SelectItem key={f._id!.toString()} value={f._id!.toString()}>
                         {f.fundName}
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
+
+              {createType === 'expense' && (
+                <div className="space-y-2 col-span-2">
+                  <Label>Danh mục chi</Label>
+                  <Select
+                    value={formData.categoryId}
+                    onValueChange={(v) => setFormData({ ...formData, categoryId: v })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Chọn danh mục chi" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {expenseCategories.filter(cat => cat._id).map((cat) => (
+                        <SelectItem key={cat._id!.toString()} value={cat._id!.toString()}>
+                          {cat.categoryCode} - {cat.categoryName}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
 
               <div className="space-y-2">
                 <Label>Số tiền *</Label>

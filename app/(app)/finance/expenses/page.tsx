@@ -25,10 +25,19 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Download, Eye, FileSpreadsheet } from 'lucide-react';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
+import { Calendar } from '@/components/ui/calendar';
+import { Download, Eye, FileSpreadsheet, CalendarIcon } from 'lucide-react';
 import { ImageGallery } from '@/components/finance/ImageGallery';
 import { StatusBadge } from '@/components/finance/StatusBadge';
 import { Expense } from '@/lib/schemas';
+import { DateRange } from 'react-day-picker';
+import { format } from 'date-fns';
+import { vi } from 'date-fns/locale';
 
 export default function ExpensesPage() {
   const [expenses, setExpenses] = useState<Expense[]>([]);
@@ -38,9 +47,17 @@ export default function ExpensesPage() {
   const [showDetail, setShowDetail] = useState(false);
   const [showGallery, setShowGallery] = useState(false);
 
+  // Custom date range state
+  const [dateRange, setDateRange] = useState<DateRange | undefined>();
+
   useEffect(() => {
-    fetchExpenses();
-  }, [filter]);
+    // Only fetch if not using custom date range, or if custom dates are set
+    if (filter !== 'date-range') {
+      fetchExpenses();
+    } else if (dateRange?.from && dateRange?.to) {
+      fetchExpenses();
+    }
+  }, [filter, dateRange]);
 
   const getDateRange = () => {
     const now = new Date();
@@ -65,6 +82,11 @@ export default function ExpensesPage() {
         return {
           startDate: quarterStart.toISOString().split('T')[0],
           endDate: quarterEnd.toISOString().split('T')[0]
+        };
+      case 'date-range':
+        return {
+          startDate: dateRange?.from ? format(dateRange.from, 'yyyy-MM-dd') : undefined,
+          endDate: dateRange?.to ? format(dateRange.to, 'yyyy-MM-dd') : undefined
         };
       default:
         return {};
@@ -147,12 +169,64 @@ export default function ExpensesPage() {
                 <SelectItem value="this-month">Tháng này</SelectItem>
                 <SelectItem value="last-month">Tháng trước</SelectItem>
                 <SelectItem value="last-quarter">Quý trước</SelectItem>
+                <SelectItem value="date-range">Tùy chọn khoảng ngày</SelectItem>
                 <SelectItem value="all">Tất cả</SelectItem>
               </SelectContent>
             </Select>
           </CardHeader>
         </Card>
       </div>
+
+      {/* Custom Date Range Picker */}
+      {filter === 'date-range' && (
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-lg flex items-center gap-2">
+              <CalendarIcon size={18} />
+              Chọn khoảng thời gian
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  className="w-full justify-start text-left font-normal"
+                >
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {dateRange?.from ? (
+                    dateRange.to ? (
+                      <>
+                        {format(dateRange.from, 'dd/MM/yyyy', { locale: vi })} -{' '}
+                        {format(dateRange.to, 'dd/MM/yyyy', { locale: vi })}
+                      </>
+                    ) : (
+                      format(dateRange.from, 'dd/MM/yyyy', { locale: vi })
+                    )
+                  ) : (
+                    <span className="text-muted-foreground">Chọn khoảng ngày</span>
+                  )}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar
+                  mode="range"
+                  defaultMonth={dateRange?.from}
+                  selected={dateRange}
+                  onSelect={setDateRange}
+                  numberOfMonths={2}
+                  locale={vi}
+                />
+              </PopoverContent>
+            </Popover>
+            {dateRange?.from && dateRange?.to && (
+              <p className="text-sm text-muted-foreground mt-2">
+                Đã chọn: {format(dateRange.from, 'dd/MM/yyyy', { locale: vi })} đến {format(dateRange.to, 'dd/MM/yyyy', { locale: vi })}
+              </p>
+            )}
+          </CardContent>
+        </Card>
+      )}
 
       <Card>
         <CardHeader>

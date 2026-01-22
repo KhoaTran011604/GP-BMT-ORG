@@ -88,6 +88,18 @@ export interface Fund {
   updatedAt: Date;
 }
 
+// Expense Category Schema
+export interface ExpenseCategory {
+  _id?: ObjectId;
+  categoryCode: string;
+  categoryName: string;
+  parentId?: ObjectId;
+  description?: string;
+  isActive: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
 // Income Schema
 export interface Income {
   _id?: ObjectId;

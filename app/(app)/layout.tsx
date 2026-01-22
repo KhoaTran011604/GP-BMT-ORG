@@ -98,6 +98,7 @@ const menuData: MenuItem[] = [
     badge: '11 quy',
     children: [
       { id: 'funds', label: 'Danh muc Quy', icon: <CreditCard size={18} />, href: '/finance/funds' },
+      { id: 'expense-categories', label: 'Danh muc Chi', icon: <FolderOpen size={18} />, href: '/finance/expense-categories' },
       { id: 'transactions', label: 'Giao dich & Xac thuc', icon: <Receipt size={18} />, href: '/finance/transactions' },
       { id: 'reconciliation', label: 'Doi soat (Audit)', icon: <CheckSquare size={18} />, href: '/finance/reconciliation' },
       { id: 'incomes', label: 'Phieu thu', icon: <ArrowDownCircle size={18} />, href: '/finance/incomes' },
@@ -267,7 +268,7 @@ function MenuItem({
             isExpanded ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
           }`}
         >
-          <div className="ml-4 mt-1 pl-4 border-l border-white/20 space-y-1">
+          <div className="ml-4 mt-1 pl-4 border-l border-blue-700 space-y-1">
             {item.children?.map((child) => {
               const isChildItemActive = child.href === pathname;
               return (
@@ -333,7 +334,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
   if (!user) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-indigo-600 to-purple-700">
+      <div className="flex items-center justify-center min-h-screen bg-blue-900">
         <div className="text-center text-white">
           <div className="w-16 h-16 border-4 border-white/30 border-t-white rounded-full animate-spin mx-auto mb-4"></div>
           <h2 className="text-xl font-semibold">Dang tai...</h2>
@@ -357,15 +358,15 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         className={`fixed lg:static inset-y-0 left-0 z-50 flex flex-col
           ${sidebarOpen ? 'w-72' : 'w-20'}
           ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
-          bg-gradient-to-b from-indigo-600 via-indigo-700 to-purple-800
+          bg-blue-900
           transition-all duration-300 ease-in-out shadow-2xl`}
       >
         {/* Header */}
-        <div className="p-4 border-b border-white/10">
+        <div className="p-4 border-b border-blue-800">
           <div className="flex items-center justify-between">
             {sidebarOpen && (
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-white/20 backdrop-blur rounded-xl flex items-center justify-center shadow-lg">
+                <div className="w-10 h-10 bg-amber-500 rounded-xl flex items-center justify-center">
                   <Cross className="text-white" size={20} />
                 </div>
                 <div>
@@ -386,10 +387,10 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         {/* User Profile Card */}
         {sidebarOpen && (
           <div className="p-4">
-            <div className="bg-white/10 backdrop-blur rounded-xl p-3">
+            <div className="bg-blue-800 rounded-xl p-3">
               <div className="flex items-center gap-3">
-                <Avatar className="h-10 w-10 border-2 border-white/30">
-                  <AvatarFallback className="bg-gradient-to-br from-amber-400 to-orange-500 text-white font-semibold">
+                <Avatar className="h-10 w-10 border-2 border-amber-400">
+                  <AvatarFallback className="bg-amber-500 text-white font-semibold">
                     {getInitials(user.fullName)}
                   </AvatarFallback>
                 </Avatar>
@@ -451,7 +452,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         </nav>
 
         {/* Footer */}
-        <div className="p-4 border-t border-white/10">
+        <div className="p-4 border-t border-blue-800">
           {sidebarOpen ? (
             <div className="flex items-center justify-between text-xs text-white/40">
               <span>Version 1.0 MVP</span>
@@ -522,7 +523,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
               <DropdownMenuTrigger asChild>
                 <button className="hidden lg:flex items-center gap-2 p-2 hover:bg-gray-100 rounded-lg transition-colors">
                   <Avatar className="h-8 w-8">
-                    <AvatarFallback className="bg-gradient-to-br from-indigo-500 to-purple-600 text-white text-sm">
+                    <AvatarFallback className="bg-blue-800 text-white text-sm">
                       {getInitials(user.fullName)}
                     </AvatarFallback>
                   </Avatar>

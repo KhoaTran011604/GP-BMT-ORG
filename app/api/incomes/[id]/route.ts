@@ -6,9 +6,11 @@ import { ObjectId } from 'mongodb';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
+
     const token = await getTokenFromCookie(request.headers.get('cookie') || '');
     if (!token) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -22,7 +24,7 @@ export async function GET(
     const db = await getDatabase();
     const collection = db.collection<Income>('incomes');
 
-    const income = await collection.findOne({ _id: new ObjectId(params.id) });
+    const income = await collection.findOne({ _id: new ObjectId(id) });
 
     if (!income) {
       return NextResponse.json({ error: 'Income not found' }, { status: 404 });
@@ -41,9 +43,11 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
+
     const token = await getTokenFromCookie(request.headers.get('cookie') || '');
     if (!token) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -57,7 +61,7 @@ export async function PUT(
     const db = await getDatabase();
     const collection = db.collection<Income>('incomes');
 
-    const income = await collection.findOne({ _id: new ObjectId(params.id) });
+    const income = await collection.findOne({ _id: new ObjectId(id) });
 
     if (!income) {
       return NextResponse.json({ error: 'Income not found' }, { status: 404 });
@@ -113,7 +117,7 @@ export async function PUT(
     if (notes !== undefined) updateData.notes = notes;
 
     const result = await collection.findOneAndUpdate(
-      { _id: new ObjectId(params.id) },
+      { _id: new ObjectId(id) },
       { $set: updateData },
       { returnDocument: 'after' }
     );
@@ -134,9 +138,11 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
+
     const token = await getTokenFromCookie(request.headers.get('cookie') || '');
     if (!token) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -150,7 +156,7 @@ export async function DELETE(
     const db = await getDatabase();
     const collection = db.collection<Income>('incomes');
 
-    const income = await collection.findOne({ _id: new ObjectId(params.id) });
+    const income = await collection.findOne({ _id: new ObjectId(id) });
 
     if (!income) {
       return NextResponse.json({ error: 'Income not found' }, { status: 404 });
@@ -172,7 +178,7 @@ export async function DELETE(
       );
     }
 
-    await collection.deleteOne({ _id: new ObjectId(params.id) });
+    await collection.deleteOne({ _id: new ObjectId(id) });
 
     return NextResponse.json({ message: 'Income deleted successfully' });
 
@@ -187,9 +193,11 @@ export async function DELETE(
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
+
     const token = await getTokenFromCookie(request.headers.get('cookie') || '');
     if (!token) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -223,7 +231,7 @@ export async function PATCH(
     const receiptsCollection = db.collection<Receipt>('receipts');
 
     const income = await incomesCollection.findOne({
-      _id: new ObjectId(params.id)
+      _id: new ObjectId(id)
     });
 
     if (!income) {
@@ -250,7 +258,7 @@ export async function PATCH(
     }
 
     const updatedIncome = await incomesCollection.findOneAndUpdate(
-      { _id: new ObjectId(params.id) },
+      { _id: new ObjectId(id) },
       { $set: updateData },
       { returnDocument: 'after' }
     );
@@ -267,7 +275,7 @@ export async function PATCH(
       const newReceipt: Receipt = {
         receiptNo,
         receiptType: 'income',
-        referenceId: new ObjectId(params.id),
+        referenceId: new ObjectId(id),
         parishId: updatedIncome!.parishId,
         amount: updatedIncome!.amount,
         receiptDate: now,
