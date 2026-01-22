@@ -310,3 +310,60 @@ export interface Receipt {
   createdAt: Date;
   printedAt?: Date;
 }
+
+// Rental Contract Schema (Hợp đồng cho thuê BDS)
+export interface RentalContract {
+  _id?: ObjectId;
+  contractCode: string;
+  parishId: ObjectId;
+  // Thông tin BDS
+  propertyName: string;
+  propertyAddress: string;
+  propertyArea?: number;
+  propertyType: 'land' | 'house' | 'apartment' | 'commercial' | 'other';
+  // Thông tin bên thuê
+  tenantName: string;
+  tenantIdNumber?: string;
+  tenantPhone?: string;
+  tenantAddress?: string;
+  tenantEmail?: string;
+  // Thông tin hợp đồng
+  startDate: Date;
+  endDate: Date;
+  rentAmount: number;
+  paymentCycle: 'monthly' | 'quarterly' | 'yearly';
+  depositAmount: number;
+  paymentMethod: 'cash' | 'transfer';
+  bankAccount?: string;
+  // Trạng thái
+  status: 'active' | 'expired' | 'terminated' | 'pending';
+  // File và ghi chú
+  contractFiles?: string[];
+  terms?: string;
+  notes?: string;
+  // Metadata
+  createdBy: ObjectId;
+  terminatedAt?: Date;
+  terminatedReason?: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+// Rental Payment Schema (Thanh toán theo hợp đồng thuê)
+export interface RentalPayment {
+  _id?: ObjectId;
+  contractId: ObjectId;
+  parishId: ObjectId;
+  amount: number;
+  paymentDate: Date;
+  paymentPeriod: string;
+  paymentMethod: 'cash' | 'transfer';
+  bankAccount?: string;
+  receiptNo?: string;
+  incomeId?: ObjectId;
+  status: 'pending' | 'paid' | 'converted';
+  notes?: string;
+  createdBy: ObjectId;
+  createdAt: Date;
+  updatedAt: Date;
+}

@@ -100,9 +100,9 @@ const menuData: MenuItem[] = [
       { id: 'funds', label: 'Danh mục Quỹ', icon: <CreditCard size={18} />, href: '/finance/funds' },
       { id: 'expense-categories', label: 'Danh mục Chi', icon: <FolderOpen size={18} />, href: '/finance/expense-categories' },
       { id: 'transactions', label: 'Giao dịch & Xác thực', icon: <Receipt size={18} />, href: '/finance/transactions' },
-      { id: 'reconciliation', label: 'Đối soát (Audit)', icon: <CheckSquare size={18} />, href: '/finance/reconciliation' },
-      { id: 'incomes', label: 'Phiếu thu', icon: <ArrowDownCircle size={18} />, href: '/finance/incomes' },
-      { id: 'expenses', label: 'Phiếu chi', icon: <ArrowUpCircle size={18} />, href: '/finance/expenses' },
+      // { id: 'reconciliation', label: 'Đối soát (Audit)', icon: <CheckSquare size={18} />, href: '/finance/reconciliation' },
+      // { id: 'incomes', label: 'Phiếu thu', icon: <ArrowDownCircle size={18} />, href: '/finance/incomes' },
+      // { id: 'expenses', label: 'Phiếu chi', icon: <ArrowUpCircle size={18} />, href: '/finance/expenses' },
     ],
   },
   {
@@ -142,6 +142,7 @@ const menuData: MenuItem[] = [
       { id: 'associations', label: 'Quản lý Hội đoàn', icon: <Users size={18} />, href: '/admin/associations' },
       { id: 'projects', label: 'Công trình & Dự án', icon: <Building size={18} />, href: '/admin/projects' },
       { id: 'assets', label: 'Quản lý Tài sản', icon: <Landmark size={18} />, href: '/admin/assets' },
+      // { id: 'rental-contracts', label: 'Hợp đồng Cho thuê BDS', icon: <FileSignature size={18} />, href: '/admin/rental-contracts' },
     ],
   },
   {

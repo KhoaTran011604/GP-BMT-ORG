@@ -635,17 +635,6 @@ Ngày in: ${formatDate(new Date())}
       </div>
 
       <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as TransactionType)}>
-        <TabsList className="grid w-full grid-cols-2 max-w-md">
-          <TabsTrigger value="income" className="gap-2">
-            <ArrowDownCircle size={16} className="text-green-600" />
-            Khoản thu
-          </TabsTrigger>
-          <TabsTrigger value="expense" className="gap-2">
-            <ArrowUpCircle size={16} className="text-red-600" />
-            Khoản chi
-          </TabsTrigger>
-        </TabsList>
-
         <TabsContent value={activeTab} className="space-y-4">
           <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
             <Card>
@@ -683,7 +672,7 @@ Ngày in: ${formatDate(new Date())}
           </div>
 
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
               <div>
                 <CardTitle>
                   {activeTab === 'income' ? 'Danh sách khoản thu' : 'Danh sách khoản chi'}
@@ -692,17 +681,29 @@ Ngày in: ${formatDate(new Date())}
                   Quản lý các giao dịch {activeTab === 'income' ? 'thu' : 'chi'}
                 </CardDescription>
               </div>
-              <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="w-40">
-                  <SelectValue placeholder="Lọc theo trạng thái" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Tất cả</SelectItem>
-                  <SelectItem value="pending">Chờ duyệt</SelectItem>
-                  <SelectItem value="approved">Đã duyệt</SelectItem>
-                  <SelectItem value="rejected">Từ chối</SelectItem>
-                </SelectContent>
-              </Select>
+              <div className="flex items-center gap-3">
+                <TabsList className="grid grid-cols-2">
+                  <TabsTrigger value="income" className="gap-2">
+                    <ArrowDownCircle size={16} className="text-green-600" />
+                    Khoản thu
+                  </TabsTrigger>
+                  <TabsTrigger value="expense" className="gap-2">
+                    <ArrowUpCircle size={16} className="text-red-600" />
+                    Khoản chi
+                  </TabsTrigger>
+                </TabsList>
+                <Select value={statusFilter} onValueChange={setStatusFilter}>
+                  <SelectTrigger className="w-40">
+                    <SelectValue placeholder="Lọc theo trạng thái" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Tất cả</SelectItem>
+                    <SelectItem value="pending">Chờ duyệt</SelectItem>
+                    <SelectItem value="approved">Đã duyệt</SelectItem>
+                    <SelectItem value="rejected">Từ chối</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </CardHeader>
             <CardContent>
               {loading ? (
