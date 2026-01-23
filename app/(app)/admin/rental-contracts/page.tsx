@@ -32,6 +32,7 @@ import {
 import { Plus, Pencil, Trash2, FileText, ArrowRightCircle, Eye } from 'lucide-react';
 import { useAuth } from '@/lib/auth-context';
 import { Parish, Fund } from '@/lib/schemas';
+import { formatCompactCurrency } from '@/lib/utils';
 
 interface RentalContractItem {
   _id: string;
@@ -333,13 +334,6 @@ export default function RentalContractsPage() {
     }
   };
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('vi-VN', {
-      style: 'currency',
-      currency: 'VND'
-    }).format(amount);
-  };
-
   const formatDate = (date: Date | string) => {
     return new Date(date).toLocaleDateString('vi-VN');
   };
@@ -429,7 +423,7 @@ export default function RentalContractsPage() {
         <Card>
           <CardHeader className="pb-2">
             <CardDescription>Doanh thu/tháng</CardDescription>
-            <CardTitle className="text-lg text-blue-600">{formatCurrency(stats.totalRevenue)}</CardTitle>
+            <CardTitle className="text-lg text-blue-600">{formatCompactCurrency(stats.totalRevenue)}</CardTitle>
           </CardHeader>
         </Card>
       </div>
@@ -487,7 +481,7 @@ export default function RentalContractsPage() {
                       )}
                     </TableCell>
                     <TableCell className="font-semibold text-green-600">
-                      {formatCurrency(contract.rentAmount)}
+                      {formatCompactCurrency(contract.rentAmount)}
                     </TableCell>
                     <TableCell>{getPaymentCycleText(contract.paymentCycle)}</TableCell>
                     <TableCell>
@@ -1019,7 +1013,7 @@ export default function RentalContractsPage() {
                 </div>
                 <div>
                   <p className="text-sm text-gray-500">Giá thuê</p>
-                  <p className="font-semibold text-green-600">{formatCurrency(selectedContract.rentAmount)}</p>
+                  <p className="font-semibold text-green-600">{formatCompactCurrency(selectedContract.rentAmount)}</p>
                 </div>
                 <div>
                   <p className="text-sm text-gray-500">Chu kỳ</p>

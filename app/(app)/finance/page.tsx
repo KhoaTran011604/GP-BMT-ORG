@@ -21,6 +21,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { useAuth } from '@/lib/auth-context';
+import { formatCompactCurrency } from '@/lib/utils';
 import { Plus, CheckCircle, XCircle, Clock } from 'lucide-react';
 
 interface Fund {
@@ -172,7 +173,7 @@ export default function FinancePage() {
           <CardContent className="p-6">
             <p className="text-sm text-gray-600 mb-2">Tổng thu</p>
             <p className="text-3xl font-bold text-blue-600">
-              {totalAmount.toLocaleString('vi-VN')} đ
+              {formatCompactCurrency(totalAmount)}
             </p>
           </CardContent>
         </Card>
@@ -181,7 +182,7 @@ export default function FinancePage() {
           <CardContent className="p-6">
             <p className="text-sm text-gray-600 mb-2">Chờ duyệt</p>
             <p className="text-3xl font-bold text-yellow-600">
-              {pendingAmount.toLocaleString('vi-VN')} đ
+              {formatCompactCurrency(pendingAmount)}
             </p>
           </CardContent>
         </Card>
@@ -190,7 +191,7 @@ export default function FinancePage() {
           <CardContent className="p-6">
             <p className="text-sm text-gray-600 mb-2">Đã xác thực</p>
             <p className="text-3xl font-bold text-green-600">
-              {verifiedAmount.toLocaleString('vi-VN')} đ
+              {formatCompactCurrency(verifiedAmount)}
             </p>
           </CardContent>
         </Card>

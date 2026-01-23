@@ -142,7 +142,7 @@ const menuData: MenuItem[] = [
       { id: 'associations', label: 'Quản lý Hội đoàn', icon: <Users size={18} />, href: '/admin/associations' },
       { id: 'projects', label: 'Công trình & Dự án', icon: <Building size={18} />, href: '/admin/projects' },
       { id: 'assets', label: 'Quản lý Tài sản', icon: <Landmark size={18} />, href: '/admin/assets' },
-      // { id: 'rental-contracts', label: 'Hợp đồng Cho thuê BDS', icon: <FileSignature size={18} />, href: '/admin/rental-contracts' },
+      { id: 'rental-contracts', label: 'Hợp đồng Cho thuê BDS', icon: <FileSignature size={18} />, href: '/admin/rental-contracts' },
     ],
   },
   {

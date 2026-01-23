@@ -35,6 +35,7 @@ import { Download, Eye, FileSpreadsheet, CalendarIcon } from 'lucide-react';
 import { ImageGallery } from '@/components/finance/ImageGallery';
 import { StatusBadge } from '@/components/finance/StatusBadge';
 import { Income } from '@/lib/schemas';
+import { formatCompactCurrency } from '@/lib/utils';
 import { DateRange } from 'react-day-picker';
 import { format } from 'date-fns';
 import { vi } from 'date-fns/locale';
@@ -155,7 +156,7 @@ export default function IncomesPage() {
         <Card>
           <CardHeader className="pb-2">
             <CardDescription>Tổng số tiền</CardDescription>
-            <CardTitle className="text-2xl">{formatCurrency(totalAmount)}</CardTitle>
+            <CardTitle className="text-2xl">{formatCompactCurrency(totalAmount)}</CardTitle>
           </CardHeader>
         </Card>
         <Card>

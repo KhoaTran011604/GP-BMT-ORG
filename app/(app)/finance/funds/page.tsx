@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
+import { formatCompactCurrency } from '@/lib/utils';
 
 interface Fund {
   _id: string;
@@ -68,20 +69,13 @@ export default function FundsPage() {
       const res = await fetch('/api/funds');
       if (res.ok) {
         const data = await res.json();
-        setFunds(Array.isArray(data) ? data : []);
+        setFunds(data.data || []);
       }
     } catch (error) {
       console.error('Error fetching funds:', error);
     } finally {
       setLoading(false);
     }
-  };
-
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('vi-VN', {
-      style: 'currency',
-      currency: 'VND',
-    }).format(amount);
   };
 
   const getColorClass = (color: string) => {
@@ -167,7 +161,7 @@ export default function FundsPage() {
                             <Badge variant="outline">{fund.cycle}</Badge>
                           </TableCell>
                           <TableCell className="text-right font-medium">
-                            {formatCurrency(dbFund?.totalCollected || 0)}
+                            {formatCompactCurrency(dbFund?.totalCollected || 0)}
                           </TableCell>
                           <TableCell>
                             <Badge className="bg-green-100 text-green-800">

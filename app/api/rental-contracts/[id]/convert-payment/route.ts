@@ -6,9 +6,11 @@ import { ObjectId } from 'mongodb';
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
+
     const token = await getTokenFromCookie(request.headers.get('cookie') || '');
     if (!token) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -34,7 +36,7 @@ export async function POST(
     const incomesCollection = db.collection<Income>('incomes');
 
     // Get contract details
-    const contract = await contractsCollection.findOne({ _id: new ObjectId(params.id) });
+    const contract = await contractsCollection.findOne({ _id: new ObjectId(id) });
 
     if (!contract) {
       return NextResponse.json(

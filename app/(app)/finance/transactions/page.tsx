@@ -41,6 +41,7 @@ import { ImageGallery } from '@/components/finance/ImageGallery';
 import { StatusBadge } from '@/components/finance/StatusBadge';
 import { Fund, Parish, ExpenseCategory } from '@/lib/schemas';
 import { useAuth } from '@/lib/auth-context';
+import { formatCompactCurrency } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 
 type TransactionType = 'income' | 'expense';
@@ -665,7 +666,7 @@ Ngày in: ${formatDate(new Date())}
               <CardHeader className="pb-2">
                 <CardDescription>Tổng tiền</CardDescription>
                 <CardTitle className={activeTab === 'income' ? 'text-green-600' : 'text-red-600'}>
-                  {formatCurrency(stats.totalAmount)}
+                  {formatCompactCurrency(stats.totalAmount)}
                 </CardTitle>
               </CardHeader>
             </Card>
@@ -732,7 +733,7 @@ Ngày in: ${formatDate(new Date())}
                         <TableCell className={`text-right font-semibold ${
                           activeTab === 'income' ? 'text-green-600' : 'text-red-600'
                         }`}>
-                          {formatCurrency(item.amount)}
+                          {formatCompactCurrency(item.amount)}
                         </TableCell>
                         <TableCell>
                           {item.images.length > 0 ? (
@@ -1214,7 +1215,7 @@ Ngày in: ${formatDate(new Date())}
                 <div>
                   <p className="text-sm font-medium text-gray-500">Số tiền</p>
                   <p className={`text-xl font-bold ${selectedForDetail.type === 'income' ? 'text-green-600' : 'text-red-600'}`}>
-                    {selectedForDetail.type === 'expense' ? '-' : ''}{formatCurrency(selectedForDetail.amount)}
+                    {selectedForDetail.type === 'expense' ? '-' : ''}{formatCompactCurrency(selectedForDetail.amount)}
                   </p>
                 </div>
                 <div>
@@ -1344,7 +1345,7 @@ Ngày in: ${formatDate(new Date())}
             <div>
               <p className="text-sm text-gray-500">Số tiền</p>
               <p className="font-semibold">
-                {selectedForReject && formatCurrency(selectedForReject.amount)}
+                {selectedForReject && formatCompactCurrency(selectedForReject.amount)}
               </p>
             </div>
             <div>
@@ -1394,7 +1395,7 @@ Ngày in: ${formatDate(new Date())}
             <div>
               <p className="text-sm text-gray-500">Số tiền</p>
               <p className="font-semibold">
-                {selectedForApprove && formatCurrency(selectedForApprove.amount)}
+                {selectedForApprove && formatCompactCurrency(selectedForApprove.amount)}
               </p>
             </div>
             <div>

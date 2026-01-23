@@ -6,9 +6,11 @@ import { ObjectId } from 'mongodb';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
+
     const token = await getTokenFromCookie(request.headers.get('cookie') || '');
     if (!token) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -22,7 +24,7 @@ export async function GET(
     const db = await getDatabase();
     const collection = db.collection<RentalContract>('rental_contracts');
 
-    const contract = await collection.findOne({ _id: new ObjectId(params.id) });
+    const contract = await collection.findOne({ _id: new ObjectId(id) });
 
     if (!contract) {
       return NextResponse.json(
@@ -44,9 +46,11 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
+
     const token = await getTokenFromCookie(request.headers.get('cookie') || '');
     if (!token) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -62,7 +66,7 @@ export async function PUT(
     const collection = db.collection<RentalContract>('rental_contracts');
 
     // Check if contract exists
-    const existing = await collection.findOne({ _id: new ObjectId(params.id) });
+    const existing = await collection.findOne({ _id: new ObjectId(id) });
     if (!existing) {
       return NextResponse.json(
         { error: 'Contract not found' },
@@ -99,11 +103,11 @@ export async function PUT(
     if (body.terminatedReason !== undefined) updateData.terminatedReason = body.terminatedReason;
 
     await collection.updateOne(
-      { _id: new ObjectId(params.id) },
+      { _id: new ObjectId(id) },
       { $set: updateData }
     );
 
-    const updated = await collection.findOne({ _id: new ObjectId(params.id) });
+    const updated = await collection.findOne({ _id: new ObjectId(id) });
 
     return NextResponse.json({
       message: 'Contract updated successfully',
@@ -121,9 +125,11 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
+
     const token = await getTokenFromCookie(request.headers.get('cookie') || '');
     if (!token) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -137,7 +143,7 @@ export async function DELETE(
     const db = await getDatabase();
     const collection = db.collection<RentalContract>('rental_contracts');
 
-    const result = await collection.deleteOne({ _id: new ObjectId(params.id) });
+    const result = await collection.deleteOne({ _id: new ObjectId(id) });
 
     if (result.deletedCount === 0) {
       return NextResponse.json(

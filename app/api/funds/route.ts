@@ -23,7 +23,7 @@ export async function GET(request: NextRequest) {
       .sort({ fundCode: 1 })
       .toArray();
 
-    return NextResponse.json(funds);
+    return NextResponse.json({ data: funds });
   } catch (error) {
     console.error('Error fetching funds:', error);
     return NextResponse.json(
