@@ -32,8 +32,10 @@ import {
 import { Plus, Pencil, Trash2, FileText, ArrowRightCircle, Eye, Receipt, CheckCircle, XCircle, Loader2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/lib/auth-context';
-import { Parish, Fund } from '@/lib/schemas';
+import { Parish, Fund, BankAccount } from '@/lib/schemas';
 import { formatCompactCurrency } from '@/lib/utils';
+import { ContactCombobox } from '@/components/finance/ContactCombobox';
+import { QuickAddContactDialog } from '@/components/finance/QuickAddContactDialog';
 
 interface ContractIncome {
   _id: string;
@@ -69,6 +71,9 @@ export default function RentalContractsPage() {
   const [contracts, setContracts] = useState<RentalContractItem[]>([]);
   const [parishes, setParishes] = useState<Parish[]>([]);
   const [funds, setFunds] = useState<Fund[]>([]);
+  const [bankAccounts, setBankAccounts] = useState<BankAccount[]>([]);
+  const [contacts, setContacts] = useState<{ _id: string; name: string; phone?: string }[]>([]);
+  const [showQuickAddContact, setShowQuickAddContact] = useState(false);
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState('all');
 
@@ -111,7 +116,9 @@ export default function RentalContractsPage() {
     incomeDate: new Date().toISOString().split('T')[0],
     paymentPeriod: '',
     paymentMethod: 'offline',
+    bankAccountId: '',
     bankAccount: '',
+    contactId: '',
     notes: ''
   });
 
@@ -124,9 +131,11 @@ export default function RentalContractsPage() {
 
   const fetchParishesAndFunds = async () => {
     try {
-      const [parishesRes, fundsRes] = await Promise.all([
+      const [parishesRes, fundsRes, bankAccountsRes, contactsRes] = await Promise.all([
         fetch('/api/parishes'),
-        fetch('/api/funds')
+        fetch('/api/funds'),
+        fetch('/api/bank-accounts?status=active'),
+        fetch('/api/contacts?status=active')
       ]);
 
       if (parishesRes.ok) {
@@ -138,8 +147,18 @@ export default function RentalContractsPage() {
         const fundsData = await fundsRes.json();
         setFunds(fundsData.data || []);
       }
+
+      if (bankAccountsRes.ok) {
+        const bankAccountsData = await bankAccountsRes.json();
+        setBankAccounts(bankAccountsData.data || []);
+      }
+
+      if (contactsRes.ok) {
+        const contactsData = await contactsRes.json();
+        setContacts(contactsData.data || []);
+      }
     } catch (error) {
-      console.error('Error fetching parishes/funds:', error);
+      console.error('Error fetching parishes/funds/bankAccounts/contacts:', error);
     }
   };
 
@@ -329,14 +348,37 @@ export default function RentalContractsPage() {
       return;
     }
 
+    if (convertData.paymentMethod === 'online' && !convertData.bankAccountId) {
+      alert('Vui lòng chọn tài khoản ngân hàng');
+      return;
+    }
+
     setSubmitting(true);
     try {
+      // Get bank account display string
+      const selectedBankAccount = convertData.bankAccountId
+        ? bankAccounts.find(ba => ba._id?.toString() === convertData.bankAccountId)
+        : null;
+      const bankAccountDisplay = selectedBankAccount
+        ? `${selectedBankAccount.accountNumber} - ${selectedBankAccount.bankName}`
+        : undefined;
+
+      // Get selected contact name
+      const selectedContact = convertData.contactId
+        ? contacts.find(c => c._id === convertData.contactId)
+        : null;
+      const payerName = selectedContact?.name || selectedContract.tenantName;
+
       const response = await fetch(`/api/rental-contracts/${selectedContract._id}/convert-payment`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...convertData,
-          amount: parseFloat(convertData.amount)
+          amount: parseFloat(convertData.amount),
+          bankAccountId: convertData.bankAccountId || undefined,
+          bankAccount: bankAccountDisplay,
+          senderId: convertData.contactId || undefined,
+          payerName
         })
       });
 
@@ -349,7 +391,9 @@ export default function RentalContractsPage() {
           incomeDate: new Date().toISOString().split('T')[0],
           paymentPeriod: '',
           paymentMethod: 'offline',
+          bankAccountId: '',
           bankAccount: '',
+          contactId: '',
           notes: ''
         });
         alert(`Đã chuyển đổi thành giao dịch thu: ${result.data.incomeCode}`);
@@ -956,10 +1000,24 @@ export default function RentalContractsPage() {
             </div>
 
             <div className="space-y-2">
+              <Label>Người gửi (Đối tượng)</Label>
+              <ContactCombobox
+                value={convertData.contactId}
+                onChange={(v) => setConvertData({ ...convertData, contactId: v })}
+                onCreateNew={() => setShowQuickAddContact(true)}
+                contacts={contacts}
+                placeholder="Chọn người gửi..."
+              />
+              <p className="text-xs text-muted-foreground">
+                Mặc định: {selectedContract?.tenantName}
+              </p>
+            </div>
+
+            <div className="space-y-2">
               <Label>Hình thức thanh toán</Label>
               <Select
                 value={convertData.paymentMethod}
-                onValueChange={(v) => setConvertData({ ...convertData, paymentMethod: v })}
+                onValueChange={(v) => setConvertData({ ...convertData, paymentMethod: v, bankAccountId: '' })}
               >
                 <SelectTrigger>
                   <SelectValue />
@@ -970,6 +1028,36 @@ export default function RentalContractsPage() {
                 </SelectContent>
               </Select>
             </div>
+
+            {convertData.paymentMethod === 'online' && (
+              <div className="space-y-2">
+                <Label>Tài khoản ngân hàng (nhận tiền) *</Label>
+                {bankAccounts.filter(ba => ba.accountType === 'income' || ba.accountType === 'both').length > 0 ? (
+                  <Select
+                    value={convertData.bankAccountId}
+                    onValueChange={(v) => setConvertData({ ...convertData, bankAccountId: v })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Chọn tài khoản ngân hàng" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {bankAccounts
+                        .filter(ba => ba.accountType === 'income' || ba.accountType === 'both')
+                        .map((ba) => (
+                          <SelectItem key={ba._id!.toString()} value={ba._id!.toString()}>
+                            {ba.accountNumber} - {ba.bankName}
+                            {ba.isDefault && ' ★'}
+                          </SelectItem>
+                        ))}
+                    </SelectContent>
+                  </Select>
+                ) : (
+                  <div className="text-sm text-gray-500 p-2 border rounded-md bg-gray-50">
+                    Chưa có tài khoản ngân hàng. <a href="/finance/bank-accounts" className="text-blue-600 hover:underline">Thêm tài khoản</a>
+                  </div>
+                )}
+              </div>
+            )}
 
             <div className="space-y-2">
               <Label>Ghi chú</Label>
@@ -991,7 +1079,9 @@ export default function RentalContractsPage() {
                 incomeDate: new Date().toISOString().split('T')[0],
                 paymentPeriod: '',
                 paymentMethod: 'offline',
+                bankAccountId: '',
                 bankAccount: '',
+                contactId: '',
                 notes: ''
               });
             }}>
@@ -1003,6 +1093,16 @@ export default function RentalContractsPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Quick Add Contact Dialog */}
+      <QuickAddContactDialog
+        open={showQuickAddContact}
+        onOpenChange={setShowQuickAddContact}
+        onCreated={(newContact) => {
+          setContacts([...contacts, newContact]);
+          setConvertData({ ...convertData, contactId: newContact._id });
+        }}
+      />
 
       {/* Detail Dialog */}
       <Dialog open={showDetailDialog} onOpenChange={setShowDetailDialog}>

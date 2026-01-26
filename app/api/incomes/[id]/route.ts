@@ -87,11 +87,13 @@ export async function PUT(
     const {
       parishId,
       fundId,
+      categoryId,
       amount,
       paymentMethod,
       bankAccountId,
       bankAccount,
       payerName,
+      senderId,
       description,
       incomeDate,
       images,
@@ -104,6 +106,9 @@ export async function PUT(
 
     if (parishId) updateData.parishId = new ObjectId(parishId);
     if (fundId) updateData.fundId = new ObjectId(fundId);
+    if (categoryId !== undefined) {
+      updateData.categoryId = categoryId ? new ObjectId(categoryId) : undefined;
+    }
     if (amount) updateData.amount = parseFloat(amount);
     if (paymentMethod) updateData.paymentMethod = paymentMethod;
     if (bankAccountId !== undefined) {
@@ -111,6 +116,9 @@ export async function PUT(
     }
     if (bankAccount !== undefined) updateData.bankAccount = bankAccount;
     if (payerName !== undefined) updateData.payerName = payerName;
+    if (senderId !== undefined) {
+      updateData.senderId = senderId ? new ObjectId(senderId) : undefined;
+    }
     if (description !== undefined) updateData.description = description;
     if (incomeDate) {
       updateData.incomeDate = new Date(incomeDate);

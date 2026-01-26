@@ -61,7 +61,7 @@ const fundGroups = {
 export default function FundsPage() {
   const [funds, setFunds] = useState<Fund[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedGroup, setSelectedGroup] = useState<'A' | 'B' | 'C' | null>(null);
+  const [selectedGroup, setSelectedGroup] = useState<'A' | 'B' | 'C' | null>('A');
 
   useEffect(() => {
     fetchFunds();
@@ -119,7 +119,6 @@ export default function FundsPage() {
           <h1 className="text-2xl font-bold">Danh mục Quỹ</h1>
           <p className="text-gray-600">Quản lý 11 loại quỹ trong Giáo phận</p>
         </div>
-        <Button variant="outline">Xuất báo cáo</Button>
       </div>
 
       {/* Fund Group Cards - Clickable */}

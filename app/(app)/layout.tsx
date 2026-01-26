@@ -70,11 +70,7 @@ const menuData: MenuItem[] = [
     id: 'people',
     label: 'Giáo dân',
     icon: <Users size={20} />,
-    children: [
-      { id: 'people-list', label: 'Danh sách Giáo dân', icon: <User size={18} />, href: '/people' },
-      { id: 'people-search', label: 'Tra cứu', icon: <Search size={18} />, href: '/people/search' },
-    ],
-    roles: ['super_admin', 'cha_quan_ly'], // Only Super Admin and Cha Quản lý
+    href: '/people',
   },
   {
     id: 'finance',
@@ -84,6 +80,7 @@ const menuData: MenuItem[] = [
       { id: 'funds', label: 'Danh mục Quỹ', icon: <CreditCard size={18} />, href: '/finance/funds' },
       { id: 'expense-categories', label: 'Danh mục Thu Chi', icon: <FolderOpen size={18} />, href: '/finance/expense-categories' },
       { id: 'bank-accounts', label: 'Tài khoản Ngân hàng', icon: <Landmark size={18} />, href: '/finance/bank-accounts' },
+      { id: 'contacts', label: 'Đối tượng Nhận gửi', icon: <Users size={18} />, href: '/admin/contacts' },
       { id: 'transactions', label: 'Quản lý Giao dịch', icon: <Receipt size={18} />, href: '/finance/transactions' },
     ],
     roles: ['super_admin', 'cha_quan_ly', 'cha_xu', 'ke_toan'], // All roles except thu_ky
@@ -94,7 +91,6 @@ const menuData: MenuItem[] = [
     icon: <Briefcase size={20} />,
     children: [
       { id: 'staff', label: 'Danh sách Nhân sự', icon: <UserCog size={18} />, href: '/hr/staff' },
-      { id: 'contracts', label: 'Hợp đồng Lao động', icon: <FileSignature size={18} />, href: '/hr/contracts' },
       { id: 'payroll', label: 'Bảng lương', icon: <DollarSign size={18} />, href: '/hr/payroll' },
     ],
     roles: ['super_admin', 'cha_quan_ly', 'ke_toan'], // Super Admin, Cha Quản lý, and Kế toán

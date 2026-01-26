@@ -21,11 +21,39 @@ export async function GET(request: NextRequest) {
     const parishId = searchParams.get('parishId');
     const startDate = searchParams.get('startDate');
     const endDate = searchParams.get('endDate');
+    const includeCancelled = searchParams.get('includeCancelled') === 'true';
+    const referenceId = searchParams.get('referenceId');
 
     const db = await getDatabase();
     const collection = db.collection<Receipt>('receipts');
 
     const filter: any = {};
+    const andConditions: any[] = [];
+
+    // Filter by referenceId (transaction ID)
+    if (referenceId) {
+      andConditions.push({
+        $or: [
+          { referenceId: new ObjectId(referenceId) },
+          { referenceIds: new ObjectId(referenceId) }
+        ]
+      });
+    }
+
+    // By default, exclude cancelled receipts unless explicitly requested
+    if (!includeCancelled) {
+      andConditions.push({
+        $or: [
+          { status: { $exists: false } },
+          { status: 'active' },
+          { status: { $ne: 'cancelled' } }
+        ]
+      });
+    }
+
+    if (andConditions.length > 0) {
+      filter.$and = andConditions;
+    }
 
     if (receiptType && receiptType !== 'all') {
       filter.receiptType = receiptType;
