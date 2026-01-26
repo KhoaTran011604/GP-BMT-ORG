@@ -76,6 +76,9 @@ export async function POST(request: NextRequest) {
       acquisitionValue: body.acquisitionValue || 0,
       currentValue: body.currentValue || 0,
       status: body.status || 'active',
+      images: body.images || [],
+      legalDocs: body.legalDocs,
+      notes: body.notes,
       createdAt: new Date(),
     };
 

@@ -69,12 +69,13 @@ export async function POST(request: NextRequest) {
       projectType: body.projectType,
       description: body.description,
       budget: body.budget || 0,
-      actualCost: body.actualCost || 0,
       startDate: body.startDate ? new Date(body.startDate) : undefined,
       expectedEnd: body.expectedEnd ? new Date(body.expectedEnd) : undefined,
+      actualEnd: body.actualEnd ? new Date(body.actualEnd) : undefined,
       permitStatus: body.permitStatus,
       progress: body.progress || 0,
-      status: body.status || 'in_progress',
+      status: body.status || 'planning',
+      images: body.images || [],
       createdAt: new Date(),
     };
 

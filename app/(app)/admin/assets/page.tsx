@@ -6,8 +6,12 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { AssetFormDialog } from '@/components/admin/AssetFormDialog';
+import { AssetDetailModal } from '@/components/admin/AssetDetailModal';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+import { toast } from 'sonner';
+import { Edit, Trash2 } from 'lucide-react';
 
 interface Asset {
   _id: string;
@@ -24,6 +28,7 @@ interface Asset {
   legalDocs?: any;
   status: 'active' | 'sold' | 'disposed';
   notes?: string;
+  images?: string[];
 }
 
 const assetTypeConfig = {
@@ -39,6 +44,12 @@ export default function AssetsPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [typeFilter, setTypeFilter] = useState('all');
 
+  const [formOpen, setFormOpen] = useState(false);
+  const [detailOpen, setDetailOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [selectedAsset, setSelectedAsset] = useState<Asset | null>(null);
+  const [assetToDelete, setAssetToDelete] = useState<Asset | null>(null);
+
   useEffect(() => {
     fetchAssets();
   }, []);
@@ -52,8 +63,54 @@ export default function AssetsPage() {
       }
     } catch (error) {
       console.error('Error fetching assets:', error);
+      toast.error('Lỗi khi tải danh sách tài sản');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleCreate = () => {
+    setSelectedAsset(null);
+    setFormOpen(true);
+  };
+
+  const handleEdit = (asset: Asset) => {
+    setSelectedAsset(asset);
+    setFormOpen(true);
+    setDetailOpen(false);
+  };
+
+  const handleViewDetail = (asset: Asset) => {
+    setSelectedAsset(asset);
+    setDetailOpen(true);
+  };
+
+  const handleDeleteClick = (asset: Asset) => {
+    setAssetToDelete(asset);
+    setDeleteDialogOpen(true);
+    setDetailOpen(false);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!assetToDelete) return;
+
+    try {
+      const res = await fetch(`/api/assets/${assetToDelete._id}`, {
+        method: 'DELETE',
+      });
+
+      if (!res.ok) {
+        throw new Error('Failed to delete');
+      }
+
+      toast.success('Xóa tài sản thành công');
+      fetchAssets();
+    } catch (error) {
+      console.error('Error deleting asset:', error);
+      toast.error('Lỗi khi xóa tài sản');
+    } finally {
+      setDeleteDialogOpen(false);
+      setAssetToDelete(null);
     }
   };
 
@@ -63,11 +120,6 @@ export default function AssetsPage() {
       style: 'currency',
       currency: 'VND',
     }).format(amount);
-  };
-
-  const formatDate = (dateStr?: string) => {
-    if (!dateStr) return '-';
-    return new Date(dateStr).toLocaleDateString('vi-VN');
   };
 
   const filteredAssets = assets.filter(a => {
@@ -96,10 +148,8 @@ export default function AssetsPage() {
           <h1 className="text-2xl font-bold">Quản lý Tài sản</h1>
           <p className="text-gray-600">Quản lý tài sản của Giáo phận và các Giáo xứ</p>
         </div>
-        <Button>+ Thêm tài sản</Button>
+        <Button onClick={handleCreate}>+ Thêm tài sản</Button>
       </div>
-
-
 
       {/* Summary */}
       <Card className="bg-gradient-to-r from-blue-50 to-indigo-50">
@@ -168,7 +218,7 @@ export default function AssetsPage() {
                   <TableHead>Diện tích</TableHead>
                   <TableHead className="text-right">Giá trị</TableHead>
                   <TableHead>Trạng thái</TableHead>
-                  <TableHead></TableHead>
+                  <TableHead className="text-right">Thao tác</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -190,15 +240,25 @@ export default function AssetsPage() {
                     <TableCell>
                       <Badge className={
                         a.status === 'active' ? 'bg-green-100 text-green-800' :
-                        a.status === 'sold' ? 'bg-blue-100 text-blue-800' :
-                        'bg-gray-100 text-gray-800'
+                          a.status === 'sold' ? 'bg-blue-100 text-blue-800' :
+                            'bg-gray-100 text-gray-800'
                       }>
                         {a.status === 'active' ? 'Đang sử dụng' :
-                         a.status === 'sold' ? 'Đã bán' : 'Đã thanh lý'}
+                          a.status === 'sold' ? 'Đã bán' : 'Đã thanh lý'}
                       </Badge>
                     </TableCell>
-                    <TableCell>
-                      <Button variant="ghost" size="sm">Chi tiết</Button>
+                    <TableCell className="text-right">
+                      <div className="flex justify-end gap-1">
+                        <Button variant="ghost" size="sm" onClick={() => handleViewDetail(a)}>
+                          Chi tiết
+                        </Button>
+                        <Button variant="ghost" size="sm" onClick={() => handleEdit(a)}>
+                          <Edit className="w-4 h-4" />
+                        </Button>
+                        <Button variant="ghost" size="sm" onClick={() => handleDeleteClick(a)}>
+                          <Trash2 className="w-4 h-4 text-red-600" />
+                        </Button>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -207,6 +267,40 @@ export default function AssetsPage() {
           )}
         </CardContent>
       </Card>
+
+      {/* Dialogs */}
+      <AssetFormDialog
+        open={formOpen}
+        onOpenChange={setFormOpen}
+        asset={selectedAsset}
+        onSuccess={fetchAssets}
+      />
+
+      <AssetDetailModal
+        open={detailOpen}
+        onOpenChange={setDetailOpen}
+        asset={selectedAsset}
+        onEdit={() => handleEdit(selectedAsset!)}
+        onDelete={() => handleDeleteClick(selectedAsset!)}
+      />
+
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Xác nhận xóa</AlertDialogTitle>
+            <AlertDialogDescription>
+              Bạn có chắc chắn muốn xóa tài sản <strong>{assetToDelete?.assetName}</strong>?
+              Hành động này không thể hoàn tác.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Hủy</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteConfirm} className="bg-red-600 hover:bg-red-700">
+              Xóa
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

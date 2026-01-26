@@ -8,6 +8,11 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { ProjectFormDialog } from '@/components/admin/ProjectFormDialog';
+import { ProjectDetailModal } from '@/components/admin/ProjectDetailModal';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+import { toast } from 'sonner';
+import { Edit, Trash2 } from 'lucide-react';
 
 interface Project {
   _id: string;
@@ -17,13 +22,13 @@ interface Project {
   projectType: 'construction' | 'renovation';
   description?: string;
   budget: number;
-  actualCost?: number;
   startDate?: string;
   expectedEnd?: string;
   actualEnd?: string;
   permitStatus: 'pending' | 'approved' | 'rejected';
   progress: number;
   status: 'planning' | 'in_progress' | 'completed' | 'cancelled';
+  images?: string[];
 }
 
 const statusConfig = {
@@ -45,6 +50,12 @@ export default function ProjectsPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
 
+  const [formOpen, setFormOpen] = useState(false);
+  const [detailOpen, setDetailOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
+  const [projectToDelete, setProjectToDelete] = useState<Project | null>(null);
+
   useEffect(() => {
     fetchProjects();
   }, []);
@@ -58,8 +69,54 @@ export default function ProjectsPage() {
       }
     } catch (error) {
       console.error('Error fetching projects:', error);
+      toast.error('Lỗi khi tải danh sách dự án');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleCreate = () => {
+    setSelectedProject(null);
+    setFormOpen(true);
+  };
+
+  const handleEdit = (project: Project) => {
+    setSelectedProject(project);
+    setFormOpen(true);
+    setDetailOpen(false);
+  };
+
+  const handleViewDetail = (project: Project) => {
+    setSelectedProject(project);
+    setDetailOpen(true);
+  };
+
+  const handleDeleteClick = (project: Project) => {
+    setProjectToDelete(project);
+    setDeleteDialogOpen(true);
+    setDetailOpen(false);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!projectToDelete) return;
+
+    try {
+      const res = await fetch(`/api/projects/${projectToDelete._id}`, {
+        method: 'DELETE',
+      });
+
+      if (!res.ok) {
+        throw new Error('Failed to delete');
+      }
+
+      toast.success('Xóa dự án thành công');
+      fetchProjects();
+    } catch (error) {
+      console.error('Error deleting project:', error);
+      toast.error('Lỗi khi xóa dự án');
+    } finally {
+      setDeleteDialogOpen(false);
+      setProjectToDelete(null);
     }
   };
 
@@ -68,11 +125,6 @@ export default function ProjectsPage() {
       style: 'currency',
       currency: 'VND',
     }).format(amount);
-  };
-
-  const formatDate = (dateStr?: string) => {
-    if (!dateStr) return '-';
-    return new Date(dateStr).toLocaleDateString('vi-VN');
   };
 
   const filteredProjects = projects.filter(p => {
@@ -84,7 +136,6 @@ export default function ProjectsPage() {
   });
 
   const totalBudget = projects.reduce((sum, p) => sum + p.budget, 0);
-  const totalActualCost = projects.reduce((sum, p) => sum + (p.actualCost || 0), 0);
 
   if (loading) {
     return (
@@ -101,11 +152,11 @@ export default function ProjectsPage() {
           <h1 className="text-2xl font-bold">Công trình & Dự án</h1>
           <p className="text-gray-600">Quản lý các công trình xây dựng trong Giáo phận</p>
         </div>
-        <Button>+ Thêm dự án</Button>
+        <Button onClick={handleCreate}>+ Thêm dự án</Button>
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card>
           <CardContent className="p-4">
             <div className="text-2xl font-bold text-blue-600">{projects.length}</div>
@@ -124,12 +175,6 @@ export default function ProjectsPage() {
           <CardContent className="p-4">
             <div className="text-2xl font-bold text-green-600">{formatCurrency(totalBudget)}</div>
             <p className="text-sm text-gray-600">Tổng ngân sách</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4">
-            <div className="text-2xl font-bold text-purple-600">{formatCurrency(totalActualCost)}</div>
-            <p className="text-sm text-gray-600">Tổng chi thực tế</p>
           </CardContent>
         </Card>
       </div>
@@ -178,7 +223,7 @@ export default function ProjectsPage() {
                   <TableHead>Tiến độ</TableHead>
                   <TableHead>Phép XD</TableHead>
                   <TableHead>Trạng thái</TableHead>
-                  <TableHead></TableHead>
+                  <TableHead className="text-right">Thao tác</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -208,8 +253,18 @@ export default function ProjectsPage() {
                         {statusConfig[p.status].label}
                       </Badge>
                     </TableCell>
-                    <TableCell>
-                      <Button variant="ghost" size="sm">Chi tiết</Button>
+                    <TableCell className="text-right">
+                      <div className="flex justify-end gap-1">
+                        <Button variant="ghost" size="sm" onClick={() => handleViewDetail(p)}>
+                          Chi tiết
+                        </Button>
+                        <Button variant="ghost" size="sm" onClick={() => handleEdit(p)}>
+                          <Edit className="w-4 h-4" />
+                        </Button>
+                        <Button variant="ghost" size="sm" onClick={() => handleDeleteClick(p)}>
+                          <Trash2 className="w-4 h-4 text-red-600" />
+                        </Button>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -218,6 +273,40 @@ export default function ProjectsPage() {
           )}
         </CardContent>
       </Card>
+
+      {/* Dialogs */}
+      <ProjectFormDialog
+        open={formOpen}
+        onOpenChange={setFormOpen}
+        project={selectedProject}
+        onSuccess={fetchProjects}
+      />
+
+      <ProjectDetailModal
+        open={detailOpen}
+        onOpenChange={setDetailOpen}
+        project={selectedProject}
+        onEdit={() => handleEdit(selectedProject!)}
+        onDelete={() => handleDeleteClick(selectedProject!)}
+      />
+
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Xác nhận xóa</AlertDialogTitle>
+            <AlertDialogDescription>
+              Bạn có chắc chắn muốn xóa dự án <strong>{projectToDelete?.projectName}</strong>?
+              Hành động này không thể hoàn tác.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Hủy</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteConfirm} className="bg-red-600 hover:bg-red-700">
+              Xóa
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
