@@ -48,6 +48,7 @@ interface MenuItem {
   href?: string;
   badge?: string;
   children?: MenuItem[];
+  roles?: string[]; // Roles that can access this menu item
 }
 
 const menuData: MenuItem[] = [
@@ -56,12 +57,14 @@ const menuData: MenuItem[] = [
     label: 'Tổng quan',
     icon: <LayoutDashboard size={20} />,
     href: '/dashboard',
+    roles: ['super_admin', 'cha_quan_ly', 'cha_xu', 'ke_toan'], // All roles
   },
   {
     id: 'parish',
     label: 'Giáo xứ',
     icon: <Church size={20} />,
     href: '/parish',
+    roles: ['super_admin', 'cha_quan_ly'], // Only Super Admin and Cha Quản lý
   },
   {
     id: 'people',
@@ -71,6 +74,7 @@ const menuData: MenuItem[] = [
       { id: 'people-list', label: 'Danh sách Giáo dân', icon: <User size={18} />, href: '/people' },
       { id: 'people-search', label: 'Tra cứu', icon: <Search size={18} />, href: '/people/search' },
     ],
+    roles: ['super_admin', 'cha_quan_ly'], // Only Super Admin and Cha Quản lý
   },
   {
     id: 'finance',
@@ -82,6 +86,7 @@ const menuData: MenuItem[] = [
       { id: 'bank-accounts', label: 'Tài khoản Ngân hàng', icon: <Landmark size={18} />, href: '/finance/bank-accounts' },
       { id: 'transactions', label: 'Quản lý Giao dịch', icon: <Receipt size={18} />, href: '/finance/transactions' },
     ],
+    roles: ['super_admin', 'cha_quan_ly', 'cha_xu', 'ke_toan'], // All roles except thu_ky
   },
   {
     id: 'hr',
@@ -92,6 +97,7 @@ const menuData: MenuItem[] = [
       { id: 'contracts', label: 'Hợp đồng Lao động', icon: <FileSignature size={18} />, href: '/hr/contracts' },
       { id: 'payroll', label: 'Bảng lương', icon: <DollarSign size={18} />, href: '/hr/payroll' },
     ],
+    roles: ['super_admin', 'cha_quan_ly', 'ke_toan'], // Super Admin, Cha Quản lý, and Kế toán
   },
   {
     id: 'admin',
@@ -103,6 +109,7 @@ const menuData: MenuItem[] = [
       { id: 'assets', label: 'Quản lý Tài sản', icon: <Landmark size={18} />, href: '/admin/assets' },
       { id: 'rental-contracts', label: 'Hợp đồng Cho thuê BDS', icon: <FileSignature size={18} />, href: '/admin/rental-contracts' },
     ],
+    roles: ['super_admin', 'cha_quan_ly', 'cha_xu'], // Super Admin, Cha Quản lý, and Cha xứ
   },
   {
     id: 'settings',
@@ -111,6 +118,7 @@ const menuData: MenuItem[] = [
     children: [
       { id: 'users', label: 'Phân quyền (RBAC)', icon: <Shield size={18} />, href: '/settings/users' },
     ],
+    roles: ['super_admin'], // Only Super Admin
   },
 ];
 
@@ -121,6 +129,34 @@ const roleLabels: Record<string, string> = {
   ke_toan: 'Kế toán VP',
   thu_ky: 'Thư ký GX',
 };
+
+// Filter menu items based on user role
+function filterMenuByRole(menuItems: MenuItem[], userRole: string): MenuItem[] {
+  return menuItems
+    .filter((item) => {
+      // If no roles specified, show to all (backward compatibility)
+      if (!item.roles || item.roles.length === 0) return true;
+      return item.roles.includes(userRole);
+    })
+    .map((item) => {
+      // Recursively filter children if they exist
+      if (item.children) {
+        return {
+          ...item,
+          children: item.children.filter((child) => {
+            if (!child.roles || child.roles.length === 0) return true;
+            return child.roles.includes(userRole);
+          }),
+        };
+      }
+      return item;
+    })
+    .filter((item) => {
+      // Remove items with no children if they had children but all were filtered out
+      if (item.children && item.children.length === 0) return false;
+      return true;
+    });
+}
 
 function MenuItem({
   item,
@@ -255,14 +291,15 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
   // Auto-expand menu based on current path
   useEffect(() => {
-    menuData.forEach((item) => {
+    const filteredMenu = filterMenuByRole(menuData, user?.role || '');
+    filteredMenu.forEach((item) => {
       if (item.children?.some((c) => c.href === pathname)) {
         if (!expanded.includes(item.id)) {
           setExpanded((prev) => [...prev, item.id]);
         }
       }
     });
-  }, [pathname]);
+  }, [pathname, user?.role]);
 
   const handleToggle = (id: string) => {
     setExpanded((prev) =>
@@ -391,7 +428,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
         {/* Navigation */}
         <nav className="flex-1 overflow-y-auto px-3 py-2 space-y-1 scrollbar-thin scrollbar-thumb-white/20">
-          {menuData.map((item) => (
+          {filterMenuByRole(menuData, user?.role || '').map((item) => (
             <MenuItem
               key={item.id}
               item={item}
