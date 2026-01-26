@@ -87,6 +87,7 @@ export async function PUT(
     const {
       parishId,
       fundId,
+      categoryId,
       amount,
       paymentMethod,
       bankAccountId,
@@ -104,6 +105,9 @@ export async function PUT(
 
     if (parishId) updateData.parishId = new ObjectId(parishId);
     if (fundId) updateData.fundId = new ObjectId(fundId);
+    if (categoryId !== undefined) {
+      updateData.categoryId = categoryId ? new ObjectId(categoryId) : undefined;
+    }
     if (amount) updateData.amount = parseFloat(amount);
     if (paymentMethod) updateData.paymentMethod = paymentMethod;
     if (bankAccountId !== undefined) {

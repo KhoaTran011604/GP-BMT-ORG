@@ -65,10 +65,14 @@ export async function POST(
     const incomeCode = `THU-${year}${String(month).padStart(2, '0')}-${String(sequence).padStart(4, '0')}`;
 
     // Create income record
+    // Default categoryId for rental contract income (Thu từ cho thuê BĐS)
+    const DEFAULT_RENTAL_INCOME_CATEGORY_ID = '697718196a780e5859f59bcf';
+
     const newIncome: Income = {
       incomeCode,
       parishId: contract.parishId,
       fundId: new ObjectId(body.fundId),
+      categoryId: new ObjectId(DEFAULT_RENTAL_INCOME_CATEGORY_ID),
       amount: body.amount,
       paymentMethod: body.paymentMethod || contract.paymentMethod === 'transfer' ? 'online' : 'offline',
       bankAccountId: body.bankAccountId ? new ObjectId(body.bankAccountId) : undefined,

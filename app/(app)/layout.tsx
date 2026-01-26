@@ -70,11 +70,7 @@ const menuData: MenuItem[] = [
     id: 'people',
     label: 'Giáo dân',
     icon: <Users size={20} />,
-    children: [
-      { id: 'people-list', label: 'Danh sách Giáo dân', icon: <User size={18} />, href: '/people' },
-      { id: 'people-search', label: 'Tra cứu', icon: <Search size={18} />, href: '/people/search' },
-    ],
-    roles: ['super_admin', 'cha_quan_ly'], // Only Super Admin and Cha Quản lý
+    href: '/people',
   },
   {
     id: 'finance',

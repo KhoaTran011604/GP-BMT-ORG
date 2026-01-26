@@ -84,6 +84,7 @@ export interface Income {
   incomeCode: string;
   parishId: ObjectId;
   fundId: ObjectId;
+  categoryId?: ObjectId; // FK to expense_categories (income type)
   amount: number;
   paymentMethod: 'online' | 'offline';
   bankAccountId?: ObjectId; // FK to bank_accounts

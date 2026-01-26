@@ -217,6 +217,7 @@ export default function TransactionsPage() {
       const body = createType === 'income' ? {
         parishId: formData.parishId,
         fundId: formData.fundId,
+        categoryId: formData.categoryId || undefined,
         amount: parseFloat(formData.amount),
         paymentMethod: formData.paymentMethod,
         bankAccountId: formData.bankAccountId || undefined,
@@ -290,6 +291,7 @@ export default function TransactionsPage() {
       const body = selectedItem.type === 'income' ? {
         parishId: formData.parishId,
         fundId: formData.fundId,
+        categoryId: formData.categoryId || undefined,
         amount: parseFloat(formData.amount),
         paymentMethod: formData.paymentMethod,
         bankAccountId: formData.bankAccountId || undefined,

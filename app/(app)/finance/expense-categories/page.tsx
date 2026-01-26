@@ -424,6 +424,8 @@ export default function ThuChiCategoriesPage() {
                         <Switch
                           checked={category.isActive}
                           onCheckedChange={() => handleToggleActive(category)}
+                          disabled={category.type === 'sys'}
+                          title={category.type === 'sys' ? 'Không thể thay đổi trạng thái danh mục hệ thống' : ''}
                         />
                         <Badge className={category.isActive ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600'}>
                           {category.isActive ? 'Hoạt động' : 'Ngừng'}

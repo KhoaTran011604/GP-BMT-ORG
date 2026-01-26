@@ -110,6 +110,7 @@ export async function POST(request: NextRequest) {
     const {
       parishId,
       fundId,
+      categoryId,
       amount,
       paymentMethod,
       bankAccountId,
@@ -142,6 +143,7 @@ export async function POST(request: NextRequest) {
       incomeCode,
       parishId: new ObjectId(parishId),
       fundId: new ObjectId(fundId),
+      categoryId: categoryId ? new ObjectId(categoryId) : undefined,
       amount: parseFloat(amount),
       paymentMethod: paymentMethod || 'offline',
       bankAccountId: bankAccountId ? new ObjectId(bankAccountId) : undefined,
