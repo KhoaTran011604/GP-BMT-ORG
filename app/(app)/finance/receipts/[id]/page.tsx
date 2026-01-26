@@ -5,9 +5,19 @@ import { useParams, useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Printer, Download, Home, Calendar, User, Building, CreditCard, FileText, Image as ImageIcon, List, ChevronRight } from 'lucide-react';
+import { ArrowLeft, Printer, Home, Calendar, User, Building, CreditCard, FileText, Image as ImageIcon, List, XCircle } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { formatCompactCurrency } from '@/lib/utils';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 interface TransactionInfo {
   _id: string;
@@ -79,12 +89,28 @@ export default function ReceiptDetailPage() {
   const [data, setData] = useState<ReceiptDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [userRole, setUserRole] = useState<string>('');
+  const [showCancelDialog, setShowCancelDialog] = useState(false);
+  const [isCancelling, setIsCancelling] = useState(false);
 
   useEffect(() => {
     if (params.id) {
       fetchReceiptDetail();
+      fetchUserInfo();
     }
   }, [params.id]);
+
+  const fetchUserInfo = async () => {
+    try {
+      const response = await fetch('/api/auth/me');
+      if (response.ok) {
+        const result = await response.json();
+        setUserRole(result.user?.role || '');
+      }
+    } catch (err) {
+      console.error('Error fetching user info:', err);
+    }
+  };
 
   const fetchReceiptDetail = async () => {
     try {
@@ -120,6 +146,29 @@ export default function ReceiptDetailPage() {
 
   const handlePrint = () => {
     window.print();
+  };
+
+  const handleCancelReceipt = async () => {
+    setIsCancelling(true);
+    try {
+      const response = await fetch(`/api/receipts/${params.id}`, {
+        method: 'DELETE',
+      });
+
+      if (response.ok) {
+        alert('Đã hủy phiếu thành công. Các khoản thu/chi liên quan đã được đưa về trạng thái chờ duyệt.');
+        router.push('/finance/transactions');
+      } else {
+        const result = await response.json();
+        alert(`Lỗi: ${result.error || 'Không thể hủy phiếu'}`);
+      }
+    } catch (err) {
+      console.error('Error cancelling receipt:', err);
+      alert('Có lỗi xảy ra khi hủy phiếu');
+    } finally {
+      setIsCancelling(false);
+      setShowCancelDialog(false);
+    }
   };
 
   if (loading) {
@@ -172,6 +221,15 @@ export default function ReceiptDetailPage() {
           Quay lại
         </Button>
         <div className="flex gap-2">
+          {userRole === 'super_admin' && (
+            <Button
+              variant="destructive"
+              onClick={() => setShowCancelDialog(true)}
+            >
+              <XCircle size={16} className="mr-2" />
+              Hủy phiếu
+            </Button>
+          )}
           <Button variant="outline" onClick={handlePrint}>
             <Printer size={16} className="mr-2" />
             In phiếu
@@ -445,6 +503,41 @@ export default function ReceiptDetailPage() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Cancel Receipt Dialog */}
+      <AlertDialog open={showCancelDialog} onOpenChange={setShowCancelDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2 text-red-600">
+              <XCircle size={20} />
+              Xác nhận hủy phiếu
+            </AlertDialogTitle>
+            <AlertDialogDescription asChild>
+              <div className="space-y-3">
+                <p>Bạn có chắc chắn muốn hủy phiếu <strong>{receipt.receiptNo}</strong>?</p>
+                <div className="bg-amber-50 border border-amber-200 p-3 rounded-lg">
+                  <p className="text-sm text-amber-800 font-medium">Lưu ý:</p>
+                  <ul className="text-sm text-amber-700 list-disc list-inside mt-1">
+                    <li>Phiếu sẽ bị hủy và không thể khôi phục</li>
+                    <li>Các khoản {isIncome ? 'thu' : 'chi'} liên quan sẽ được đưa về trạng thái "Chờ duyệt"</li>
+                    <li>Bạn có thể duyệt lại các khoản này sau</li>
+                  </ul>
+                </div>
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isCancelling}>Đóng</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleCancelReceipt}
+              disabled={isCancelling}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              {isCancelling ? 'Đang xử lý...' : 'Xác nhận hủy phiếu'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

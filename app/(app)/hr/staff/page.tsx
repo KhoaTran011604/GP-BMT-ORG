@@ -9,11 +9,10 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { formatCurrency } from '@/lib/utils';
 import {
-  Plus, Search, FileSignature, Receipt, Users, Building2, Briefcase,
-  CheckCircle, XCircle, Eye, MoreHorizontal
+  Plus, Search, FileSignature, Users, Receipt,
+  CheckCircle, XCircle, Eye, MoreHorizontal, Pencil
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -88,6 +87,7 @@ export default function StaffPage() {
 
   // Staff dialog
   const [isStaffDialogOpen, setIsStaffDialogOpen] = useState(false);
+  const [editingStaffId, setEditingStaffId] = useState<string | null>(null);
   const [staffFormData, setStaffFormData] = useState({
     staffCode: '',
     fullName: '',
@@ -100,18 +100,31 @@ export default function StaffPage() {
     position: '',
     department: '',
     hireDate: '',
+    status: 'active' as 'active' | 'resigned',
   });
 
   // Contract dialog
   const [isContractDialogOpen, setIsContractDialogOpen] = useState(false);
   const [selectedStaff, setSelectedStaff] = useState<Staff | null>(null);
-  const [contractFormData, setContractFormData] = useState({
+  const [editingContractId, setEditingContractId] = useState<string | null>(null);
+  const [contractFormData, setContractFormData] = useState<{
+    contractNo: string;
+    contractType: 'full_time' | 'part_time' | 'fixed_term' | 'seasonal';
+    startDate: string;
+    endDate: string;
+    basicSalary: number;
+  }>({
     contractNo: '',
-    contractType: 'full_time' as const,
+    contractType: 'full_time',
     startDate: '',
     endDate: '',
     basicSalary: 0,
   });
+
+  // Staff detail dialog
+  const [isDetailDialogOpen, setIsDetailDialogOpen] = useState(false);
+  const [detailStaff, setDetailStaff] = useState<Staff | null>(null);
+  const [staffContract, setStaffContract] = useState<Contract | null>(null);
 
   useEffect(() => {
     fetchData();
@@ -163,37 +176,77 @@ export default function StaffPage() {
   const handleSubmitStaff = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const res = await fetch('/api/staff', {
-        method: 'POST',
+      const url = editingStaffId ? `/api/staff/${editingStaffId}` : '/api/staff';
+      const method = editingStaffId ? 'PUT' : 'POST';
+
+      const res = await fetch(url, {
+        method,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...staffFormData, status: 'active' }),
+        body: JSON.stringify(staffFormData),
       });
 
       if (res.ok) {
         setIsStaffDialogOpen(false);
         resetStaffForm();
         fetchData();
-        alert('Thêm nhân sự thành công!');
+        alert(editingStaffId ? 'Cập nhật nhân sự thành công!' : 'Thêm nhân sự thành công!');
       } else {
         const error = await res.json();
-        alert(`Lỗi: ${error.error || 'Không thể thêm nhân sự'}`);
+        alert(`Lỗi: ${error.error || 'Không thể lưu nhân sự'}`);
       }
     } catch (error) {
-      console.error('Error creating staff:', error);
-      alert('Lỗi khi thêm nhân sự');
+      console.error('Error saving staff:', error);
+      alert('Lỗi khi lưu nhân sự');
     }
+  };
+
+  const handleEditStaff = (staffMember: Staff) => {
+    setEditingStaffId(staffMember._id);
+    setStaffFormData({
+      staffCode: staffMember.staffCode,
+      fullName: staffMember.fullName,
+      gender: staffMember.gender,
+      dob: staffMember.dob ? staffMember.dob.split('T')[0] : '',
+      idNumber: staffMember.idNumber,
+      phone: staffMember.phone,
+      email: staffMember.email || '',
+      address: staffMember.address,
+      position: staffMember.position,
+      department: staffMember.department,
+      hireDate: staffMember.hireDate ? staffMember.hireDate.split('T')[0] : '',
+      status: staffMember.status,
+    });
+    setIsStaffDialogOpen(true);
   };
 
   const handleOpenContractDialog = (staffMember: Staff) => {
     setSelectedStaff(staffMember);
-    const today = new Date().toISOString().split('T')[0];
-    setContractFormData({
-      contractNo: `HD-${staffMember.staffCode}-${Date.now().toString().slice(-6)}`,
-      contractType: 'full_time',
-      startDate: today,
-      endDate: '',
-      basicSalary: 0,
-    });
+
+    // Check if staff already has an active contract
+    const existingContract = contracts.find(c => c.staffId === staffMember._id && c.status === 'active');
+
+    if (existingContract) {
+      // Edit existing contract
+      setEditingContractId(existingContract._id);
+      setContractFormData({
+        contractNo: existingContract.contractNo,
+        contractType: existingContract.contractType,
+        startDate: existingContract.startDate ? existingContract.startDate.split('T')[0] : '',
+        endDate: existingContract.endDate ? existingContract.endDate.split('T')[0] : '',
+        basicSalary: existingContract.basicSalary,
+      });
+    } else {
+      // Create new contract
+      setEditingContractId(null);
+      const today = new Date().toISOString().split('T')[0];
+      setContractFormData({
+        contractNo: `HD-${staffMember.staffCode}-${Date.now().toString().slice(-6)}`,
+        contractType: 'full_time',
+        startDate: today,
+        endDate: '',
+        basicSalary: 0,
+      });
+    }
     setIsContractDialogOpen(true);
   };
 
@@ -202,8 +255,11 @@ export default function StaffPage() {
     if (!selectedStaff) return;
 
     try {
-      const res = await fetch('/api/contracts', {
-        method: 'POST',
+      const url = editingContractId ? `/api/contracts/${editingContractId}` : '/api/contracts';
+      const method = editingContractId ? 'PUT' : 'POST';
+
+      const res = await fetch(url, {
+        method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...contractFormData,
@@ -217,25 +273,29 @@ export default function StaffPage() {
       if (res.ok) {
         setIsContractDialogOpen(false);
         setSelectedStaff(null);
+        setEditingContractId(null);
         fetchData();
-        alert('Tạo hợp đồng thành công!');
+        alert(editingContractId ? 'Cập nhật hợp đồng thành công!' : 'Tạo hợp đồng thành công!');
       } else {
         const error = await res.json();
-        alert(`Lỗi: ${error.error || 'Không thể tạo hợp đồng'}`);
+        alert(`Lỗi: ${error.error || 'Không thể lưu hợp đồng'}`);
       }
     } catch (error) {
-      console.error('Error creating contract:', error);
-      alert('Lỗi khi tạo hợp đồng');
+      console.error('Error saving contract:', error);
+      alert('Lỗi khi lưu hợp đồng');
     }
   };
 
-  const handleCreateSalaryExpense = (staffMember: Staff) => {
-    // Navigate to create expense page with pre-filled data
-    alert(`Chuyển đến tạo phiếu chi lương cho ${staffMember.fullName}\nSố tiền: ${formatCurrency(staffMember.basicSalary || 0)}`);
-    // TODO: Implement navigation to expense creation with prefilled data
+  const handleViewDetail = (staffMember: Staff) => {
+    setDetailStaff(staffMember);
+    // Find the active contract for this staff
+    const contract = contracts.find(c => c.staffId === staffMember._id && c.status === 'active');
+    setStaffContract(contract || null);
+    setIsDetailDialogOpen(true);
   };
 
   const resetStaffForm = () => {
+    setEditingStaffId(null);
     setStaffFormData({
       staffCode: '',
       fullName: '',
@@ -248,6 +308,7 @@ export default function StaffPage() {
       position: '',
       department: '',
       hireDate: '',
+      status: 'active',
     });
   };
 
@@ -287,7 +348,7 @@ export default function StaffPage() {
           <h1 className="text-2xl font-bold">Danh sách Nhân sự</h1>
           <p className="text-gray-600">Quản lý nhân sự và hợp đồng lao động</p>
         </div>
-        <Button onClick={() => setIsStaffDialogOpen(true)}>
+        <Button onClick={() => { resetStaffForm(); setIsStaffDialogOpen(true); }}>
           <Plus size={16} className="mr-2" />
           Thêm Nhân sự
         </Button>
@@ -469,9 +530,13 @@ export default function StaffPage() {
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                          <DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleViewDetail(s)}>
                             <Eye size={14} className="mr-2" />
                             Xem chi tiết
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleEditStaff(s)}>
+                            <Pencil size={14} className="mr-2" />
+                            Sửa thông tin
                           </DropdownMenuItem>
                           <DropdownMenuSeparator />
                           {!s.hasActiveContract && s.status === 'active' && (
@@ -481,9 +546,9 @@ export default function StaffPage() {
                             </DropdownMenuItem>
                           )}
                           {s.hasActiveContract && (
-                            <DropdownMenuItem onClick={() => handleCreateSalaryExpense(s)}>
-                              <Receipt size={14} className="mr-2" />
-                              Tạo phiếu chi lương
+                            <DropdownMenuItem onClick={() => handleOpenContractDialog(s)}>
+                              <FileSignature size={14} className="mr-2" />
+                              Xem/Cập nhật HDLD
                             </DropdownMenuItem>
                           )}
                         </DropdownMenuContent>
@@ -497,13 +562,15 @@ export default function StaffPage() {
         </CardContent>
       </Card>
 
-      {/* Add Staff Dialog */}
-      <Dialog open={isStaffDialogOpen} onOpenChange={setIsStaffDialogOpen}>
-        <DialogContent className="max-w-2xl">
+      {/* Add/Edit Staff Dialog */}
+      <Dialog open={isStaffDialogOpen} onOpenChange={(open) => { if (!open) resetStaffForm(); setIsStaffDialogOpen(open); }}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Thêm Nhân sự mới</DialogTitle>
+            <DialogTitle>{editingStaffId ? 'Cập nhật thông tin Nhân sự' : 'Thêm Nhân sự mới'}</DialogTitle>
             <DialogDescription>
-              Nhập thông tin nhân sự. Sau khi thêm, bạn có thể tạo HDLD cho nhân sự này.
+              {editingStaffId
+                ? 'Chỉnh sửa thông tin nhân sự.'
+                : 'Nhập thông tin nhân sự. Sau khi thêm, bạn có thể tạo HDLD cho nhân sự này.'}
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={handleSubmitStaff} className="space-y-4">
@@ -633,24 +700,44 @@ export default function StaffPage() {
                   required
                 />
               </div>
+              {editingStaffId && (
+                <div>
+                  <Label>Trạng thái</Label>
+                  <Select
+                    value={staffFormData.status}
+                    onValueChange={(value: 'active' | 'resigned') => setStaffFormData({ ...staffFormData, status: value })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="active">Hoạt động</SelectItem>
+                      <SelectItem value="resigned">Nghỉ việc</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
             </div>
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => setIsStaffDialogOpen(false)}>
                 Hủy
               </Button>
-              <Button type="submit">Thêm Nhân sự</Button>
+              <Button type="submit">{editingStaffId ? 'Cập nhật' : 'Thêm Nhân sự'}</Button>
             </DialogFooter>
           </form>
         </DialogContent>
       </Dialog>
 
-      {/* Create Contract Dialog */}
-      <Dialog open={isContractDialogOpen} onOpenChange={setIsContractDialogOpen}>
+      {/* Create/Edit Contract Dialog */}
+      <Dialog open={isContractDialogOpen} onOpenChange={(open) => { if (!open) setEditingContractId(null); setIsContractDialogOpen(open); }}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
-            <DialogTitle>Tạo Hợp đồng Lao động</DialogTitle>
+            <DialogTitle>{editingContractId ? 'Cập nhật Hợp đồng Lao động' : 'Tạo Hợp đồng Lao động'}</DialogTitle>
             <DialogDescription>
-              Tạo HDLD cho nhân sự: <strong>{selectedStaff?.fullName}</strong>
+              {editingContractId
+                ? `Cập nhật HDLD cho nhân sự: `
+                : `Tạo HDLD cho nhân sự: `}
+              <strong>{selectedStaff?.fullName}</strong>
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={handleSubmitContract} className="space-y-4">
@@ -722,10 +809,149 @@ export default function StaffPage() {
               </Button>
               <Button type="submit">
                 <FileSignature size={16} className="mr-2" />
-                Tạo Hợp đồng
+                {editingContractId ? 'Cập nhật Hợp đồng' : 'Tạo Hợp đồng'}
               </Button>
             </DialogFooter>
           </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Staff Detail Dialog */}
+      <Dialog open={isDetailDialogOpen} onOpenChange={setIsDetailDialogOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Chi tiết Nhân sự</DialogTitle>
+            <DialogDescription>
+              Thông tin chi tiết của nhân sự
+            </DialogDescription>
+          </DialogHeader>
+          {detailStaff && (
+            <div className="space-y-6">
+              {/* Basic Info */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <p className="text-sm text-gray-500">Mã nhân sự</p>
+                  <p className="font-mono font-medium">{detailStaff.staffCode}</p>
+                </div>
+                <div className="space-y-1">
+                  <p className="text-sm text-gray-500">Họ và tên</p>
+                  <p className="font-medium">{detailStaff.fullName}</p>
+                </div>
+                <div className="space-y-1">
+                  <p className="text-sm text-gray-500">Giới tính</p>
+                  <p>{detailStaff.gender === 'male' ? 'Nam' : 'Nữ'}</p>
+                </div>
+                <div className="space-y-1">
+                  <p className="text-sm text-gray-500">Ngày sinh</p>
+                  <p>{formatDate(detailStaff.dob)}</p>
+                </div>
+                <div className="space-y-1">
+                  <p className="text-sm text-gray-500">CCCD/CMND</p>
+                  <p className="font-mono">{detailStaff.idNumber}</p>
+                </div>
+                <div className="space-y-1">
+                  <p className="text-sm text-gray-500">Điện thoại</p>
+                  <p>{detailStaff.phone}</p>
+                </div>
+                {detailStaff.email && (
+                  <div className="space-y-1">
+                    <p className="text-sm text-gray-500">Email</p>
+                    <p>{detailStaff.email}</p>
+                  </div>
+                )}
+                <div className="space-y-1 col-span-2">
+                  <p className="text-sm text-gray-500">Địa chỉ</p>
+                  <p>{detailStaff.address}</p>
+                </div>
+              </div>
+
+              {/* Work Info */}
+              <div className="border-t pt-4">
+                <h4 className="font-medium mb-3">Thông tin công việc</h4>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1">
+                    <p className="text-sm text-gray-500">Chức vụ</p>
+                    <p>{detailStaff.position}</p>
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-sm text-gray-500">Bộ phận</p>
+                    <p>{detailStaff.department}</p>
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-sm text-gray-500">Ngày vào làm</p>
+                    <p>{formatDate(detailStaff.hireDate)}</p>
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-sm text-gray-500">Trạng thái</p>
+                    <Badge className={
+                      detailStaff.status === 'active'
+                        ? 'bg-green-100 text-green-800'
+                        : 'bg-gray-100 text-gray-800'
+                    }>
+                      {detailStaff.status === 'active' ? 'Hoạt động' : 'Nghỉ việc'}
+                    </Badge>
+                  </div>
+                </div>
+              </div>
+
+              {/* Contract Info */}
+              <div className="border-t pt-4">
+                <h4 className="font-medium mb-3">Thông tin Hợp đồng Lao động</h4>
+                {staffContract ? (
+                  <div className="grid grid-cols-2 gap-4 bg-green-50 p-4 rounded-lg">
+                    <div className="space-y-1">
+                      <p className="text-sm text-gray-500">Số hợp đồng</p>
+                      <p className="font-mono font-medium">{staffContract.contractNo}</p>
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-sm text-gray-500">Loại hợp đồng</p>
+                      <Badge className={contractTypes[staffContract.contractType]?.color || 'bg-gray-100'}>
+                        {contractTypes[staffContract.contractType]?.label || staffContract.contractType}
+                      </Badge>
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-sm text-gray-500">Ngày bắt đầu</p>
+                      <p>{formatDate(staffContract.startDate)}</p>
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-sm text-gray-500">Ngày kết thúc</p>
+                      <p>{staffContract.endDate ? formatDate(staffContract.endDate) : 'Không xác định'}</p>
+                    </div>
+                    <div className="space-y-1 col-span-2">
+                      <p className="text-sm text-gray-500">Lương cơ bản</p>
+                      <p className="text-xl font-bold text-green-600">{formatCurrency(staffContract.basicSalary)}</p>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="bg-amber-50 border border-amber-200 p-4 rounded-lg">
+                    <div className="flex items-center gap-2 text-amber-800">
+                      <XCircle size={18} />
+                      <p className="font-medium">Chưa có Hợp đồng Lao động</p>
+                    </div>
+                    <p className="text-sm text-amber-700 mt-1">
+                      Nhân sự cần có HDLD để được tính vào bảng lương hàng tháng
+                    </p>
+                    <Button
+                      className="mt-3"
+                      size="sm"
+                      onClick={() => {
+                        setIsDetailDialogOpen(false);
+                        handleOpenContractDialog(detailStaff);
+                      }}
+                    >
+                      <FileSignature size={14} className="mr-2" />
+                      Tạo HDLD ngay
+                    </Button>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsDetailDialogOpen(false)}>
+              Đóng
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>

@@ -94,7 +94,6 @@ const menuData: MenuItem[] = [
     icon: <Briefcase size={20} />,
     children: [
       { id: 'staff', label: 'Danh sách Nhân sự', icon: <UserCog size={18} />, href: '/hr/staff' },
-      { id: 'contracts', label: 'Hợp đồng Lao động', icon: <FileSignature size={18} />, href: '/hr/contracts' },
       { id: 'payroll', label: 'Bảng lương', icon: <DollarSign size={18} />, href: '/hr/payroll' },
     ],
     roles: ['super_admin', 'cha_quan_ly', 'ke_toan'], // Super Admin, Cha Quản lý, and Kế toán

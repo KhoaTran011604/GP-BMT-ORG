@@ -447,11 +447,12 @@ export default function TransactionsPage() {
   const fetchReceipt = async (transactionId: string) => {
     setLoadingReceipt(true);
     try {
-      const receiptsRes = await fetch(`/api/receipts`);
+      // Fetch receipt with referenceId matching transaction ID
+      const receiptsRes = await fetch(`/api/receipts?referenceId=${transactionId}`);
 
       if (receiptsRes.ok) {
         const receiptsResult = await receiptsRes.json();
-        const receipt = receiptsResult.data?.find((r: any) => r.referenceId?.toString() === transactionId);
+        const receipt = receiptsResult.data?.[0];
 
         if (receipt) {
           router.push(`/finance/receipts/${receipt._id}`);

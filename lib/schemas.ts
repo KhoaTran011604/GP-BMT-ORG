@@ -109,6 +109,20 @@ export interface Income {
   updatedAt: Date;
 }
 
+// Salary Expense Item (for payroll expenses)
+export interface SalaryExpenseItem {
+  staffId: ObjectId;
+  staffCode: string;
+  staffName: string;
+  basicSalary: number;
+  responsibilityAllowance: number;
+  mealAllowance: number;
+  transportAllowance: number;
+  advance: number;
+  deductions: number;
+  netSalary: number;
+}
+
 // Expense Schema
 export interface Expense {
   _id?: ObjectId;
@@ -134,6 +148,10 @@ export interface Expense {
   notes?: string;
   // Reference to receipt (for quick lookup after approval)
   receiptId?: ObjectId;
+  // Salary expense fields
+  expenseType?: 'general' | 'salary'; // Type of expense
+  salaryPeriod?: string; // e.g., "01/2026"
+  salaryItems?: SalaryExpenseItem[]; // Detailed salary breakdown per employee
   createdAt: Date;
   updatedAt: Date;
 }
@@ -222,6 +240,11 @@ export interface Receipt {
   createdBy: ObjectId;
   createdAt: Date;
   printedAt?: Date;
+  // Cancellation fields - only super_admin can cancel
+  status?: 'active' | 'cancelled';
+  cancelledBy?: ObjectId;
+  cancelledAt?: Date;
+  updatedAt?: Date;
 }
 
 // Rental Contract Schema (Hợp đồng cho thuê BDS)

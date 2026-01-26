@@ -103,3 +103,144 @@ export async function GET(
     );
   }
 }
+
+// Cancel/Void a receipt - ONLY for super_admin
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id } = await params;
+
+    const token = await getTokenFromCookie(request.headers.get('cookie') || '');
+    if (!token) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const decoded = await verifyToken(token);
+    if (!decoded) {
+      return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
+    }
+
+    // ONLY super_admin can cancel receipts
+    if (decoded.role !== 'super_admin') {
+      return NextResponse.json(
+        { error: 'Only super_admin can cancel receipts' },
+        { status: 403 }
+      );
+    }
+
+    const db = await getDatabase();
+    const receiptsCollection = db.collection<Receipt>('receipts');
+    const incomesCollection = db.collection<Income>('incomes');
+    const expensesCollection = db.collection<Expense>('expenses');
+
+    // Get the receipt
+    const receipt = await receiptsCollection.findOne({ _id: new ObjectId(id) });
+
+    if (!receipt) {
+      return NextResponse.json({ error: 'Receipt not found' }, { status: 404 });
+    }
+
+    // Check if already cancelled
+    if ((receipt as any).status === 'cancelled') {
+      return NextResponse.json(
+        { error: 'Receipt already cancelled' },
+        { status: 400 }
+      );
+    }
+
+    const now = new Date();
+
+    // Get all transaction IDs
+    const transactionIds = receipt.referenceIds && receipt.referenceIds.length > 0
+      ? receipt.referenceIds
+      : receipt.referenceId
+        ? [receipt.referenceId]
+        : [];
+
+    // Update the receipt status to cancelled (soft delete)
+    await receiptsCollection.updateOne(
+      { _id: new ObjectId(id) },
+      {
+        $set: {
+          status: 'cancelled',
+          cancelledBy: new ObjectId(decoded.userId),
+          cancelledAt: now,
+          updatedAt: now
+        }
+      }
+    );
+
+    // Revert related transactions back to pending status
+    if (transactionIds.length > 0) {
+      if (receipt.receiptType === 'income') {
+        await incomesCollection.updateMany(
+          { _id: { $in: transactionIds } },
+          {
+            $set: {
+              status: 'pending',
+              verifiedBy: undefined,
+              verifiedAt: undefined,
+              receiptId: undefined,
+              updatedAt: now
+            }
+          }
+        );
+      } else {
+        await expensesCollection.updateMany(
+          { _id: { $in: transactionIds } },
+          {
+            $set: {
+              status: 'pending',
+              approvedBy: undefined,
+              approvedAt: undefined,
+              receiptId: undefined,
+              updatedAt: now
+            }
+          }
+        );
+
+        // If this was a salary expense, revert payroll status
+        const expenses = await expensesCollection.find({
+          _id: { $in: transactionIds },
+          expenseType: 'salary'
+        }).toArray();
+
+        for (const expense of expenses) {
+          if (expense.salaryPeriod) {
+            const payrollCollection = db.collection('payroll');
+            await payrollCollection.updateMany(
+              {
+                period: expense.salaryPeriod,
+                status: 'paid'
+              },
+              {
+                $set: {
+                  status: 'approved',
+                  paidAt: undefined,
+                  updatedAt: now
+                }
+              }
+            );
+          }
+        }
+      }
+    }
+
+    return NextResponse.json({
+      message: 'Receipt cancelled successfully',
+      data: {
+        receiptNo: receipt.receiptNo,
+        transactionsReverted: transactionIds.length
+      }
+    });
+
+  } catch (error) {
+    console.error('Error cancelling receipt:', error);
+    return NextResponse.json(
+      { error: 'Failed to cancel receipt' },
+      { status: 500 }
+    );
+  }
+}

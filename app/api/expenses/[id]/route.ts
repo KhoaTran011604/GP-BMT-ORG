@@ -282,6 +282,22 @@ export async function PATCH(
       });
       const receiptNo = `REC-${year}-${String(count + 1).padStart(4, '0')}`;
 
+      // Check if this is a salary expense
+      const isSalaryExpense = updatedExpense!.expenseType === 'salary';
+
+      // Build receipt items for salary expenses
+      let items: Receipt['items'] = undefined;
+      if (isSalaryExpense && updatedExpense!.salaryItems && updatedExpense!.salaryItems.length > 0) {
+        items = updatedExpense!.salaryItems.map((item: any) => ({
+          referenceId: item.staffId,
+          code: item.staffCode,
+          amount: item.netSalary,
+          date: now,
+          payerPayee: item.staffName,
+          description: `Lương: ${item.basicSalary.toLocaleString('vi-VN')} + PC: ${(item.responsibilityAllowance + item.mealAllowance + item.transportAllowance).toLocaleString('vi-VN')} - Khấu trừ: ${(item.advance + item.deductions).toLocaleString('vi-VN')}`
+        }));
+      }
+
       const newReceipt: Receipt = {
         receiptNo,
         receiptType: 'expense',
@@ -290,13 +306,34 @@ export async function PATCH(
         amount: updatedExpense!.amount,
         receiptDate: now,
         payerPayee: updatedExpense!.payeeName || '',
-        description: updatedExpense!.description,
+        description: isSalaryExpense
+          ? `Chi lương kỳ ${updatedExpense!.salaryPeriod} - ${updatedExpense!.salaryItems?.length || 0} nhân viên`
+          : updatedExpense!.description,
+        items,
         createdBy: new ObjectId(decoded.userId),
         createdAt: now
       };
 
       const receiptResult = await receiptsCollection.insertOne(newReceipt);
       receipt = { ...newReceipt, _id: receiptResult.insertedId };
+
+      // If salary expense, update payrolls to 'paid' status
+      if (isSalaryExpense && updatedExpense!.salaryPeriod) {
+        const payrollCollection = db.collection('payroll');
+        await payrollCollection.updateMany(
+          {
+            period: updatedExpense!.salaryPeriod,
+            status: 'approved'
+          },
+          {
+            $set: {
+              status: 'paid',
+              paidAt: now,
+              updatedAt: now
+            }
+          }
+        );
+      }
     }
 
     return NextResponse.json({

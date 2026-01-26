@@ -71,6 +71,7 @@ export async function POST(
       fundId: new ObjectId(body.fundId),
       amount: body.amount,
       paymentMethod: body.paymentMethod || contract.paymentMethod === 'transfer' ? 'online' : 'offline',
+      bankAccountId: body.bankAccountId ? new ObjectId(body.bankAccountId) : undefined,
       bankAccount: body.bankAccount || contract.bankAccount,
       payerName: contract.tenantName,
       description: `Tiền thuê ${contract.propertyName} - Kỳ ${body.paymentPeriod} - HĐ ${contract.contractCode}`,
