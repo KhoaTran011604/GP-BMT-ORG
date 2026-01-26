@@ -99,24 +99,7 @@ export default function AssetsPage() {
         <Button>+ Thêm tài sản</Button>
       </div>
 
-      {/* Stats by Type */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        {Object.entries(assetTypeConfig).map(([key, config]) => (
-          <Card key={key} className="hover:shadow-md cursor-pointer" onClick={() => setTypeFilter(key)}>
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="text-3xl">{config.icon}</div>
-                <div>
-                  <div className="text-2xl font-bold">
-                    {assets.filter(a => a.assetType === key).length}
-                  </div>
-                  <p className="text-sm text-gray-600">{config.label}</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+
 
       {/* Summary */}
       <Card className="bg-gradient-to-r from-blue-50 to-indigo-50">

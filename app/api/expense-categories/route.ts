@@ -77,11 +77,18 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { categoryCode, categoryName, parentId, description } = body;
+    const { categoryCode, categoryName, categoryType, parentId, description } = body;
 
     if (!categoryCode || !categoryName) {
       return NextResponse.json(
         { error: 'Category code and name are required' },
+        { status: 400 }
+      );
+    }
+
+    if (!categoryType || !['income', 'expense'].includes(categoryType)) {
+      return NextResponse.json(
+        { error: 'Category type must be either "income" or "expense"' },
         { status: 400 }
       );
     }
@@ -102,6 +109,8 @@ export async function POST(request: NextRequest) {
     const newCategory: ExpenseCategory = {
       categoryCode,
       categoryName,
+      categoryType,
+      type: 'user', // User-created categories
       parentId: parentId ? new ObjectId(parentId) : undefined,
       description,
       isActive: true,

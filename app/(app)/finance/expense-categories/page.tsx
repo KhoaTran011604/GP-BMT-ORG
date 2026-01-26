@@ -28,12 +28,14 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { Plus, Pencil, Trash2, FolderTree, Search } from 'lucide-react';
+import { Plus, Pencil, Trash2, FolderTree, Search, ArrowDownCircle, ArrowUpCircle, Lock } from 'lucide-react';
 
-interface ExpenseCategory {
+interface ThuChiCategory {
   _id: string;
   categoryCode: string;
   categoryName: string;
+  categoryType: 'income' | 'expense';
+  type: 'sys' | 'user';
   parentId?: string;
   parentName?: string;
   description?: string;
@@ -42,21 +44,23 @@ interface ExpenseCategory {
   updatedAt: string;
 }
 
-export default function ExpenseCategoriesPage() {
-  const [categories, setCategories] = useState<ExpenseCategory[]>([]);
+export default function ThuChiCategoriesPage() {
+  const [categories, setCategories] = useState<ThuChiCategory[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterActive, setFilterActive] = useState<'all' | 'active' | 'inactive'>('all');
+  const [filterCategoryType, setFilterCategoryType] = useState<'all' | 'income' | 'expense'>('all');
 
   const [showDialog, setShowDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  const [editingCategory, setEditingCategory] = useState<ExpenseCategory | null>(null);
-  const [deletingCategory, setDeletingCategory] = useState<ExpenseCategory | null>(null);
+  const [editingCategory, setEditingCategory] = useState<ThuChiCategory | null>(null);
+  const [deletingCategory, setDeletingCategory] = useState<ThuChiCategory | null>(null);
   const [saving, setSaving] = useState(false);
 
   const [formData, setFormData] = useState({
     categoryCode: '',
     categoryName: '',
+    categoryType: 'expense' as 'income' | 'expense',
     parentId: '',
     description: '',
     isActive: true
@@ -75,9 +79,9 @@ export default function ExpenseCategoriesPage() {
         const categoriesData = data.data || [];
 
         // Map parent names
-        const categoriesWithParent = categoriesData.map((cat: ExpenseCategory) => {
+        const categoriesWithParent = categoriesData.map((cat: ThuChiCategory) => {
           if (cat.parentId) {
-            const parent = categoriesData.find((p: ExpenseCategory) => p._id === cat.parentId);
+            const parent = categoriesData.find((p: ThuChiCategory) => p._id === cat.parentId);
             return { ...cat, parentName: parent?.categoryName };
           }
           return cat;
@@ -97,6 +101,7 @@ export default function ExpenseCategoriesPage() {
     setFormData({
       categoryCode: '',
       categoryName: '',
+      categoryType: 'expense',
       parentId: '',
       description: '',
       isActive: true
@@ -104,11 +109,12 @@ export default function ExpenseCategoriesPage() {
     setShowDialog(true);
   };
 
-  const handleOpenEdit = (category: ExpenseCategory) => {
+  const handleOpenEdit = (category: ThuChiCategory) => {
     setEditingCategory(category);
     setFormData({
       categoryCode: category.categoryCode,
       categoryName: category.categoryName,
+      categoryType: category.categoryType || 'expense',
       parentId: category.parentId || '',
       description: category.description || '',
       isActive: category.isActive
@@ -116,7 +122,11 @@ export default function ExpenseCategoriesPage() {
     setShowDialog(true);
   };
 
-  const handleOpenDelete = (category: ExpenseCategory) => {
+  const handleOpenDelete = (category: ThuChiCategory) => {
+    if (category.type === 'sys') {
+      alert('Không thể xóa danh mục hệ thống. Chỉ có thể tắt trạng thái hoạt động.');
+      return;
+    }
     setDeletingCategory(category);
     setShowDeleteDialog(true);
   };
@@ -184,7 +194,7 @@ export default function ExpenseCategoriesPage() {
     }
   };
 
-  const handleToggleActive = async (category: ExpenseCategory) => {
+  const handleToggleActive = async (category: ThuChiCategory) => {
     try {
       const res = await fetch(`/api/expense-categories/${category._id}`, {
         method: 'PUT',
@@ -212,15 +222,20 @@ export default function ExpenseCategoriesPage() {
       (filterActive === 'active' && cat.isActive) ||
       (filterActive === 'inactive' && !cat.isActive);
 
-    return matchesSearch && matchesActive;
+    const matchesCategoryType = filterCategoryType === 'all' ||
+      cat.categoryType === filterCategoryType;
+
+    return matchesSearch && matchesActive && matchesCategoryType;
   });
 
   const parentCategories = categories.filter(cat =>
-    !cat.parentId && cat.isActive && cat._id !== editingCategory?._id
+    !cat.parentId && cat.isActive && cat._id !== editingCategory?._id &&
+    cat.categoryType === formData.categoryType
   );
 
-  const activeCount = categories.filter(c => c.isActive).length;
-  const inactiveCount = categories.filter(c => !c.isActive).length;
+  const incomeCount = categories.filter(c => c.categoryType === 'income').length;
+  const expenseCount = categories.filter(c => c.categoryType === 'expense').length;
+  const sysCount = categories.filter(c => c.type === 'sys').length;
 
   if (loading) {
     return (
@@ -234,8 +249,8 @@ export default function ExpenseCategoriesPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Danh mục Chi</h1>
-          <p className="text-gray-600">Quản lý các danh mục chi tiêu</p>
+          <h1 className="text-2xl font-bold">Danh mục Thu Chi</h1>
+          <p className="text-gray-600">Quản lý các danh mục thu và chi</p>
         </div>
         <Button onClick={handleOpenCreate}>
           <Plus size={16} className="mr-2" />
@@ -244,7 +259,7 @@ export default function ExpenseCategoriesPage() {
       </div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
@@ -262,11 +277,11 @@ export default function ExpenseCategoriesPage() {
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
-                <FolderTree className="text-green-600" size={20} />
+                <ArrowDownCircle className="text-green-600" size={20} />
               </div>
               <div>
-                <p className="text-2xl font-bold text-green-600">{activeCount}</p>
-                <p className="text-sm text-gray-600">Đang hoạt động</p>
+                <p className="text-2xl font-bold text-green-600">{incomeCount}</p>
+                <p className="text-sm text-gray-600">Danh mục Thu</p>
               </div>
             </div>
           </CardContent>
@@ -274,12 +289,25 @@ export default function ExpenseCategoriesPage() {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
-                <FolderTree className="text-gray-600" size={20} />
+              <div className="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
+                <ArrowUpCircle className="text-red-600" size={20} />
               </div>
               <div>
-                <p className="text-2xl font-bold text-gray-600">{inactiveCount}</p>
-                <p className="text-sm text-gray-600">Ngừng hoạt động</p>
+                <p className="text-2xl font-bold text-red-600">{expenseCount}</p>
+                <p className="text-sm text-gray-600">Danh mục Chi</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-amber-100 rounded-lg flex items-center justify-center">
+                <Lock className="text-amber-600" size={20} />
+              </div>
+              <div>
+                <p className="text-2xl font-bold text-amber-600">{sysCount}</p>
+                <p className="text-sm text-gray-600">Danh mục hệ thống</p>
               </div>
             </div>
           </CardContent>
@@ -301,6 +329,16 @@ export default function ExpenseCategoriesPage() {
                 />
               </div>
             </div>
+            <Select value={filterCategoryType} onValueChange={(v: 'all' | 'income' | 'expense') => setFilterCategoryType(v)}>
+              <SelectTrigger className="w-[150px]">
+                <SelectValue placeholder="Loại" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Tất cả loại</SelectItem>
+                <SelectItem value="income">Danh mục Thu</SelectItem>
+                <SelectItem value="expense">Danh mục Chi</SelectItem>
+              </SelectContent>
+            </Select>
             <Select value={filterActive} onValueChange={(v: 'all' | 'active' | 'inactive') => setFilterActive(v)}>
               <SelectTrigger className="w-[180px]">
                 <SelectValue placeholder="Trạng thái" />
@@ -318,7 +356,7 @@ export default function ExpenseCategoriesPage() {
       {/* Table */}
       <Card>
         <CardHeader>
-          <CardTitle>Danh sách danh mục chi</CardTitle>
+          <CardTitle>Danh sách danh mục thu chi</CardTitle>
           <CardDescription>
             Hiển thị {filteredCategories.length} / {categories.length} danh mục
           </CardDescription>
@@ -339,8 +377,9 @@ export default function ExpenseCategoriesPage() {
                 <TableRow>
                   <TableHead className="w-32">Mã</TableHead>
                   <TableHead>Tên danh mục</TableHead>
+                  <TableHead>Loại</TableHead>
+                  <TableHead>Phân loại</TableHead>
                   <TableHead>Danh mục cha</TableHead>
-                  <TableHead>Mô tả</TableHead>
                   <TableHead>Trạng thái</TableHead>
                   <TableHead className="text-right">Thao tác</TableHead>
                 </TableRow>
@@ -349,16 +388,36 @@ export default function ExpenseCategoriesPage() {
                 {filteredCategories.map((category) => (
                   <TableRow key={category._id}>
                     <TableCell className="font-mono font-medium">{category.categoryCode}</TableCell>
-                    <TableCell className="font-medium">{category.categoryName}</TableCell>
+                    <TableCell className="font-medium">
+                      <div className="flex items-center gap-2">
+                        {category.categoryName}
+                        {category.type === 'sys' && (
+                          <span title="Danh mục hệ thống">
+                            <Lock size={14} className="text-amber-500" />
+                          </span>
+                        )}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <Badge className={category.categoryType === 'income'
+                        ? 'bg-green-100 text-green-800'
+                        : 'bg-red-100 text-red-800'}>
+                        {category.categoryType === 'income' ? 'Thu' : 'Chi'}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant="outline" className={category.type === 'sys'
+                        ? 'border-amber-500 text-amber-700'
+                        : ''}>
+                        {category.type === 'sys' ? 'Hệ thống' : 'Người dùng'}
+                      </Badge>
+                    </TableCell>
                     <TableCell>
                       {category.parentName ? (
                         <Badge variant="outline">{category.parentName}</Badge>
                       ) : (
                         <span className="text-gray-400">-</span>
                       )}
-                    </TableCell>
-                    <TableCell className="text-gray-600 max-w-[200px] truncate">
-                      {category.description || '-'}
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">
@@ -383,8 +442,12 @@ export default function ExpenseCategoriesPage() {
                         <Button
                           variant="ghost"
                           size="sm"
-                          className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                          className={category.type === 'sys'
+                            ? 'text-gray-400 cursor-not-allowed'
+                            : 'text-red-600 hover:text-red-700 hover:bg-red-50'}
                           onClick={() => handleOpenDelete(category)}
+                          disabled={category.type === 'sys'}
+                          title={category.type === 'sys' ? 'Không thể xóa danh mục hệ thống' : 'Xóa'}
                         >
                           <Trash2 size={16} />
                         </Button>
@@ -406,7 +469,7 @@ export default function ExpenseCategoriesPage() {
               {editingCategory ? 'Chỉnh sửa danh mục' : 'Thêm danh mục mới'}
             </DialogTitle>
             <DialogDescription>
-              {editingCategory ? 'Cập nhật thông tin danh mục chi' : 'Tạo danh mục chi mới cho hệ thống'}
+              {editingCategory ? 'Cập nhật thông tin danh mục thu chi' : 'Tạo danh mục thu chi mới cho hệ thống'}
             </DialogDescription>
           </DialogHeader>
 
@@ -416,28 +479,25 @@ export default function ExpenseCategoriesPage() {
                 <Label htmlFor="categoryCode">Mã danh mục *</Label>
                 <Input
                   id="categoryCode"
-                  placeholder="VD: EXP_001"
+                  placeholder="VD: INC_001 hoặc EXP_001"
                   value={formData.categoryCode}
                   onChange={(e) => setFormData({ ...formData, categoryCode: e.target.value.toUpperCase() })}
                   disabled={!!editingCategory}
                 />
               </div>
               <div>
-                <Label htmlFor="parentId">Danh mục cha</Label>
+                <Label htmlFor="categoryType">Loại danh mục *</Label>
                 <Select
-                  value={formData.parentId || 'none'}
-                  onValueChange={(v) => setFormData({ ...formData, parentId: v === 'none' ? '' : v })}
+                  value={formData.categoryType}
+                  onValueChange={(v: 'income' | 'expense') => setFormData({ ...formData, categoryType: v, parentId: '' })}
+                  disabled={!!editingCategory}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Không có (danh mục gốc)" />
+                    <SelectValue placeholder="Chọn loại" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="none">Không có (danh mục gốc)</SelectItem>
-                    {parentCategories.filter(cat => cat._id).map((cat) => (
-                      <SelectItem key={cat._id} value={cat._id}>
-                        {cat.categoryCode} - {cat.categoryName}
-                      </SelectItem>
-                    ))}
+                    <SelectItem value="income">Danh mục Thu</SelectItem>
+                    <SelectItem value="expense">Danh mục Chi</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -447,17 +507,37 @@ export default function ExpenseCategoriesPage() {
               <Label htmlFor="categoryName">Tên danh mục *</Label>
               <Input
                 id="categoryName"
-                placeholder="VD: Chi phí văn phòng"
+                placeholder="VD: Tiền lương nhân viên"
                 value={formData.categoryName}
                 onChange={(e) => setFormData({ ...formData, categoryName: e.target.value })}
               />
             </div>
 
             <div>
+              <Label htmlFor="parentId">Danh mục cha</Label>
+              <Select
+                value={formData.parentId || 'none'}
+                onValueChange={(v) => setFormData({ ...formData, parentId: v === 'none' ? '' : v })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Không có (danh mục gốc)" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">Không có (danh mục gốc)</SelectItem>
+                  {parentCategories.filter(cat => cat._id).map((cat) => (
+                    <SelectItem key={cat._id} value={cat._id}>
+                      {cat.categoryCode} - {cat.categoryName}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
               <Label htmlFor="description">Mô tả</Label>
               <Textarea
                 id="description"
-                placeholder="Mô tả chi tiết về danh mục chi này..."
+                placeholder="Mô tả chi tiết về danh mục này..."
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
               />

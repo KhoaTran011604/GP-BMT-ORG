@@ -82,6 +82,9 @@ export async function POST(
       submittedBy: new ObjectId(decoded.userId),
       submittedAt: new Date(),
       notes: body.notes || `Chuyển đổi từ hợp đồng thuê ${contract.contractCode}`,
+      // Reference to source contract for transparency
+      rentalContractId: new ObjectId(id),
+      sourceType: 'rental_contract',
       createdAt: new Date(),
       updatedAt: new Date()
     };

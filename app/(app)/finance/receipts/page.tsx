@@ -1,12 +1,14 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Eye, Printer } from 'lucide-react';
 
 interface Receipt {
   _id: string;
@@ -21,6 +23,7 @@ interface Receipt {
 }
 
 export default function ReceiptsPage() {
+  const router = useRouter();
   const [receipts, setReceipts] = useState<Receipt[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -187,13 +190,21 @@ export default function ReceiptsPage() {
                     </TableCell>
                     <TableCell>
                       <div className="flex gap-1">
-                        <Button variant="ghost" size="sm">Xem</Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => router.push(`/finance/receipts/${receipt._id}`)}
+                        >
+                          <Eye size={14} className="mr-1" />
+                          Xem
+                        </Button>
                         {receipt.status === 'issued' && (
                           <Button
                             variant="ghost"
                             size="sm"
-                            onClick={() => handlePrint(receipt._id)}
+                            onClick={() => router.push(`/finance/receipts/${receipt._id}`)}
                           >
+                            <Printer size={14} className="mr-1" />
                             In
                           </Button>
                         )}

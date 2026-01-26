@@ -30,33 +30,6 @@ export interface Parish {
   updatedAt: Date;
 }
 
-// Sub-Parish Schema
-export interface SubParish {
-  _id?: ObjectId;
-  subParishCode: string;
-  subParishName: string;
-  parishId: ObjectId;
-  patronSaint?: string;
-  address?: string;
-  createdAt: Date;
-  updatedAt: Date;
-}
-
-// Family Schema
-export interface Family {
-  _id?: ObjectId;
-  familyCode: string;
-  familyName: string;
-  parishId: ObjectId;
-  subParishId?: ObjectId;
-  address: string;
-  phone?: string;
-  registrationDate: Date;
-  status: 'active' | 'moved' | 'deceased';
-  createdAt: Date;
-  updatedAt: Date;
-}
-
 // Person (Giáo dân) Schema
 export interface Person {
   _id?: ObjectId;
@@ -88,17 +61,22 @@ export interface Fund {
   updatedAt: Date;
 }
 
-// Expense Category Schema
-export interface ExpenseCategory {
+// Thu Chi Category Schema (Danh mục Thu Chi)
+export interface ThuChiCategory {
   _id?: ObjectId;
   categoryCode: string;
   categoryName: string;
+  categoryType: 'income' | 'expense'; // Thu hoặc Chi
+  type: 'sys' | 'user'; // sys = hệ thống (không được xóa), user = người dùng tạo
   parentId?: ObjectId;
   description?: string;
   isActive: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
+
+// Alias for backward compatibility
+export type ExpenseCategory = ThuChiCategory;
 
 // Income Schema
 export interface Income {
@@ -108,7 +86,8 @@ export interface Income {
   fundId: ObjectId;
   amount: number;
   paymentMethod: 'online' | 'offline';
-  bankAccount?: string;
+  bankAccountId?: ObjectId; // FK to bank_accounts
+  bankAccount?: string; // Display string (for backwards compatibility)
   payerName?: string;
   description?: string;
   fiscalYear: number;
@@ -121,6 +100,11 @@ export interface Income {
   submittedAt: Date;
   verifiedAt?: Date;
   notes?: string;
+  // Reference to source contract (if income came from a rental contract)
+  rentalContractId?: ObjectId;
+  sourceType?: 'manual' | 'rental_contract'; // Track where the income originated
+  // Reference to receipt (for quick lookup after approval)
+  receiptId?: ObjectId;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -134,7 +118,8 @@ export interface Expense {
   fundId?: ObjectId;
   amount: number;
   paymentMethod: 'cash' | 'transfer';
-  bankAccount?: string;
+  bankAccountId?: ObjectId; // FK to bank_accounts
+  bankAccount?: string; // Display string (for backwards compatibility)
   payeeName?: string;
   description?: string;
   fiscalYear: number;
@@ -147,6 +132,8 @@ export interface Expense {
   requestedAt: Date;
   approvedAt?: Date;
   notes?: string;
+  // Reference to receipt (for quick lookup after approval)
+  receiptId?: ObjectId;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -170,76 +157,6 @@ export interface Transaction {
   notes?: string;
   createdAt: Date;
   updatedAt: Date;
-}
-
-// Clergy Schema
-export interface Clergy {
-  _id?: ObjectId;
-  saintName: string;
-  fullName: string;
-  dob: Date;
-  birthplace: string;
-  ordinationDate: Date;
-  trainingClass: string;
-  currentAssignmentId?: ObjectId;
-  phone?: string;
-  email?: string;
-  photoUrl?: string;
-  status: 'active' | 'retired' | 'deceased';
-  createdAt: Date;
-  updatedAt: Date;
-}
-
-// Assignment (Bổ nhiệm) Schema
-export interface Assignment {
-  _id?: ObjectId;
-  clergyId: ObjectId;
-  parishId: ObjectId;
-  role: 'cha_xu' | 'cha_pho' | 'quan_nhiem' | 'dac_trach';
-  startDate: Date;
-  endDate?: Date;
-  decreeNo?: string;
-  notes?: string;
-  createdAt: Date;
-  updatedAt: Date;
-}
-
-// Sacrament Base
-export interface BaseSacrament {
-  _id?: ObjectId;
-  personId?: ObjectId;
-  minister: string;
-  registerBook: string;
-  registerNo: string;
-  createdAt: Date;
-  updatedAt: Date;
-}
-
-// Baptism Schema
-export interface Baptism extends BaseSacrament {
-  baptismName: string;
-  fullName: string;
-  dob: Date;
-  baptismDate: Date;
-  baptismPlace: string;
-  godfather?: string;
-  godmother?: string;
-  fatherName: string;
-  motherName: string;
-  notes?: string;
-}
-
-// Marriage Schema
-export interface Marriage extends BaseSacrament {
-  groomName: string;
-  groomParish: string;
-  brideName: string;
-  brideParish: string;
-  marriageDate: Date;
-  marriagePlace: string;
-  witness1: string;
-  witness2: string;
-  dispensation?: string;
 }
 
 // Staff Schema
@@ -281,31 +198,27 @@ export interface Payroll {
   updatedAt: Date;
 }
 
-// AuditLog Schema
-export interface AuditLog {
-  _id?: ObjectId;
-  userId: ObjectId;
-  action: 'create' | 'update' | 'delete' | 'approve' | 'reject';
-  module: string;
-  recordId: ObjectId;
-  oldValue?: Record<string, any>;
-  newValue?: Record<string, any>;
-  ipAddress?: string;
-  userAgent?: string;
-  createdAt: Date;
-}
-
 // Receipt Schema (Auto-generated from approved incomes/expenses)
 export interface Receipt {
   _id?: ObjectId;
   receiptNo: string;
   receiptType: 'income' | 'expense';
-  referenceId: ObjectId;
+  referenceId?: ObjectId; // Single reference (backward compatibility)
+  referenceIds?: ObjectId[]; // Multiple references for batch receipts
   parishId: ObjectId;
-  amount: number;
+  amount: number; // Total amount
   receiptDate: Date;
   payerPayee: string;
   description?: string;
+  // Detailed items for batch receipts
+  items?: Array<{
+    referenceId: ObjectId;
+    code: string; // incomeCode or expenseCode
+    amount: number;
+    date: Date;
+    payerPayee?: string;
+    description?: string;
+  }>;
   createdBy: ObjectId;
   createdAt: Date;
   printedAt?: Date;
@@ -366,4 +279,45 @@ export interface RentalPayment {
   createdBy: ObjectId;
   createdAt: Date;
   updatedAt: Date;
+}
+
+// Bank Account Schema (Tài khoản ngân hàng)
+export interface BankAccount {
+  _id?: ObjectId;
+  accountCode: string;
+  accountName: string;
+  accountNumber: string;
+  bankName: string;
+  bankBranch?: string;
+  accountType: 'income' | 'expense' | 'both'; // Loại TK: thu, chi, hoặc cả hai
+  parishId?: ObjectId; // Nếu null = TK chung của Giáo phận
+  balance?: number;
+  isDefault: boolean; // TK mặc định cho giao dịch
+  status: 'active' | 'inactive';
+  notes?: string;
+  createdBy: ObjectId;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+// Media File Schema (Tệp tin - AWS S3)
+export interface MediaFile {
+  _id?: ObjectId;
+  fileName: string;
+  fileKey: string; // S3 Object Key
+  bucketName: string;
+  fileUrl?: string;
+  cdnUrl?: string;
+  mimeType?: string;
+  fileSize?: number;
+  fileType: 'image' | 'document' | 'video';
+  entityType: 'income' | 'expense' | 'receipt' | 'contract' | 'staff' | 'other';
+  entityId: ObjectId;
+  category?: string; // screenshot, avatar, document
+  description?: string;
+  metadata?: Record<string, any>;
+  uploadedBy: ObjectId;
+  uploadedAt: Date;
+  isPublic: boolean;
+  status: 'active' | 'archived' | 'deleted';
 }

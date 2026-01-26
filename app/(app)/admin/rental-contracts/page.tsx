@@ -29,10 +29,21 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Plus, Pencil, Trash2, FileText, ArrowRightCircle, Eye } from 'lucide-react';
+import { Plus, Pencil, Trash2, FileText, ArrowRightCircle, Eye, Receipt, CheckCircle, XCircle, Loader2 } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/lib/auth-context';
 import { Parish, Fund } from '@/lib/schemas';
 import { formatCompactCurrency } from '@/lib/utils';
+
+interface ContractIncome {
+  _id: string;
+  incomeCode: string;
+  amount: number;
+  incomeDate: string;
+  status: 'pending' | 'approved' | 'rejected';
+  paymentMethod: string;
+  description?: string;
+}
 
 interface RentalContractItem {
   _id: string;
@@ -66,6 +77,10 @@ export default function RentalContractsPage() {
   const [showDetailDialog, setShowDetailDialog] = useState(false);
   const [showConvertDialog, setShowConvertDialog] = useState(false);
   const [selectedContract, setSelectedContract] = useState<RentalContractItem | null>(null);
+
+  // Contract incomes state
+  const [contractIncomes, setContractIncomes] = useState<ContractIncome[]>([]);
+  const [loadingIncomes, setLoadingIncomes] = useState(false);
 
   const [formData, setFormData] = useState({
     contractCode: '',
@@ -145,6 +160,22 @@ export default function RentalContractsPage() {
       console.error('Error fetching contracts:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchContractIncomes = async (contractId: string) => {
+    setLoadingIncomes(true);
+    try {
+      // Fetch incomes linked to this contract
+      const response = await fetch(`/api/incomes?rentalContractId=${contractId}`);
+      if (response.ok) {
+        const result = await response.json();
+        setContractIncomes(result.data || []);
+      }
+    } catch (error) {
+      console.error('Error fetching contract incomes:', error);
+    } finally {
+      setLoadingIncomes(false);
     }
   };
 
@@ -501,6 +532,8 @@ export default function RentalContractsPage() {
                           size="icon"
                           onClick={() => {
                             setSelectedContract(contract);
+                            setContractIncomes([]);
+                            fetchContractIncomes(contract._id);
                             setShowDetailDialog(true);
                           }}
                           title="Chi tiết"
@@ -973,13 +1006,17 @@ export default function RentalContractsPage() {
 
       {/* Detail Dialog */}
       <Dialog open={showDetailDialog} onOpenChange={setShowDetailDialog}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Chi tiết Hợp đồng</DialogTitle>
+            <DialogDescription>
+              Xem thông tin chi tiết và các khoản thu phát sinh từ hợp đồng
+            </DialogDescription>
           </DialogHeader>
 
           {selectedContract && (
-            <div className="space-y-4">
+            <div className="space-y-6">
+              {/* Contract Info */}
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <p className="text-sm text-gray-500">Mã hợp đồng</p>
@@ -1027,6 +1064,108 @@ export default function RentalContractsPage() {
                   <p className="text-sm text-gray-500">Ngày kết thúc</p>
                   <p className="font-semibold">{formatDate(selectedContract.endDate)}</p>
                 </div>
+              </div>
+
+              {/* Contract Incomes Section */}
+              <div className="border-t pt-4">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-2">
+                    <Receipt size={18} className="text-green-600" />
+                    <h3 className="font-semibold">Các khoản thu phát sinh từ HĐ</h3>
+                  </div>
+                  {selectedContract.status === 'active' && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setConvertData({
+                          ...convertData,
+                          amount: selectedContract.rentAmount.toString()
+                        });
+                        setShowDetailDialog(false);
+                        setShowConvertDialog(true);
+                      }}
+                    >
+                      <ArrowRightCircle size={14} className="mr-1" />
+                      Tạo khoản thu mới
+                    </Button>
+                  )}
+                </div>
+
+                {loadingIncomes ? (
+                  <div className="flex items-center justify-center py-8">
+                    <Loader2 className="animate-spin mr-2" size={20} />
+                    <span className="text-gray-500">Đang tải...</span>
+                  </div>
+                ) : contractIncomes.length === 0 ? (
+                  <div className="text-center py-8 text-gray-500 bg-gray-50 rounded-lg">
+                    <Receipt className="mx-auto mb-2 text-gray-400" size={32} />
+                    <p>Chưa có khoản thu nào từ hợp đồng này</p>
+                    <p className="text-sm mt-1">Bấm "Tạo khoản thu mới" để thêm</p>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    {/* Summary */}
+                    <div className="grid grid-cols-3 gap-4 mb-4 p-3 bg-gray-50 rounded-lg">
+                      <div>
+                        <p className="text-xs text-gray-500">Tổng số khoản thu</p>
+                        <p className="font-semibold">{contractIncomes.length}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-gray-500">Tổng tiền</p>
+                        <p className="font-semibold text-green-600">
+                          {formatCompactCurrency(contractIncomes.reduce((sum, i) => sum + i.amount, 0))}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-gray-500">Đã duyệt</p>
+                        <p className="font-semibold">
+                          {contractIncomes.filter(i => i.status === 'approved').length} / {contractIncomes.length}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Income List */}
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Mã</TableHead>
+                          <TableHead>Ngày</TableHead>
+                          <TableHead className="text-right">Số tiền</TableHead>
+                          <TableHead>Trạng thái</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {contractIncomes.map((income) => (
+                          <TableRow key={income._id}>
+                            <TableCell className="font-mono text-sm">{income.incomeCode}</TableCell>
+                            <TableCell>{formatDate(income.incomeDate)}</TableCell>
+                            <TableCell className="text-right font-semibold text-green-600">
+                              {formatCompactCurrency(income.amount)}
+                            </TableCell>
+                            <TableCell>
+                              {income.status === 'approved' ? (
+                                <Badge className="bg-green-100 text-green-700">
+                                  <CheckCircle size={12} className="mr-1" />
+                                  Đã duyệt
+                                </Badge>
+                              ) : income.status === 'pending' ? (
+                                <Badge className="bg-yellow-100 text-yellow-700">
+                                  Chờ duyệt
+                                </Badge>
+                              ) : (
+                                <Badge className="bg-red-100 text-red-700">
+                                  <XCircle size={12} className="mr-1" />
+                                  Từ chối
+                                </Badge>
+                              )}
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                )}
               </div>
             </div>
           )}
