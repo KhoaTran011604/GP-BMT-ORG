@@ -39,6 +39,8 @@ import {
   FolderOpen,
   Landmark,
   Shield,
+  History,
+  KeyRound,
 } from 'lucide-react';
 
 interface MenuItem {
@@ -110,6 +112,7 @@ const menuData: MenuItem[] = [
     icon: <Settings size={20} />,
     children: [
       { id: 'users', label: 'Phân quyền (RBAC)', icon: <Shield size={18} />, href: '/settings/users' },
+      { id: 'audit-logs', label: 'Nhật ký hệ thống', icon: <History size={18} />, href: '/settings/audit-logs' },
     ],
   },
 ];
@@ -357,11 +360,15 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                     </button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-48">
-                    <DropdownMenuItem>
-                      <User size={16} className="mr-2" /> Hồ sơ cá nhân
+                    <DropdownMenuItem asChild>
+                      <Link href="/settings/profile">
+                        <User size={16} className="mr-2" /> Hồ sơ cá nhân
+                      </Link>
                     </DropdownMenuItem>
-                    <DropdownMenuItem>
-                      <Settings size={16} className="mr-2" /> Cài đặt
+                    <DropdownMenuItem asChild>
+                      <Link href="/settings/account">
+                        <Settings size={16} className="mr-2" /> Cài đặt
+                      </Link>
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={handleLogout} className="text-red-600">
@@ -491,11 +498,15 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                   <p className="font-medium">{user.fullName}</p>
                   <p className="text-sm text-gray-500">{user.email}</p>
                 </div>
-                <DropdownMenuItem>
-                  <User size={16} className="mr-2" /> Hồ sơ cá nhân
+                <DropdownMenuItem asChild>
+                  <Link href="/settings/profile">
+                    <User size={16} className="mr-2" /> Hồ sơ cá nhân
+                  </Link>
                 </DropdownMenuItem>
-                <DropdownMenuItem>
-                  <Settings size={16} className="mr-2" /> Cài đặt tài khoản
+                <DropdownMenuItem asChild>
+                  <Link href="/settings/account">
+                    <Settings size={16} className="mr-2" /> Cài đặt tài khoản
+                  </Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleLogout} className="text-red-600">
