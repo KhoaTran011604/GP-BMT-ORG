@@ -31,6 +31,9 @@ export async function POST(
       );
     }
 
+    // Optional senderId (contact reference for payer)
+    const senderId = body.senderId ? new ObjectId(body.senderId) : undefined;
+
     const db = await getDatabase();
     const contractsCollection = db.collection<RentalContract>('rental_contracts');
     const incomesCollection = db.collection<Income>('incomes');
@@ -77,7 +80,8 @@ export async function POST(
       paymentMethod: body.paymentMethod || contract.paymentMethod === 'transfer' ? 'online' : 'offline',
       bankAccountId: body.bankAccountId ? new ObjectId(body.bankAccountId) : undefined,
       bankAccount: body.bankAccount || contract.bankAccount,
-      payerName: contract.tenantName,
+      senderId: senderId,
+      payerName: body.payerName || contract.tenantName,
       description: `Tiền thuê ${contract.propertyName} - Kỳ ${body.paymentPeriod} - HĐ ${contract.contractCode}`,
       fiscalYear: year,
       fiscalPeriod: month,

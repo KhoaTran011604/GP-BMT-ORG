@@ -21,7 +21,14 @@ import {
 } from '@/components/ui/select';
 import { ArrowDownCircle, ArrowUpCircle } from 'lucide-react';
 import { ImageUpload } from '@/components/finance/ImageUpload';
+import { ContactCombobox } from '@/components/finance/ContactCombobox';
 import { Fund, Parish, ExpenseCategory, BankAccount } from '@/lib/schemas';
+
+interface Contact {
+    _id: string;
+    name: string;
+    phone?: string;
+}
 
 interface FormData {
     parishId: string;
@@ -30,6 +37,7 @@ interface FormData {
     amount: string;
     paymentMethod: string;
     bankAccountId: string;
+    contactId: string;
     payerPayeeName: string;
     description: string;
     transactionDate: string;
@@ -51,6 +59,8 @@ interface TransactionFormDialogProps {
     parishes: Parish[];
     expenseCategories: ExpenseCategory[];
     bankAccounts: BankAccount[];
+    contacts?: Contact[];
+    onCreateNewContact?: () => void;
 }
 
 export function TransactionFormDialog({
@@ -67,6 +77,8 @@ export function TransactionFormDialog({
     parishes,
     expenseCategories,
     bankAccounts,
+    contacts,
+    onCreateNewContact,
 }: TransactionFormDialogProps) {
     const updateField = (field: keyof FormData, value: any) => {
         onFormDataChange({ ...formData, [field]: value });
@@ -188,11 +200,13 @@ export function TransactionFormDialog({
                         </div>
 
                         <div className="space-y-2">
-                            <Label>{transactionType === 'income' ? 'Người nộp' : 'Người nhận'}</Label>
-                            <Input
-                                placeholder={transactionType === 'income' ? 'Tên người nộp' : 'Tên người nhận'}
-                                value={formData.payerPayeeName}
-                                onChange={(e) => updateField('payerPayeeName', e.target.value)}
+                            <Label>{transactionType === 'income' ? 'Người gửi (Đối tượng)' : 'Người nhận (Đối tượng)'}</Label>
+                            <ContactCombobox
+                                value={formData.contactId}
+                                onChange={(v) => updateField('contactId', v)}
+                                onCreateNew={onCreateNewContact}
+                                contacts={contacts}
+                                placeholder={transactionType === 'income' ? 'Chọn người gửi...' : 'Chọn người nhận...'}
                             />
                         </div>
 

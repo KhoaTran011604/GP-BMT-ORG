@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import getDatabase from '@/lib/db';
-import { Payroll, Expense } from '@/lib/schemas';
+import { Payroll, Expense, Contact, Staff } from '@/lib/schemas';
 import { verifyToken, getTokenFromCookie } from '@/lib/auth';
 import { ObjectId } from 'mongodb';
 
@@ -38,6 +38,8 @@ export async function POST(request: NextRequest) {
     const db = await getDatabase();
     const payrollCollection = db.collection<Payroll>('payroll');
     const expensesCollection = db.collection<Expense>('expenses');
+    const contactsCollection = db.collection<Contact>('contacts');
+    const staffCollection = db.collection<Staff>('staff');
 
     // Get all draft payrolls for the period
     const draftPayrolls = await payrollCollection.find({
@@ -75,6 +77,35 @@ export async function POST(request: NextRequest) {
       const staffName = (payroll as any).staffName || 'Nhân viên';
       const staffCode = (payroll as any).staffCode || '';
 
+      // Get staff phone from staff collection
+      let receiverId: ObjectId | undefined;
+      const staffIdObj = typeof payroll.staffId === 'string'
+        ? new ObjectId(payroll.staffId)
+        : payroll.staffId;
+      const staff = await staffCollection.findOne({ _id: staffIdObj });
+      const staffPhone = staff?.phone;
+
+      if (staffPhone) {
+        // Find existing contact by phone
+        let contact = await contactsCollection.findOne({ phone: staffPhone });
+
+        if (contact) {
+          // Use existing contact
+          receiverId = contact._id;
+        } else {
+          // Create new contact
+          const newContact: Contact = {
+            name: staffName,
+            phone: staffPhone,
+            status: 'active',
+            createdAt: now,
+            updatedAt: now
+          };
+          const contactResult = await contactsCollection.insertOne(newContact);
+          receiverId = contactResult.insertedId;
+        }
+      }
+
       // Hardcoded expense category ID for salary expenses
       const SALARY_EXPENSE_CATEGORY_ID = '6971a8dd184a64c66bb004e1';
 
@@ -86,6 +117,7 @@ export async function POST(request: NextRequest) {
         paymentMethod: paymentMethod as 'cash' | 'transfer',
         bankAccountId: bankAccountId ? new ObjectId(bankAccountId) : undefined,
         bankAccount,
+        receiverId: receiverId,
         payeeName: staffName,
         description: `Chi lương tháng ${period} - ${staffCode} - ${staffName}`,
         fiscalYear: year,

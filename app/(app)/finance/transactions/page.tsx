@@ -139,7 +139,7 @@ export default function TransactionsPage() {
       const [fundsRes, parishesRes, categoriesRes, bankAccountsRes, contactsRes] = await Promise.all([
         fetch('/api/funds'),
         fetch('/api/parishes'),
-        fetch('/api/expense-categories?isActive=true'),
+        fetch('/api/expense-categories'),
         fetch('/api/bank-accounts?status=active'),
         fetch('/api/contacts?status=active')
       ]);
@@ -1176,7 +1176,7 @@ export default function TransactionsPage() {
                       <SelectValue placeholder="Chọn danh mục thu" />
                     </SelectTrigger>
                     <SelectContent>
-                      {expenseCategories.filter(cat => cat._id && cat.categoryType === 'income').map((cat) => (
+                      {expenseCategories.filter(cat => cat._id && (cat.categoryType === 'income' || cat._id.toString() === formData.categoryId)).map((cat) => (
                         <SelectItem key={cat._id!.toString()} value={cat._id!.toString()}>
                           {cat.categoryCode} - {cat.categoryName}
                         </SelectItem>
@@ -1197,7 +1197,7 @@ export default function TransactionsPage() {
                       <SelectValue placeholder="Chọn danh mục chi" />
                     </SelectTrigger>
                     <SelectContent>
-                      {expenseCategories.filter(cat => cat._id && cat.categoryType === 'expense').map((cat) => (
+                      {expenseCategories.filter(cat => cat._id && (cat.categoryType === 'expense' || cat._id.toString() === formData.categoryId)).map((cat) => (
                         <SelectItem key={cat._id!.toString()} value={cat._id!.toString()}>
                           {cat.categoryCode} - {cat.categoryName}
                         </SelectItem>
