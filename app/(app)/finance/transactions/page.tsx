@@ -108,6 +108,7 @@ export default function TransactionsPage() {
   // Multi-select for batch operations
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [showBatchApproveDialog, setShowBatchApproveDialog] = useState(false);
+  const [showBatchDeleteDialog, setShowBatchDeleteDialog] = useState(false);
   const [batchProcessing, setBatchProcessing] = useState(false);
 
   const [formData, setFormData] = useState({
@@ -740,6 +741,54 @@ Ngày in: ${formatDate(new Date())}
     }
   };
 
+  const handleBatchDelete = async () => {
+    if (selectedIds.size === 0) return;
+
+    setBatchProcessing(true);
+    try {
+      const selectedTransactions = filteredTransactions.filter(t => selectedIds.has(t._id));
+      
+      // Verify all selected transactions are pending
+      const nonPending = selectedTransactions.filter(t => t.status !== 'pending');
+      if (nonPending.length > 0) {
+        alert(`Có ${nonPending.length} giao dịch không ở trạng thái chờ duyệt. Chỉ có thể xóa các giao dịch đang chờ duyệt.`);
+        setBatchProcessing(false);
+        return;
+      }
+
+      // Delete each transaction
+      const deletePromises = selectedTransactions.map(async (item) => {
+        const endpoint = item.type === 'income'
+          ? `/api/incomes/${item._id}`
+          : `/api/expenses/${item._id}`;
+        
+        const response = await fetch(endpoint, { method: 'DELETE' });
+        return { item, response, ok: response.ok };
+      });
+
+      const results = await Promise.all(deletePromises);
+      const successful = results.filter(r => r.ok);
+      const failed = results.filter(r => !r.ok);
+
+      if (successful.length > 0) {
+        alert(`Đã xóa thành công ${successful.length} khoản ${activeTab === 'income' ? 'thu' : 'chi'}`);
+      }
+
+      if (failed.length > 0) {
+        alert(`Không thể xóa ${failed.length} khoản. Vui lòng thử lại.`);
+      }
+
+      clearSelection();
+      setShowBatchDeleteDialog(false);
+      fetchData();
+    } catch (error) {
+      console.error('Error batch deleting:', error);
+      alert('Có lỗi xảy ra khi xóa hàng loạt');
+    } finally {
+      setBatchProcessing(false);
+    }
+  };
+
   // Clear selection when tab changes
   useEffect(() => {
     clearSelection();
@@ -1007,12 +1056,23 @@ Ngày in: ${formatDate(new Date())}
                             Duyệt {selectedIds.size} khoản
                           </Button>
                         )}
+                        {(user?.role === 'super_admin' || user?.role === 'cha_quan_ly') && (
+                          <Button
+                            size="sm"
+                            onClick={() => setShowBatchDeleteDialog(true)}
+                            variant="destructive"
+                            className="bg-red-600 hover:bg-red-700"
+                          >
+                            <Trash2 size={16} className="mr-1" />
+                            Xóa {selectedIds.size} khoản
+                          </Button>
+                        )}
                         <Button
                           variant="outline"
                           size="sm"
                           onClick={clearSelection}
                         >
-                          Bỏ chọn
+                          Bỏ chọn 
                         </Button>
                       </div>
                     </div>
@@ -2141,6 +2201,80 @@ Ngày in: ${formatDate(new Date())}
                 <>
                   <CheckCircle size={16} className="mr-2" />
                   Xác nhận duyệt {selectedIds.size} khoản
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Batch Delete Confirmation Dialog */}
+      <Dialog open={showBatchDeleteDialog} onOpenChange={setShowBatchDeleteDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="text-red-600">Xác nhận xóa hàng loạt</DialogTitle>
+            <DialogDescription>
+              Bạn sắp xóa {selectedIds.size} khoản {activeTab === 'income' ? 'thu' : 'chi'} đang chờ duyệt.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <div className="bg-red-50 border border-red-200 p-4 rounded-lg">
+              <p className="text-sm text-red-800 font-semibold">
+                ⚠️ Cảnh báo: Hành động này không thể hoàn tác!
+              </p>
+              <p className="text-sm text-red-700 mt-2">
+                Tất cả {selectedIds.size} khoản được chọn sẽ bị xóa vĩnh viễn khỏi hệ thống.
+              </p>
+            </div>
+
+            <div>
+              <p className="text-sm font-medium mb-2">Danh sách các khoản sẽ bị xóa:</p>
+              <div className="max-h-40 overflow-y-auto border rounded-lg">
+                {filteredTransactions
+                  .filter(t => selectedIds.has(t._id))
+                  .map(t => (
+                    <div key={t._id} className="flex justify-between items-center p-2 border-b last:border-b-0 hover:bg-gray-50">
+                      <span className="font-mono text-sm">{t.code}</span>
+                      <span className={`font-semibold ${activeTab === 'income' ? 'text-green-600' : 'text-red-600'}`}>
+                        {formatCompactCurrency(t.amount)}
+                      </span>
+                    </div>
+                  ))}
+              </div>
+              <div className="mt-2 pt-2 border-t flex justify-between items-center">
+                <span className="font-medium">Tổng cộng:</span>
+                <span className={`font-bold text-lg ${activeTab === 'income' ? 'text-green-600' : 'text-red-600'}`}>
+                  {formatCompactCurrency(
+                    filteredTransactions
+                      .filter(t => selectedIds.has(t._id))
+                      .reduce((sum, t) => sum + t.amount, 0)
+                  )}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setShowBatchDeleteDialog(false)}
+              disabled={batchProcessing}
+            >
+              Hủy
+            </Button>
+            <Button
+              variant="destructive"
+              className="bg-red-600 hover:bg-red-700"
+              onClick={handleBatchDelete}
+              disabled={batchProcessing}
+            >
+              {batchProcessing ? (
+                <>Đang xóa...</>
+              ) : (
+                <>
+                  <Trash2 size={16} className="mr-2" />
+                  Xác nhận xóa {selectedIds.size} khoản
                 </>
               )}
             </Button>
