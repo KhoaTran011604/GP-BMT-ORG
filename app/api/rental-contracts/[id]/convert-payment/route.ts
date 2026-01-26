@@ -69,7 +69,7 @@ export async function POST(
 
     // Create income record
     // Default categoryId for rental contract income (Thu từ cho thuê BĐS)
-    const DEFAULT_RENTAL_INCOME_CATEGORY_ID = '697718196a780e5859f59bcf';
+    const DEFAULT_RENTAL_INCOME_CATEGORY_ID = '69774a76c1ccf437e507d4c6';
 
     const newIncome: Income = {
       incomeCode,
