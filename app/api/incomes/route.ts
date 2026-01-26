@@ -24,6 +24,7 @@ export async function GET(request: NextRequest) {
     const fiscalPeriod = searchParams.get('fiscalPeriod');
     const startDate = searchParams.get('startDate');
     const endDate = searchParams.get('endDate');
+    const rentalContractId = searchParams.get('rentalContractId');
 
     const db = await getDatabase();
     const collection = db.collection<Income>('incomes');
@@ -58,6 +59,11 @@ export async function GET(request: NextRequest) {
       if (endDate) {
         filter.incomeDate.$lte = new Date(endDate);
       }
+    }
+
+    // Filter by rental contract ID
+    if (rentalContractId) {
+      filter.rentalContractId = new ObjectId(rentalContractId);
     }
 
     const incomes = await collection
@@ -106,6 +112,7 @@ export async function POST(request: NextRequest) {
       fundId,
       amount,
       paymentMethod,
+      bankAccountId,
       bankAccount,
       payerName,
       description,
@@ -137,6 +144,7 @@ export async function POST(request: NextRequest) {
       fundId: new ObjectId(fundId),
       amount: parseFloat(amount),
       paymentMethod: paymentMethod || 'offline',
+      bankAccountId: bankAccountId ? new ObjectId(bankAccountId) : undefined,
       bankAccount,
       payerName,
       description,

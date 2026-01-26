@@ -89,6 +89,7 @@ export async function PUT(
       fundId,
       amount,
       paymentMethod,
+      bankAccountId,
       bankAccount,
       payerName,
       description,
@@ -105,6 +106,9 @@ export async function PUT(
     if (fundId) updateData.fundId = new ObjectId(fundId);
     if (amount) updateData.amount = parseFloat(amount);
     if (paymentMethod) updateData.paymentMethod = paymentMethod;
+    if (bankAccountId !== undefined) {
+      updateData.bankAccountId = bankAccountId ? new ObjectId(bankAccountId) : undefined;
+    }
     if (bankAccount !== undefined) updateData.bankAccount = bankAccount;
     if (payerName !== undefined) updateData.payerName = payerName;
     if (description !== undefined) updateData.description = description;

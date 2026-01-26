@@ -156,6 +156,14 @@ export async function DELETE(
       return NextResponse.json({ error: 'Category not found' }, { status: 404 });
     }
 
+    // Check if category is system type (cannot be deleted)
+    if (category.type === 'sys') {
+      return NextResponse.json(
+        { error: 'Không thể xóa danh mục hệ thống. Chỉ có thể tắt trạng thái hoạt động.' },
+        { status: 400 }
+      );
+    }
+
     // Check if category has children
     const hasChildren = await collection.findOne({ parentId: new ObjectId(id) });
     if (hasChildren) {
