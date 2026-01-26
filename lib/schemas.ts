@@ -370,3 +370,17 @@ export interface MediaFile {
   isPublic: boolean;
   status: 'active' | 'archived' | 'deleted';
 }
+
+// Audit Log Schema (Nhật ký hệ thống)
+export interface AuditLog {
+  _id?: ObjectId;
+  userId: ObjectId;
+  action: 'create' | 'update' | 'delete' | 'approve';
+  module: string;
+  recordId?: ObjectId;
+  oldValue?: Record<string, any>;
+  newValue?: Record<string, any>;
+  ipAddress?: string;
+  userAgent?: string;
+  createdAt: Date;
+}
