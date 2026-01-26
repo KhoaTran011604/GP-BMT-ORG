@@ -98,7 +98,6 @@ const menuData: MenuItem[] = [
     label: 'Hành chính & Tài sản',
     icon: <FolderOpen size={20} />,
     children: [
-      { id: 'associations', label: 'Quản lý Hội đoàn', icon: <Users size={18} />, href: '/admin/associations' },
       { id: 'projects', label: 'Công trình & Dự án', icon: <Building size={18} />, href: '/admin/projects' },
       { id: 'assets', label: 'Quản lý Tài sản', icon: <Landmark size={18} />, href: '/admin/assets' },
       { id: 'rental-contracts', label: 'Hợp đồng Cho thuê BDS', icon: <FileSignature size={18} />, href: '/admin/rental-contracts' },
@@ -216,9 +215,8 @@ function MenuItem({
       {/* Submenu */}
       {hasChildren && (
         <div
-          className={`overflow-hidden transition-all duration-300 ease-in-out ${
-            isExpanded ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
-          }`}
+          className={`overflow-hidden transition-all duration-300 ease-in-out ${isExpanded ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
+            }`}
         >
           <div className="ml-4 mt-1 pl-4 border-l border-gray-700 space-y-1">
             {item.children?.map((child) => {
