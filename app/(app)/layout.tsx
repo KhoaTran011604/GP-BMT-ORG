@@ -80,6 +80,7 @@ const menuData: MenuItem[] = [
       { id: 'funds', label: 'Danh mục Quỹ', icon: <CreditCard size={18} />, href: '/finance/funds' },
       { id: 'expense-categories', label: 'Danh mục Thu Chi', icon: <FolderOpen size={18} />, href: '/finance/expense-categories' },
       { id: 'bank-accounts', label: 'Tài khoản Ngân hàng', icon: <Landmark size={18} />, href: '/finance/bank-accounts' },
+      { id: 'contacts', label: 'Đối tượng Nhận gửi', icon: <Users size={18} />, href: '/admin/contacts' },
       { id: 'transactions', label: 'Quản lý Giao dịch', icon: <Receipt size={18} />, href: '/finance/transactions' },
     ],
     roles: ['super_admin', 'cha_quan_ly', 'cha_xu', 'ke_toan'], // All roles except thu_ky

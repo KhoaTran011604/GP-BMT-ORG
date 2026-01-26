@@ -12,6 +12,9 @@ import {
 } from '@/components/ui/tabs';
 import { Plus, ArrowDownCircle, ArrowUpCircle, Printer } from 'lucide-react';
 import { ImageGallery } from '@/components/finance/ImageGallery';
+import { StatusBadge } from '@/components/finance/StatusBadge';
+import { ContactCombobox } from '@/components/finance/ContactCombobox';
+import { QuickAddContactDialog } from '@/components/finance/QuickAddContactDialog';
 import { Fund, Parish, ExpenseCategory, BankAccount } from '@/lib/schemas';
 import { useAuth } from '@/lib/auth-context';
 
@@ -26,8 +29,41 @@ import {
   ApproveRejectDialog,
   BatchApproveDialog,
 } from '@/components/finance/transactions/TransactionDialogs';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { ImageUpload } from '@/components/finance/ImageUpload';
 
 type TransactionType = 'income' | 'expense';
+
+interface TransactionItem {
+  _id: string;
+  type: TransactionType;
+  code: string;
+  date: Date;
+  amount: number;
+  payerPayee: string;
+  paymentMethod: string;
+  status: 'pending' | 'approved' | 'rejected';
+  images: string[];
+  description?: string;
+  notes?: string;
+  parishId?: string;
+  fundId?: string;
+  categoryId?: string;
+  bankAccount?: string;
+  fiscalYear?: number;
+  fiscalPeriod?: number;
+  submittedAt?: string;
+  // Source tracking for transparency
+  sourceType?: 'manual' | 'rental_contract';
+  rentalContractId?: string;
+  // Contact references
+  senderId?: string;   // for income
+  receiverId?: string; // for expense
+}
 
 export default function TransactionsPage() {
   const router = useRouter();
@@ -38,6 +74,8 @@ export default function TransactionsPage() {
   const [parishes, setParishes] = useState<Parish[]>([]);
   const [expenseCategories, setExpenseCategories] = useState<ExpenseCategory[]>([]);
   const [bankAccounts, setBankAccounts] = useState<BankAccount[]>([]);
+  const [contacts, setContacts] = useState<{ _id: string; name: string; phone?: string }[]>([]);
+  const [showQuickAddContact, setShowQuickAddContact] = useState(false);
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
@@ -78,7 +116,8 @@ export default function TransactionsPage() {
     categoryId: '',
     amount: '',
     paymentMethod: 'offline',
-    bankAccountId: '',
+    bankAccountId: '', // FK to bank_accounts
+    contactId: '', // FK to contacts - senderId for income, receiverId for expense
     payerPayeeName: '',
     description: '',
     transactionDate: new Date().toISOString().split('T')[0],
@@ -97,11 +136,12 @@ export default function TransactionsPage() {
 
   const fetchFundsAndParishes = async () => {
     try {
-      const [fundsRes, parishesRes, categoriesRes, bankAccountsRes] = await Promise.all([
+      const [fundsRes, parishesRes, categoriesRes, bankAccountsRes, contactsRes] = await Promise.all([
         fetch('/api/funds'),
         fetch('/api/parishes'),
         fetch('/api/expense-categories?isActive=true'),
-        fetch('/api/bank-accounts?status=active')
+        fetch('/api/bank-accounts?status=active'),
+        fetch('/api/contacts?status=active')
       ]);
 
       if (fundsRes.ok) {
@@ -122,6 +162,11 @@ export default function TransactionsPage() {
       if (bankAccountsRes.ok) {
         const bankAccountsData = await bankAccountsRes.json();
         setBankAccounts(bankAccountsData.data || []);
+      }
+
+      if (contactsRes.ok) {
+        const contactsData = await contactsRes.json();
+        setContacts(contactsData.data || []);
       }
     } catch (error) {
       console.error('Error fetching funds/parishes/categories:', error);
@@ -166,7 +211,10 @@ export default function TransactionsPage() {
           fiscalPeriod: item.fiscalPeriod,
           submittedAt: activeTab === 'income' ? item.submittedAt : item.requestedAt,
           sourceType: item.sourceType || 'manual',
-          rentalContractId: item.rentalContractId
+          rentalContractId: item.rentalContractId,
+          // Contact references
+          senderId: item.senderId,
+          receiverId: item.receiverId
         }));
         setTransactions(items);
       }
@@ -185,6 +233,7 @@ export default function TransactionsPage() {
       amount: '',
       paymentMethod: 'offline',
       bankAccountId: '',
+      contactId: '',
       payerPayeeName: '',
       description: '',
       transactionDate: new Date().toISOString().split('T')[0],
@@ -214,6 +263,12 @@ export default function TransactionsPage() {
         ? `${selectedBankAccount.accountNumber} - ${selectedBankAccount.bankName}`
         : undefined;
 
+      // Get selected contact name
+      const selectedContact = formData.contactId
+        ? contacts.find(c => c._id === formData.contactId)
+        : null;
+      const contactName = selectedContact?.name || formData.payerPayeeName || undefined;
+
       const body = createType === 'income' ? {
         parishId: formData.parishId,
         fundId: formData.fundId,
@@ -222,7 +277,8 @@ export default function TransactionsPage() {
         paymentMethod: formData.paymentMethod,
         bankAccountId: formData.bankAccountId || undefined,
         bankAccount: bankAccountDisplay,
-        payerName: formData.payerPayeeName || undefined,
+        senderId: formData.contactId || undefined,
+        payerName: contactName,
         description: formData.description || undefined,
         incomeDate: formData.transactionDate,
         images: formData.images,
@@ -235,7 +291,8 @@ export default function TransactionsPage() {
         paymentMethod: formData.paymentMethod === 'offline' ? 'cash' : 'transfer',
         bankAccountId: formData.bankAccountId || undefined,
         bankAccount: bankAccountDisplay,
-        payeeName: formData.payerPayeeName || undefined,
+        receiverId: formData.contactId || undefined,
+        payeeName: contactName,
         description: formData.description || undefined,
         expenseDate: formData.transactionDate,
         images: formData.images,
@@ -288,6 +345,12 @@ export default function TransactionsPage() {
         ? `${selectedBankAccount.accountNumber} - ${selectedBankAccount.bankName}`
         : undefined;
 
+      // Get selected contact name
+      const selectedContact = formData.contactId
+        ? contacts.find(c => c._id === formData.contactId)
+        : null;
+      const contactName = selectedContact?.name || formData.payerPayeeName || undefined;
+
       const body = selectedItem.type === 'income' ? {
         parishId: formData.parishId,
         fundId: formData.fundId,
@@ -296,7 +359,8 @@ export default function TransactionsPage() {
         paymentMethod: formData.paymentMethod,
         bankAccountId: formData.bankAccountId || undefined,
         bankAccount: bankAccountDisplay,
-        payerName: formData.payerPayeeName || undefined,
+        senderId: formData.contactId || undefined,
+        payerName: contactName,
         description: formData.description || undefined,
         incomeDate: formData.transactionDate,
         images: formData.images,
@@ -309,7 +373,8 @@ export default function TransactionsPage() {
         paymentMethod: formData.paymentMethod === 'offline' ? 'cash' : 'transfer',
         bankAccountId: formData.bankAccountId || undefined,
         bankAccount: bankAccountDisplay,
-        payeeName: formData.payerPayeeName || undefined,
+        receiverId: formData.contactId || undefined,
+        payeeName: contactName,
         description: formData.description || undefined,
         expenseDate: formData.transactionDate,
         images: formData.images,
@@ -490,6 +555,7 @@ export default function TransactionsPage() {
           amount: fullData.amount.toString(),
           paymentMethod: fullData.paymentMethod,
           bankAccountId: fullData.bankAccountId?.toString() || '',
+          contactId: item.type === 'income' ? (fullData.senderId?.toString() || '') : (fullData.receiverId?.toString() || ''),
           payerPayeeName: item.type === 'income' ? (fullData.payerName || '') : (fullData.payeeName || ''),
           description: fullData.description || '',
           transactionDate: new Date(item.type === 'income' ? fullData.incomeDate : fullData.expenseDate).toISOString().split('T')[0],
@@ -506,6 +572,7 @@ export default function TransactionsPage() {
         amount: item.amount.toString(),
         paymentMethod: item.paymentMethod,
         bankAccountId: '',
+        contactId: item.type === 'income' ? (item.senderId || '') : (item.receiverId || ''),
         payerPayeeName: item.payerPayee || '',
         description: item.description || '',
         transactionDate: new Date(item.date).toISOString().split('T')[0],
@@ -804,43 +871,466 @@ export default function TransactionsPage() {
       </Tabs>
 
       {/* Create Dialog */}
-      <TransactionFormDialog
-        open={showCreateDialog}
-        onOpenChange={setShowCreateDialog}
-        mode="create"
-        transactionType={createType}
-        onTypeChange={setCreateType}
-        formData={formData}
-        onFormDataChange={setFormData}
-        onSubmit={handleCreate}
-        submitting={submitting}
-        funds={funds}
-        parishes={parishes}
-        expenseCategories={expenseCategories}
-        bankAccounts={bankAccounts}
-      />
+      <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>
+              Tạo {createType === 'income' ? 'khoản thu' : 'khoản chi'} mới
+            </DialogTitle>
+            <DialogDescription>
+              Điền thông tin để tạo giao dịch mới
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <div className="flex gap-4">
+              <Button
+                type="button"
+                variant={createType === 'income' ? 'default' : 'outline'}
+                onClick={() => setCreateType('income')}
+                className="flex-1 gap-2"
+              >
+                <ArrowDownCircle size={16} />
+                Khoản thu
+              </Button>
+              <Button
+                type="button"
+                variant={createType === 'expense' ? 'default' : 'outline'}
+                onClick={() => setCreateType('expense')}
+                className="flex-1 gap-2"
+              >
+                <ArrowUpCircle size={16} />
+                Khoản chi
+              </Button>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Giáo xứ *</Label>
+                <Select
+                  value={formData.parishId}
+                  onValueChange={(v) => setFormData({ ...formData, parishId: v })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Chọn giáo xứ" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {parishes.filter(p => p._id).map((p) => (
+                      <SelectItem key={p._id!.toString()} value={p._id!.toString()}>
+                        {p.parishName}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label>{createType === 'income' ? 'Quỹ *' : 'Nguồn quỹ (tùy chọn)'}</Label>
+                <Select
+                  value={formData.fundId}
+                  onValueChange={(v) => setFormData({ ...formData, fundId: v })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Chọn quỹ" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {funds.filter(f => f._id).map((f) => (
+                      <SelectItem key={f._id!.toString()} value={f._id!.toString()}>
+                        {f.fundName}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {createType === 'income' && (
+                <div className="space-y-2 col-span-2">
+                  <Label>Danh mục thu</Label>
+                  <Select
+                    value={formData.categoryId}
+                    onValueChange={(v) => setFormData({ ...formData, categoryId: v })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Chọn danh mục thu" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {expenseCategories.filter(cat => cat._id && cat.categoryType === 'income').map((cat) => (
+                        <SelectItem key={cat._id!.toString()} value={cat._id!.toString()}>
+                          {cat.categoryCode} - {cat.categoryName}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+
+              {createType === 'expense' && (
+                <div className="space-y-2 col-span-2">
+                  <Label>Danh mục chi</Label>
+                  <Select
+                    value={formData.categoryId}
+                    onValueChange={(v) => setFormData({ ...formData, categoryId: v })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Chọn danh mục chi" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {expenseCategories.filter(cat => cat._id && cat.categoryType === 'expense').map((cat) => (
+                        <SelectItem key={cat._id!.toString()} value={cat._id!.toString()}>
+                          {cat.categoryCode} - {cat.categoryName}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+
+              <div className="space-y-2">
+                <Label>Số tiền *</Label>
+                <Input
+                  type="number"
+                  placeholder="0"
+                  value={formData.amount}
+                  onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label>Ngày *</Label>
+                <Input
+                  type="date"
+                  value={formData.transactionDate}
+                  onChange={(e) => setFormData({ ...formData, transactionDate: e.target.value })}
+                />
+              </div>
+
+              <div className="space-y-2 col-span-2">
+                <Label>{createType === 'income' ? 'Người gửi (Đối tượng)' : 'Người nhận (Đối tượng)'}</Label>
+                <ContactCombobox
+                  value={formData.contactId}
+                  onChange={(v) => setFormData({ ...formData, contactId: v })}
+                  onCreateNew={() => setShowQuickAddContact(true)}
+                  contacts={contacts}
+                  placeholder={createType === 'income' ? 'Chọn người gửi...' : 'Chọn người nhận...'}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label>Hình thức</Label>
+                <Select
+                  value={formData.paymentMethod}
+                  onValueChange={(v) => setFormData({ ...formData, paymentMethod: v })}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="offline">Tiền mặt</SelectItem>
+                    <SelectItem value="online">Chuyển khoản</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {formData.paymentMethod === 'online' && (
+                <div className="space-y-2 col-span-2">
+                  <Label>Tài khoản ngân hàng {createType === 'income' ? '(nhận tiền)' : '(chi tiền)'}</Label>
+                  {bankAccounts.filter(ba =>
+                    createType === 'income'
+                      ? ba.accountType === 'income' || ba.accountType === 'both'
+                      : ba.accountType === 'expense' || ba.accountType === 'both'
+                  ).length > 0 ? (
+                    <Select
+                      value={formData.bankAccountId}
+                      onValueChange={(v) => setFormData({ ...formData, bankAccountId: v })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Chọn tài khoản ngân hàng" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {bankAccounts
+                          .filter(ba =>
+                            createType === 'income'
+                              ? ba.accountType === 'income' || ba.accountType === 'both'
+                              : ba.accountType === 'expense' || ba.accountType === 'both'
+                          )
+                          .map((ba) => (
+                            <SelectItem key={ba._id!.toString()} value={ba._id!.toString()}>
+                              <div className="flex items-center gap-2">
+                                <span className="font-mono">{ba.accountNumber}</span>
+                                <span className="text-gray-500">-</span>
+                                <span>{ba.bankName}</span>
+                                {ba.isDefault && <span className="text-yellow-500">★</span>}
+                              </div>
+                            </SelectItem>
+                          ))}
+                      </SelectContent>
+                    </Select>
+                  ) : (
+                    <div className="text-sm text-gray-500 p-2 border rounded-md bg-gray-50">
+                      Chưa có tài khoản ngân hàng. <a href="/finance/bank-accounts" className="text-blue-600 hover:underline">Thêm tài khoản</a>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              <div className="space-y-2 col-span-2">
+                <Label>Diễn giải</Label>
+                <Textarea
+                  placeholder="Nội dung giao dịch"
+                  value={formData.description}
+                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                />
+              </div>
+
+              <div className="space-y-2 col-span-2">
+                <Label>Hình ảnh chứng từ (tối đa 5 ảnh)</Label>
+                <ImageUpload
+                  images={formData.images}
+                  onChange={(imgs) => setFormData({ ...formData, images: imgs })}
+                  maxImages={5}
+                />
+              </div>
+
+              <div className="space-y-2 col-span-2">
+                <Label>Ghi chú</Label>
+                <Textarea
+                  placeholder="Ghi chú thêm"
+                  value={formData.notes}
+                  onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                />
+              </div>
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowCreateDialog(false)}>
+              Hủy
+            </Button>
+            <Button onClick={handleCreate} disabled={submitting}>
+              {submitting ? 'Đang tạo...' : 'Tạo giao dịch'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Edit Dialog */}
-      <TransactionFormDialog
-        open={showEditDialog}
-        onOpenChange={(open) => {
-          setShowEditDialog(open);
-          if (!open) {
-            setSelectedItem(null);
-            resetForm();
-          }
-        }}
-        mode="edit"
-        transactionType={selectedItem?.type || 'income'}
-        formData={formData}
-        onFormDataChange={setFormData}
-        onSubmit={handleUpdate}
-        submitting={submitting}
-        funds={funds}
-        parishes={parishes}
-        expenseCategories={expenseCategories}
-        bankAccounts={bankAccounts}
-      />
+      <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>
+              Sửa {selectedItem?.type === 'income' ? 'khoản thu' : 'khoản chi'}
+            </DialogTitle>
+            <DialogDescription>
+              Chỉ có thể sửa giao dịch đang chờ duyệt
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Giáo xứ *</Label>
+                <Select
+                  value={formData.parishId}
+                  onValueChange={(v) => setFormData({ ...formData, parishId: v })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Chọn giáo xứ" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {parishes.filter(p => p._id).map((p) => (
+                      <SelectItem key={p._id!.toString()} value={p._id!.toString()}>
+                        {p.parishName}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label>{selectedItem?.type === 'income' ? 'Quỹ *' : 'Nguồn quỹ (tùy chọn)'}</Label>
+                <Select
+                  value={formData.fundId}
+                  onValueChange={(v) => setFormData({ ...formData, fundId: v })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Chọn quỹ" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {funds.filter(f => f._id).map((f) => (
+                      <SelectItem key={f._id!.toString()} value={f._id!.toString()}>
+                        {f.fundName}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {selectedItem?.type === 'income' && (
+                <div className="space-y-2 col-span-2">
+                  <Label>Danh mục thu</Label>
+                  <Select
+                    value={formData.categoryId}
+                    onValueChange={(v) => setFormData({ ...formData, categoryId: v })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Chọn danh mục thu" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {expenseCategories.filter(cat => cat._id && cat.categoryType === 'income').map((cat) => (
+                        <SelectItem key={cat._id!.toString()} value={cat._id!.toString()}>
+                          {cat.categoryCode} - {cat.categoryName}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+
+              {selectedItem?.type === 'expense' && (
+                <div className="space-y-2 col-span-2">
+                  <Label>Danh mục chi</Label>
+                  <Select
+                    value={formData.categoryId}
+                    onValueChange={(v) => setFormData({ ...formData, categoryId: v })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Chọn danh mục chi" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {expenseCategories.filter(cat => cat._id && cat.categoryType === 'expense').map((cat) => (
+                        <SelectItem key={cat._id!.toString()} value={cat._id!.toString()}>
+                          {cat.categoryCode} - {cat.categoryName}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+
+              <div className="space-y-2">
+                <Label>Số tiền *</Label>
+                <Input
+                  type="number"
+                  placeholder="0"
+                  value={formData.amount}
+                  onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label>Ngày *</Label>
+                <Input
+                  type="date"
+                  value={formData.transactionDate}
+                  onChange={(e) => setFormData({ ...formData, transactionDate: e.target.value })}
+                />
+              </div>
+
+              <div className="space-y-2 col-span-2">
+                <Label>{selectedItem?.type === 'income' ? 'Người gửi (Đối tượng)' : 'Người nhận (Đối tượng)'}</Label>
+                <ContactCombobox
+                  value={formData.contactId}
+                  onChange={(v) => setFormData({ ...formData, contactId: v })}
+                  onCreateNew={() => setShowQuickAddContact(true)}
+                  contacts={contacts}
+                  placeholder={selectedItem?.type === 'income' ? 'Chọn người gửi...' : 'Chọn người nhận...'}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label>Hình thức</Label>
+                <Select
+                  value={formData.paymentMethod}
+                  onValueChange={(v) => setFormData({ ...formData, paymentMethod: v })}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="offline">Tiền mặt</SelectItem>
+                    <SelectItem value="online">Chuyển khoản</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {formData.paymentMethod === 'online' && (
+                <div className="space-y-2 col-span-2">
+                  <Label>Tài khoản ngân hàng {selectedItem?.type === 'income' ? '(nhận tiền)' : '(chi tiền)'}</Label>
+                  {bankAccounts.filter(ba =>
+                    selectedItem?.type === 'income'
+                      ? ba.accountType === 'income' || ba.accountType === 'both'
+                      : ba.accountType === 'expense' || ba.accountType === 'both'
+                  ).length > 0 ? (
+                    <Select
+                      value={formData.bankAccountId}
+                      onValueChange={(v) => setFormData({ ...formData, bankAccountId: v })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Chọn tài khoản ngân hàng" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {bankAccounts.filter(ba =>
+                          selectedItem?.type === 'income'
+                            ? ba.accountType === 'income' || ba.accountType === 'both'
+                            : ba.accountType === 'expense' || ba.accountType === 'both'
+                        ).map((ba) => (
+                          <SelectItem key={ba._id!.toString()} value={ba._id!.toString()}>
+                            {ba.accountNumber} - {ba.bankName} ({ba.accountName})
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  ) : (
+                    <div className="text-sm text-muted-foreground p-2 border rounded">
+                      Chưa có tài khoản ngân hàng phù hợp. <a href="/finance/bank-accounts" className="text-blue-600 hover:underline">Thêm tài khoản</a>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              <div className="space-y-2 col-span-2">
+                <Label>Diễn giải</Label>
+                <Textarea
+                  placeholder="Nội dung giao dịch"
+                  value={formData.description}
+                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                />
+              </div>
+
+              <div className="space-y-2 col-span-2">
+                <Label>Hình ảnh chứng từ (tối đa 5 ảnh)</Label>
+                <ImageUpload
+                  images={formData.images}
+                  onChange={(imgs) => setFormData({ ...formData, images: imgs })}
+                  maxImages={5}
+                />
+              </div>
+
+              <div className="space-y-2 col-span-2">
+                <Label>Ghi chú</Label>
+                <Textarea
+                  placeholder="Ghi chú thêm"
+                  value={formData.notes}
+                  onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                />
+              </div>
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => {
+              setShowEditDialog(false);
+              setSelectedItem(null);
+              resetForm();
+            }}>
+              Hủy
+            </Button>
+            <Button onClick={handleUpdate} disabled={submitting}>
+              {submitting ? 'Đang lưu...' : 'Lưu thay đổi'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Detail Dialog */}
       <TransactionDetailDialog
@@ -913,6 +1403,16 @@ export default function TransactionsPage() {
         transactions={filteredTransactions.filter(t => selectedIds.has(t._id))}
         onConfirm={() => handleBatchApprove(true)}
         processing={batchProcessing}
+      />
+
+      {/* Quick Add Contact Dialog */}
+      <QuickAddContactDialog
+        open={showQuickAddContact}
+        onOpenChange={setShowQuickAddContact}
+        onCreated={(newContact) => {
+          setContacts([...contacts, newContact]);
+          setFormData({ ...formData, contactId: newContact._id });
+        }}
       />
 
       {/* Image Gallery */}

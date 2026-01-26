@@ -93,6 +93,7 @@ export async function PUT(
       bankAccountId,
       bankAccount,
       payeeName,
+      receiverId,
       description,
       expenseDate,
       images,
@@ -117,6 +118,9 @@ export async function PUT(
     }
     if (bankAccount !== undefined) updateData.bankAccount = bankAccount;
     if (payeeName !== undefined) updateData.payeeName = payeeName;
+    if (receiverId !== undefined) {
+      updateData.receiverId = receiverId ? new ObjectId(receiverId) : undefined;
+    }
     if (description !== undefined) updateData.description = description;
     if (expenseDate) {
       updateData.expenseDate = new Date(expenseDate);

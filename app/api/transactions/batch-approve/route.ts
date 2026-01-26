@@ -89,80 +89,106 @@ export async function POST(request: NextRequest) {
       }
     );
 
-    let receipt: Receipt | null = null;
+    const receipts: Receipt[] = [];
 
     if (createCombinedReceipt !== false) {
-      // Create combined receipt
+      // Group transactions by senderId (for income) or receiverId (for expense)
+      const groupedTransactions = new Map<string, (Income | Expense)[]>();
+
+      for (const t of transactions) {
+        const contactId = type === 'income'
+          ? ((t as Income).senderId?.toString() || 'no-contact')
+          : ((t as Expense).receiverId?.toString() || 'no-contact');
+
+        if (!groupedTransactions.has(contactId)) {
+          groupedTransactions.set(contactId, []);
+        }
+        groupedTransactions.get(contactId)!.push(t);
+      }
+
+      // Create separate receipt for each group
       const year = now.getFullYear();
-      const count = await receiptsCollection.countDocuments({
+      let receiptCount = await receiptsCollection.countDocuments({
         receiptNo: { $regex: `^REC-${year}-` }
       });
-      const receiptNo = `REC-${year}-${String(count + 1).padStart(4, '0')}`;
 
-      // Calculate total amount
-      const totalAmount = transactions.reduce((sum, t) => sum + t.amount, 0);
+      for (const [contactKey, groupTransactions] of groupedTransactions) {
+        receiptCount++;
+        const receiptNo = `REC-${year}-${String(receiptCount).padStart(4, '0')}`;
 
-      // Build items array with details
-      const items = transactions.map(t => ({
-        referenceId: t._id!,
-        code: type === 'income' ? (t as Income).incomeCode : (t as Expense).expenseCode,
-        amount: t.amount,
-        date: type === 'income' ? (t as Income).incomeDate : (t as Expense).expenseDate,
-        payerPayee: type === 'income' ? (t as Income).payerName : (t as Expense).payeeName,
-        description: t.description
-      }));
+        // Calculate total amount for this group
+        const totalAmount = groupTransactions.reduce((sum, t) => sum + t.amount, 0);
 
-      // Get payers/payees for display
-      const payerPayees = transactions
-        .map(t => type === 'income' ? (t as Income).payerName : (t as Expense).payeeName)
-        .filter(Boolean);
-      const payerPayeeStr = payerPayees.length > 0
-        ? payerPayees.length === 1
-          ? payerPayees[0]
-          : `${payerPayees.length} ${type === 'income' ? 'người nộp' : 'người nhận'}`
-        : '';
+        // Build items array with details
+        const items = groupTransactions.map(t => ({
+          referenceId: t._id!,
+          code: type === 'income' ? (t as Income).incomeCode : (t as Expense).expenseCode,
+          amount: t.amount,
+          date: type === 'income' ? (t as Income).incomeDate : (t as Expense).expenseDate,
+          payerPayee: type === 'income' ? (t as Income).payerName : (t as Expense).payeeName,
+          description: t.description
+        }));
 
-      // Build description
-      const descriptions = transactions.map(t => t.description).filter(Boolean);
-      const description = descriptions.length > 0
-        ? descriptions.join('; ')
-        : `Phiếu ${type === 'income' ? 'thu' : 'chi'} tổng hợp ${transactions.length} khoản`;
+        // Get payers/payees for display
+        const payerPayees = groupTransactions
+          .map(t => type === 'income' ? (t as Income).payerName : (t as Expense).payeeName)
+          .filter(Boolean);
+        const payerPayeeStr = payerPayees.length > 0
+          ? payerPayees[0] // Use first one since they should all be the same contact
+          : '';
 
-      const newReceipt: Receipt = {
-        receiptNo,
-        receiptType: type,
-        referenceIds: objectIds,
-        parishId: transactions[0].parishId,
-        amount: totalAmount,
-        receiptDate: now,
-        payerPayee: payerPayeeStr || '',
-        description,
-        items,
-        createdBy: userId,
-        createdAt: now
-      };
+        // Build description
+        const descriptions = groupTransactions.map(t => t.description).filter(Boolean);
+        const description = descriptions.length > 0
+          ? descriptions.join('; ')
+          : `Phiếu ${type === 'income' ? 'thu' : 'chi'} tổng hợp ${groupTransactions.length} khoản`;
 
-      const receiptResult = await receiptsCollection.insertOne(newReceipt);
-      receipt = { ...newReceipt, _id: receiptResult.insertedId };
+        const groupObjectIds = groupTransactions.map(t => t._id!);
 
-      // Update all transactions with the receiptId for quick lookup
-      await transactionCollection.updateMany(
-        { _id: { $in: objectIds } },
-        {
-          $set: {
-            receiptId: receiptResult.insertedId,
-            updatedAt: now
+        const newReceipt: Receipt = {
+          receiptNo,
+          receiptType: type,
+          referenceIds: groupObjectIds,
+          parishId: groupTransactions[0].parishId,
+          amount: totalAmount,
+          receiptDate: now,
+          payerPayee: payerPayeeStr || '',
+          description,
+          items,
+          createdBy: userId,
+          createdAt: now
+        };
+
+        const receiptResult = await receiptsCollection.insertOne(newReceipt);
+        receipts.push({ ...newReceipt, _id: receiptResult.insertedId });
+
+        // Update transactions in this group with the receiptId
+        await transactionCollection.updateMany(
+          { _id: { $in: groupObjectIds } },
+          {
+            $set: {
+              receiptId: receiptResult.insertedId,
+              updatedAt: now
+            }
           }
-        }
-      );
+        );
+      }
     }
+
+    // Build response message
+    const receiptMessage = receipts.length > 0
+      ? receipts.length === 1
+        ? ` và tạo phiếu ${receipts[0].receiptNo}`
+        : ` và tạo ${receipts.length} phiếu (${receipts.map(r => r.receiptNo).join(', ')})`
+      : '';
 
     return NextResponse.json({
       data: {
         approvedCount: updateResult.modifiedCount,
-        receipt
+        receipts,
+        receipt: receipts.length > 0 ? receipts[0] : null // For backward compatibility
       },
-      message: `Đã duyệt ${updateResult.modifiedCount} khoản ${type === 'income' ? 'thu' : 'chi'}${receipt ? ` và tạo phiếu ${receipt.receiptNo}` : ''}`
+      message: `Đã duyệt ${updateResult.modifiedCount} khoản ${type === 'income' ? 'thu' : 'chi'}${receiptMessage}`
     });
 
   } catch (error) {

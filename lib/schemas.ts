@@ -1,5 +1,15 @@
 import { ObjectId } from 'mongodb';
 
+// Contact (Đối tượng nhận gửi) Schema
+export interface Contact {
+  _id?: ObjectId;
+  name: string;
+  phone?: string;
+  status: 'active' | 'inactive';
+  createdAt: Date;
+  updatedAt: Date;
+}
+
 // User Schema
 export interface User {
   _id?: ObjectId;
@@ -90,6 +100,7 @@ export interface Income {
   bankAccountId?: ObjectId; // FK to bank_accounts
   bankAccount?: string; // Display string (for backwards compatibility)
   payerName?: string;
+  senderId?: ObjectId; // FK to contacts - Đối tượng nhận gửi (người nộp)
   description?: string;
   fiscalYear: number;
   fiscalPeriod: number;
@@ -136,6 +147,7 @@ export interface Expense {
   bankAccountId?: ObjectId; // FK to bank_accounts
   bankAccount?: string; // Display string (for backwards compatibility)
   payeeName?: string;
+  receiverId?: ObjectId; // FK to contacts - Đối tượng nhận gửi (người nhận)
   description?: string;
   fiscalYear: number;
   fiscalPeriod: number;
