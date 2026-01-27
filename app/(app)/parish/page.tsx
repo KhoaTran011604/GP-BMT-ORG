@@ -2,10 +2,18 @@
 
 import React from "react"
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 import {
   Dialog,
   DialogContent,
@@ -14,8 +22,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { useAuth } from '@/lib/auth-context';
-import Link from 'next/link';
-import { Plus, Edit2, Trash2 } from 'lucide-react';
+import { Plus, Edit2, Trash2, Search } from 'lucide-react';
 
 interface Parish {
   _id: string;
@@ -35,6 +42,7 @@ export default function ParishPage() {
   const [loading, setLoading] = useState(true);
   const [showDialog, setShowDialog] = useState(false);
   const [editingParish, setEditingParish] = useState<Parish | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
   const [formData, setFormData] = useState({
     parishCode: '',
     parishName: '',
@@ -44,6 +52,19 @@ export default function ParishPage() {
     phone: '',
     email: '',
   });
+
+  // Filter parishes based on search query
+  const filteredParishes = useMemo(() => {
+    if (!searchQuery.trim()) return parishes;
+    const query = searchQuery.toLowerCase();
+    return parishes.filter(
+      (parish) =>
+        parish.parishCode.toLowerCase().includes(query) ||
+        parish.parishName.toLowerCase().includes(query) ||
+        parish.patronSaint.toLowerCase().includes(query) ||
+        parish.address.toLowerCase().includes(query)
+    );
+  }, [parishes, searchQuery]);
 
   // Fetch parishes
   useEffect(() => {
@@ -154,95 +175,105 @@ export default function ParishPage() {
         )}
       </div>
 
-      {/* Loading State */}
-      {loading && (
-        <Card>
-          <CardContent className="p-8 text-center">
-            <p className="text-gray-600">Đang tải dữ liệu...</p>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Parishes List */}
-      {!loading && parishes.length === 0 ? (
-        <Card>
-          <CardContent className="p-8 text-center">
-            <p className="text-gray-600 mb-4">Chưa có Giáo xứ nào</p>
-            {canEdit && (
-              <Button onClick={() => handleOpenDialog()}>Thêm Giáo xứ đầu tiên</Button>
-            )}
-          </CardContent>
-        </Card>
-      ) : (
-        <div className="grid gap-4">
-          {parishes.map((parish) => (
-            <Card key={parish._id} className="hover:shadow-lg transition-shadow">
-              <CardHeader className="pb-3">
-                <div className="flex justify-between items-start">
-                  <div className="flex-1">
-                    <CardTitle className="text-xl">{parish.parishName}</CardTitle>
-                    <CardDescription>{parish.patronSaint}</CardDescription>
-                  </div>
-                  <div className="text-sm font-medium bg-blue-100 text-blue-800 px-3 py-1 rounded">
-                    {parish.parishCode}
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="grid md:grid-cols-2 gap-4 mb-4">
-                  <div>
-                    <p className="text-sm text-gray-600">Địa chỉ</p>
-                    <p className="font-medium">{parish.address}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-600">Ngày lễ Bổn mạng</p>
-                    <p className="font-medium">{parish.feastDay || 'N/A'}</p>
-                  </div>
-                  {parish.phone && (
-                    <div>
-                      <p className="text-sm text-gray-600">Điện thoại</p>
-                      <p className="font-medium">{parish.phone}</p>
-                    </div>
-                  )}
-                  {parish.email && (
-                    <div>
-                      <p className="text-sm text-gray-600">Email</p>
-                      <p className="font-medium">{parish.email}</p>
-                    </div>
-                  )}
-                </div>
-
-                {/* Actions */}
-                <div className="flex gap-2 pt-4 border-t">
-                  <Link href={`/parish/${parish._id}`} className="flex-1">
-                    <Button variant="outline" className="w-full bg-transparent">
-                      Xem chi tiết
-                    </Button>
-                  </Link>
+      {/* Search and Table */}
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <div>
+            <CardTitle>Danh sách Giáo xứ</CardTitle>
+            <CardDescription>
+              {filteredParishes.length} / {parishes.length} giáo xứ
+            </CardDescription>
+          </div>
+          <div className="relative w-72">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+            <Input
+              placeholder="Tìm kiếm theo tên, mã, bổn mạng..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10"
+            />
+          </div>
+        </CardHeader>
+        <CardContent>
+          {loading ? (
+            <div className="text-center py-8 text-gray-500">Đang tải dữ liệu...</div>
+          ) : filteredParishes.length === 0 ? (
+            <div className="text-center py-8 text-gray-500">
+              {parishes.length === 0 ? (
+                <>
+                  <p className="mb-4">Chưa có Giáo xứ nào</p>
                   {canEdit && (
-                    <>
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        onClick={() => handleOpenDialog(parish)}
-                      >
-                        <Edit2 size={18} />
-                      </Button>
-                      <Button
-                        variant="destructive"
-                        size="icon"
-                        onClick={() => handleDelete(parish._id)}
-                      >
-                        <Trash2 size={18} />
-                      </Button>
-                    </>
+                    <Button onClick={() => handleOpenDialog()}>Thêm Giáo xứ đầu tiên</Button>
                   )}
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      )}
+                </>
+              ) : (
+                <p>Không tìm thấy giáo xứ phù hợp</p>
+              )}
+            </div>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Mã GX</TableHead>
+                  <TableHead>Tên Giáo xứ</TableHead>
+                  <TableHead>Bổn mạng</TableHead>
+                  <TableHead>Ngày lễ</TableHead>
+                  <TableHead>Địa chỉ</TableHead>
+                  <TableHead>Liên hệ</TableHead>
+                  <TableHead>Thao tác</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredParishes.map((parish) => (
+                  <TableRow key={parish._id}>
+                    <TableCell>
+                      <span className="font-mono text-sm bg-blue-100 text-blue-800 px-2 py-1 rounded">
+                        {parish.parishCode}
+                      </span>
+                    </TableCell>
+                    <TableCell className="font-medium">{parish.parishName}</TableCell>
+                    <TableCell>{parish.patronSaint}</TableCell>
+                    <TableCell>{parish.feastDay || '-'}</TableCell>
+                    <TableCell className="max-w-[200px] truncate" title={parish.address}>
+                      {parish.address}
+                    </TableCell>
+                    <TableCell>
+                      <div className="text-sm">
+                        {parish.phone && <div>{parish.phone}</div>}
+                        {parish.email && <div className="text-gray-500">{parish.email}</div>}
+                        {!parish.phone && !parish.email && '-'}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      {canEdit && (
+                        <div className="flex gap-1">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => handleOpenDialog(parish)}
+                            title="Sửa"
+                          >
+                            <Edit2 size={16} />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="text-red-600 hover:text-red-700"
+                            onClick={() => handleDelete(parish._id)}
+                            title="Xóa"
+                          >
+                            <Trash2 size={16} />
+                          </Button>
+                        </div>
+                      )}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
+        </CardContent>
+      </Card>
 
       {/* Add/Edit Dialog */}
       <Dialog open={showDialog} onOpenChange={setShowDialog}>

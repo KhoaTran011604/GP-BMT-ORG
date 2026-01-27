@@ -57,6 +57,7 @@ interface RentalContractItem {
   propertyType: string;
   tenantName: string;
   tenantPhone?: string;
+  tenantContactId?: string; // FK to contacts - liên kết với đối tượng nhận gửi
   startDate: Date;
   endDate: Date;
   rentAmount: number;
@@ -104,7 +105,8 @@ export default function RentalContractsPage() {
     rentAmount: '',
     paymentCycle: 'monthly',
     depositAmount: '',
-    paymentMethod: 'cash',
+    paymentMethod: 'offline',
+    bankAccountId: '',
     bankAccount: '',
     terms: '',
     notes: ''
@@ -216,7 +218,8 @@ export default function RentalContractsPage() {
       rentAmount: '',
       paymentCycle: 'monthly',
       depositAmount: '',
-      paymentMethod: 'cash',
+      paymentMethod: 'offline',
+      bankAccountId: '',
       bankAccount: '',
       terms: '',
       notes: ''
@@ -227,6 +230,11 @@ export default function RentalContractsPage() {
     if (!formData.contractCode || !formData.parishId || !formData.propertyName ||
         !formData.tenantName || !formData.startDate || !formData.endDate || !formData.rentAmount) {
       alert('Vui lòng điền đầy đủ thông tin bắt buộc');
+      return;
+    }
+
+    if (formData.paymentMethod === 'online' && !formData.bankAccountId) {
+      alert('Vui lòng chọn tài khoản ngân hàng khi thanh toán chuyển khoản');
       return;
     }
 
@@ -334,7 +342,8 @@ export default function RentalContractsPage() {
       rentAmount: contract.rentAmount.toString(),
       paymentCycle: contract.paymentCycle,
       depositAmount: contract.depositAmount.toString(),
-      paymentMethod: 'cash',
+      paymentMethod: 'offline',
+      bankAccountId: '',
       bankAccount: '',
       terms: '',
       notes: ''
@@ -601,7 +610,8 @@ export default function RentalContractsPage() {
                               setSelectedContract(contract);
                               setConvertData({
                                 ...convertData,
-                                amount: contract.rentAmount.toString()
+                                amount: contract.rentAmount.toString(),
+                                contactId: contract.tenantContactId || '' // Mặc định chọn người thuê
                               });
                               setShowConvertDialog(true);
                             }}
@@ -835,26 +845,54 @@ export default function RentalContractsPage() {
                   <Label>Hình thức thanh toán</Label>
                   <Select
                     value={formData.paymentMethod}
-                    onValueChange={(v) => setFormData({ ...formData, paymentMethod: v })}
+                    onValueChange={(v) => setFormData({ ...formData, paymentMethod: v, bankAccountId: '', bankAccount: '' })}
                   >
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="cash">Tiền mặt</SelectItem>
-                      <SelectItem value="transfer">Chuyển khoản</SelectItem>
+                      <SelectItem value="offline">Tiền mặt</SelectItem>
+                      <SelectItem value="online">Chuyển khoản</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
 
-                {formData.paymentMethod === 'transfer' && (
+                {formData.paymentMethod === 'online' && (
                   <div className="space-y-2 col-span-2">
-                    <Label>Tài khoản ngân hàng</Label>
-                    <Input
-                      placeholder="Số tài khoản"
-                      value={formData.bankAccount}
-                      onChange={(e) => setFormData({ ...formData, bankAccount: e.target.value })}
-                    />
+                    <Label>Tài khoản ngân hàng (nhận tiền) *</Label>
+                    {bankAccounts.filter(ba => ba.accountType === 'income' || ba.accountType === 'both').length > 0 ? (
+                      <Select
+                        value={formData.bankAccountId}
+                        onValueChange={(v) => {
+                          const selectedBankAccount = bankAccounts.find(ba => ba._id?.toString() === v);
+                          setFormData({
+                            ...formData,
+                            bankAccountId: v,
+                            bankAccount: selectedBankAccount
+                              ? `${selectedBankAccount.accountNumber} - ${selectedBankAccount.bankName}`
+                              : ''
+                          });
+                        }}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Chọn tài khoản ngân hàng" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {bankAccounts
+                            .filter(ba => ba.accountType === 'income' || ba.accountType === 'both')
+                            .map((ba) => (
+                              <SelectItem key={ba._id!.toString()} value={ba._id!.toString()}>
+                                {ba.accountNumber} - {ba.bankName}
+                                {ba.isDefault && ' ★'}
+                              </SelectItem>
+                            ))}
+                        </SelectContent>
+                      </Select>
+                    ) : (
+                      <div className="text-sm text-gray-500 p-2 border rounded-md bg-gray-50">
+                        Chưa có tài khoản ngân hàng. <a href="/finance/bank-accounts" className="text-blue-600 hover:underline">Thêm tài khoản</a>
+                      </div>
+                    )}
                   </div>
                 )}
 
@@ -1180,7 +1218,8 @@ export default function RentalContractsPage() {
                       onClick={() => {
                         setConvertData({
                           ...convertData,
-                          amount: selectedContract.rentAmount.toString()
+                          amount: selectedContract.rentAmount.toString(),
+                          contactId: selectedContract.tenantContactId || '' // Mặc định chọn người thuê
                         });
                         setShowDetailDialog(false);
                         setShowConvertDialog(true);

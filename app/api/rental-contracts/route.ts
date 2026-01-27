@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import getDatabase from '@/lib/db';
-import { RentalContract } from '@/lib/schemas';
+import { RentalContract, Contact } from '@/lib/schemas';
 import { verifyToken, getTokenFromCookie } from '@/lib/auth';
 import { ObjectId } from 'mongodb';
 
@@ -68,7 +68,7 @@ export async function POST(request: NextRequest) {
 
     // Validate required fields
     if (!body.contractCode || !body.parishId || !body.propertyName || !body.tenantName ||
-        !body.startDate || !body.endDate || !body.rentAmount) {
+      !body.startDate || !body.endDate || !body.rentAmount) {
       return NextResponse.json(
         { error: 'Missing required fields' },
         { status: 400 }
@@ -77,6 +77,7 @@ export async function POST(request: NextRequest) {
 
     const db = await getDatabase();
     const collection = db.collection<RentalContract>('rental_contracts');
+    const contactsCollection = db.collection<Contact>('contacts');
 
     // Check if contract code already exists
     const existing = await collection.findOne({ contractCode: body.contractCode });
@@ -85,6 +86,37 @@ export async function POST(request: NextRequest) {
         { error: 'Contract code already exists' },
         { status: 400 }
       );
+    }
+
+    // Check/Create contact for tenant based on phone number
+    let tenantContactId: ObjectId | undefined;
+
+    if (body.tenantPhone) {
+      // Normalize phone number (remove spaces, dashes)
+      const normalizedPhone = body.tenantPhone.replace(/[\s-]/g, '');
+
+      // Check if contact with this phone already exists
+      const existingContact = await contactsCollection.findOne({
+        phone: normalizedPhone,
+        status: 'active'
+      });
+
+      if (existingContact && existingContact._id) {
+        // Use existing contact
+        tenantContactId = existingContact._id;
+      } else {
+        // Create new contact
+        const newContact: Contact = {
+          name: body.tenantName,
+          phone: normalizedPhone,
+          status: 'active',
+          createdAt: new Date(),
+          updatedAt: new Date()
+        };
+
+        const contactResult = await contactsCollection.insertOne(newContact);
+        tenantContactId = contactResult.insertedId;
+      }
     }
 
     const newContract: RentalContract = {
@@ -99,12 +131,14 @@ export async function POST(request: NextRequest) {
       tenantPhone: body.tenantPhone,
       tenantAddress: body.tenantAddress,
       tenantEmail: body.tenantEmail,
+      tenantContactId: tenantContactId,
       startDate: new Date(body.startDate),
       endDate: new Date(body.endDate),
       rentAmount: body.rentAmount,
       paymentCycle: body.paymentCycle || 'monthly',
       depositAmount: body.depositAmount || 0,
-      paymentMethod: body.paymentMethod || 'cash',
+      paymentMethod: body.paymentMethod || 'offline',
+      bankAccountId: body.bankAccountId ? new ObjectId(body.bankAccountId) : undefined,
       bankAccount: body.bankAccount,
       status: body.status || 'active',
       contractFiles: body.contractFiles || [],

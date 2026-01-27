@@ -67,15 +67,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Validate all transactions belong to the same parish
-    const parishIds = new Set(transactions.map(t => t.parishId.toString()));
-    if (parishIds.size > 1) {
-      return NextResponse.json(
-        { error: 'Các khoản thu/chi phải cùng giáo xứ để gộp vào một phiếu' },
-        { status: 400 }
-      );
-    }
-
     // Update all transactions to approved
     const updateResult = await transactionCollection.updateMany(
       { _id: { $in: objectIds }, status: 'pending' },
@@ -92,18 +83,27 @@ export async function POST(request: NextRequest) {
     const receipts: Receipt[] = [];
 
     if (createCombinedReceipt !== false) {
-      // Group transactions by senderId (for income) or receiverId (for expense)
+      // Group transactions by parishId + contactId combination
+      // Only transactions with SAME parish AND SAME contact can be merged
+      // Transactions without contact (no-contact) will get individual receipts
       const groupedTransactions = new Map<string, (Income | Expense)[]>();
 
       for (const t of transactions) {
+        const parishId = t.parishId.toString();
         const contactId = type === 'income'
-          ? ((t as Income).senderId?.toString() || 'no-contact')
-          : ((t as Expense).receiverId?.toString() || 'no-contact');
+          ? ((t as Income).senderId?.toString() || '')
+          : ((t as Expense).receiverId?.toString() || '');
 
-        if (!groupedTransactions.has(contactId)) {
-          groupedTransactions.set(contactId, []);
+        // If no contact, each transaction gets its own receipt (use unique key)
+        // If has contact, group by parishId + contactId
+        const groupKey = contactId
+          ? `${parishId}::${contactId}`
+          : `individual::${t._id!.toString()}`;
+
+        if (!groupedTransactions.has(groupKey)) {
+          groupedTransactions.set(groupKey, []);
         }
-        groupedTransactions.get(contactId)!.push(t);
+        groupedTransactions.get(groupKey)!.push(t);
       }
 
       // Create separate receipt for each group
@@ -112,7 +112,7 @@ export async function POST(request: NextRequest) {
         receiptNo: { $regex: `^REC-${year}-` }
       });
 
-      for (const [contactKey, groupTransactions] of groupedTransactions) {
+      for (const [, groupTransactions] of groupedTransactions) {
         receiptCount++;
         const receiptNo = `REC-${year}-${String(receiptCount).padStart(4, '0')}`;
 

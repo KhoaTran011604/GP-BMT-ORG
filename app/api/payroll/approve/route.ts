@@ -26,7 +26,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { period, parishId, paymentMethod = 'cash', bankAccountId, bankAccount } = body;
+    const { period, parishId, paymentMethod = 'offline', bankAccountId, bankAccount } = body;
 
     if (!period || !parishId) {
       return NextResponse.json(
@@ -114,7 +114,7 @@ export async function POST(request: NextRequest) {
         parishId: new ObjectId(parishId),
         categoryId: new ObjectId(SALARY_EXPENSE_CATEGORY_ID),
         amount: payroll.netSalary || 0,
-        paymentMethod: paymentMethod as 'cash' | 'transfer',
+        paymentMethod: paymentMethod as 'offline' | 'online',
         bankAccountId: bankAccountId ? new ObjectId(bankAccountId) : undefined,
         bankAccount,
         receiverId: receiverId,

@@ -31,8 +31,8 @@ export async function POST(
       );
     }
 
-    // Optional senderId (contact reference for payer)
-    const senderId = body.senderId ? new ObjectId(body.senderId) : undefined;
+    // senderId will be determined after fetching contract
+    let senderId: ObjectId | undefined;
 
     const db = await getDatabase();
     const contractsCollection = db.collection<RentalContract>('rental_contracts');
@@ -46,6 +46,13 @@ export async function POST(
         { error: 'Contract not found' },
         { status: 404 }
       );
+    }
+
+    // Determine senderId: use provided senderId, or fallback to contract's tenantContactId
+    if (body.senderId) {
+      senderId = new ObjectId(body.senderId);
+    } else if (contract.tenantContactId) {
+      senderId = contract.tenantContactId;
     }
 
     // Generate income code
@@ -77,7 +84,7 @@ export async function POST(
       fundId: new ObjectId(body.fundId),
       categoryId: new ObjectId(DEFAULT_RENTAL_INCOME_CATEGORY_ID),
       amount: body.amount,
-      paymentMethod: body.paymentMethod || contract.paymentMethod === 'transfer' ? 'online' : 'offline',
+      paymentMethod: body.paymentMethod || contract.paymentMethod === 'online' ? 'online' : 'offline',
       bankAccountId: body.bankAccountId ? new ObjectId(body.bankAccountId) : undefined,
       bankAccount: body.bankAccount || contract.bankAccount,
       senderId: senderId,

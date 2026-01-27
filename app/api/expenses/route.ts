@@ -145,7 +145,7 @@ export async function POST(request: NextRequest) {
       categoryId: categoryId ? new ObjectId(categoryId) : undefined,
       fundId: fundId ? new ObjectId(fundId) : undefined,
       amount: parseFloat(amount),
-      paymentMethod: paymentMethod || 'cash',
+      paymentMethod: paymentMethod || 'offline',
       bankAccountId: bankAccountId ? new ObjectId(bankAccountId) : undefined,
       bankAccount,
       payeeName,

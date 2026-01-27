@@ -143,7 +143,7 @@ export interface Expense {
   categoryId?: ObjectId;
   fundId?: ObjectId;
   amount: number;
-  paymentMethod: 'cash' | 'transfer';
+  paymentMethod: 'offline' | 'online';
   bankAccountId?: ObjectId; // FK to bank_accounts
   bankAccount?: string; // Display string (for backwards compatibility)
   payeeName?: string;
@@ -276,14 +276,16 @@ export interface RentalContract {
   tenantPhone?: string;
   tenantAddress?: string;
   tenantEmail?: string;
+  tenantContactId?: ObjectId; // FK to contacts - liên kết với đối tượng nhận gửi
   // Thông tin hợp đồng
   startDate: Date;
   endDate: Date;
   rentAmount: number;
   paymentCycle: 'monthly' | 'quarterly' | 'yearly';
   depositAmount: number;
-  paymentMethod: 'cash' | 'transfer';
-  bankAccount?: string;
+  paymentMethod: 'offline' | 'online';
+  bankAccountId?: ObjectId; // FK to bank_accounts
+  bankAccount?: string; // Display string: "accountNumber - bankName"
   // Trạng thái
   status: 'active' | 'expired' | 'terminated' | 'pending';
   // File và ghi chú
@@ -306,7 +308,7 @@ export interface RentalPayment {
   amount: number;
   paymentDate: Date;
   paymentPeriod: string;
-  paymentMethod: 'cash' | 'transfer';
+  paymentMethod: 'offline' | 'online';
   bankAccount?: string;
   receiptNo?: string;
   incomeId?: ObjectId;

@@ -288,7 +288,7 @@ export default function TransactionsPage() {
         categoryId: formData.categoryId || undefined,
         fundId: formData.fundId || undefined,
         amount: parseFloat(formData.amount),
-        paymentMethod: formData.paymentMethod === 'offline' ? 'cash' : 'transfer',
+        paymentMethod: formData.paymentMethod === 'offline' ? 'offline' : 'online',
         bankAccountId: formData.bankAccountId || undefined,
         bankAccount: bankAccountDisplay,
         receiverId: formData.contactId || undefined,
@@ -370,7 +370,7 @@ export default function TransactionsPage() {
         categoryId: formData.categoryId || undefined,
         fundId: formData.fundId || undefined,
         amount: parseFloat(formData.amount),
-        paymentMethod: formData.paymentMethod === 'offline' ? 'cash' : 'transfer',
+        paymentMethod: formData.paymentMethod === 'offline' ? 'offline' : 'online',
         bankAccountId: formData.bankAccountId || undefined,
         bankAccount: bankAccountDisplay,
         receiverId: formData.contactId || undefined,
@@ -608,7 +608,7 @@ export default function TransactionsPage() {
 
     // Payment method filter
     if (paymentMethodFilter !== 'all') {
-      const normalizedMethod = t.paymentMethod === 'cash' ? 'offline' : t.paymentMethod === 'transfer' ? 'online' : t.paymentMethod;
+      const normalizedMethod = t.paymentMethod === 'offline' ? 'offline' : t.paymentMethod === 'online' ? 'online' : t.paymentMethod;
       if (normalizedMethod !== paymentMethodFilter) {
         return false;
       }

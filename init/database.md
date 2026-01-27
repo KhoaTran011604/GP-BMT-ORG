@@ -199,7 +199,7 @@
 | `category_id`    | uuid      | **FK** → `expense_categories.category_id`, NOT NULL | Danh mục chi                                 | Expense category     |
 | `fund_id`        | uuid      | **FK** → `funds.fund_id`                            | Nguồn quỹ chi                                | Fund source          |
 | `amount`         | decimal   | NOT NULL                                            | Số tiền                                      | Amount               |
-| `payment_method` | enum      |                                                     | Hình thức (cash/transfer)                    | Payment method       |
+| `payment_method` | enum      |                                                     | Hình thức (offline/online)                   | Payment method       |
 | `bank_account`   | varchar   |                                                     | TK chi                                       | Bank account         |
 | `payee_name`     | varchar   |                                                     | Người nhận                                   | Payee name           |
 | `description`    | text      |                                                     | Diễn giải                                    | Description          |

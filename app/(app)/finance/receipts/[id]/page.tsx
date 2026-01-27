@@ -304,7 +304,7 @@ export default function ReceiptDetailPage() {
                 <div>
                   <p className="text-sm text-gray-500">Hình thức thanh toán</p>
                   <p className="font-medium">
-                    {transaction?.paymentMethod === 'offline' || transaction?.paymentMethod === 'cash'
+                    {transaction?.paymentMethod === 'offline' || transaction?.paymentMethod === 'offline'
                       ? 'Tiền mặt'
                       : 'Chuyển khoản'}
                   </p>
