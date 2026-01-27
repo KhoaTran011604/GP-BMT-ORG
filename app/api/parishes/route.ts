@@ -1,5 +1,6 @@
 import { getCollection } from '@/lib/db';
 import { verifyToken, getTokenFromCookie } from '@/lib/auth';
+import { createAuditLog } from '@/lib/audit';
 import { Parish } from '@/lib/schemas';
 import { NextRequest, NextResponse } from 'next/server';
 import { ObjectId } from 'mongodb';
@@ -82,6 +83,16 @@ export async function POST(request: NextRequest) {
     };
 
     const result = await parishesCollection.insertOne(parish as any);
+
+    // Create audit log
+    await createAuditLog({
+      userId: payload.userId,
+      action: 'create',
+      module: 'parishes',
+      recordId: result.insertedId.toString(),
+      newValue: { _id: result.insertedId, ...parish },
+      request,
+    });
 
     return NextResponse.json(
       { data: { _id: result.insertedId, ...parish } },

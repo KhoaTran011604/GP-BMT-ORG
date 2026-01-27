@@ -46,6 +46,14 @@ export interface TransactionItem {
     submittedAt?: string;
     sourceType?: 'manual' | 'rental_contract';
     rentalContractId?: string;
+    // Contact references
+    senderId?: string;
+    receiverId?: string;
+    // Bank info for sender/receiver (online transactions)
+    senderBankName?: string;
+    senderBankAccount?: string;
+    receiverBankName?: string;
+    receiverBankAccount?: string;
 }
 
 interface TransactionTableProps {

@@ -45,6 +45,8 @@ export async function GET(
       hireDate: staff.hireDate,
       contractType: staff.contractType,
       status: staff.status,
+      bankName: staff.bankName,
+      bankAccountNumber: staff.bankAccountNumber,
     });
   } catch (error) {
     console.error('Error fetching staff:', error);
@@ -118,6 +120,8 @@ export async function PUT(
       hireDate: body.hireDate ? new Date(body.hireDate) : existingStaff.hireDate,
       contractType: body.contractType || existingStaff.contractType,
       status: body.status || existingStaff.status,
+      bankName: body.bankName,
+      bankAccountNumber: body.bankAccountNumber,
       updatedAt: new Date(),
     };
 

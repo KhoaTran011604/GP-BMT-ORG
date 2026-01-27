@@ -1,5 +1,6 @@
 import { getCollection } from '@/lib/db';
 import { verifyToken, getTokenFromCookie } from '@/lib/auth';
+import { createAuditLog } from '@/lib/audit';
 import { Parish } from '@/lib/schemas';
 import { NextRequest, NextResponse } from 'next/server';
 import { ObjectId } from 'mongodb';
@@ -7,9 +8,10 @@ import { ObjectId } from 'mongodb';
 // GET - Get parish by ID
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const token = await getTokenFromCookie(request.headers.get('cookie') || '');
 
     if (!token) {
@@ -20,7 +22,7 @@ export async function GET(
 
     const parishesCollection = await getCollection('parishes');
     const parish = await parishesCollection.findOne({
-      _id: new ObjectId(params.id),
+      _id: new ObjectId(id),
     });
 
     if (!parish) {
@@ -40,9 +42,10 @@ export async function GET(
 // PUT - Update parish
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const token = await getTokenFromCookie(request.headers.get('cookie') || '');
 
     if (!token) {
@@ -58,6 +61,11 @@ export async function PUT(
 
     const parishesCollection = await getCollection('parishes');
 
+    // Get old value for audit log
+    const oldParish = await parishesCollection.findOne({
+      _id: new ObjectId(id),
+    });
+
     const updateData: Partial<Parish> = {
       ...body,
       updatedAt: new Date(),
@@ -72,16 +80,30 @@ export async function PUT(
     }
 
     const result = await parishesCollection.findOneAndUpdate(
-      { _id: new ObjectId(params.id) },
+      { _id: new ObjectId(id) },
       { $set: updateData },
       { returnDocument: 'after' }
     );
 
-    if (!result.value) {
+    // MongoDB driver 5.x+ returns document directly, older versions return { value: document }
+    const updatedParish = result?.value ?? result;
+
+    if (!updatedParish) {
       return NextResponse.json({ error: 'Parish not found' }, { status: 404 });
     }
 
-    return NextResponse.json({ data: result.value });
+    // Create audit log
+    await createAuditLog({
+      userId: payload.userId,
+      action: 'update',
+      module: 'parishes',
+      recordId: id,
+      oldValue: oldParish || undefined,
+      newValue: updatedParish,
+      request,
+    });
+
+    return NextResponse.json({ data: updatedParish });
   } catch (error) {
     console.error('Error updating parish:', error);
     return NextResponse.json(
@@ -94,9 +116,10 @@ export async function PUT(
 // DELETE - Delete parish
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const token = await getTokenFromCookie(request.headers.get('cookie') || '');
 
     if (!token) {
@@ -110,13 +133,28 @@ export async function DELETE(
 
     const parishesCollection = await getCollection('parishes');
 
+    // Get old value for audit log
+    const oldParish = await parishesCollection.findOne({
+      _id: new ObjectId(id),
+    });
+
     const result = await parishesCollection.deleteOne({
-      _id: new ObjectId(params.id),
+      _id: new ObjectId(id),
     });
 
     if (result.deletedCount === 0) {
       return NextResponse.json({ error: 'Parish not found' }, { status: 404 });
     }
+
+    // Create audit log
+    await createAuditLog({
+      userId: payload.userId,
+      action: 'delete',
+      module: 'parishes',
+      recordId: id,
+      oldValue: oldParish || undefined,
+      request,
+    });
 
     return NextResponse.json({ message: 'Parish deleted successfully' });
   } catch (error) {

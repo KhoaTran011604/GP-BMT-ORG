@@ -85,6 +85,12 @@ export async function PUT(
     if (body.phone !== undefined) {
       updateData.phone = body.phone?.trim() || undefined;
     }
+    if (body.bankName !== undefined) {
+      updateData.bankName = body.bankName?.trim() || undefined;
+    }
+    if (body.bankAccountNumber !== undefined) {
+      updateData.bankAccountNumber = body.bankAccountNumber?.trim() || undefined;
+    }
     if (body.status !== undefined) {
       updateData.status = body.status;
     }

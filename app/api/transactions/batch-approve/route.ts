@@ -83,76 +83,43 @@ export async function POST(request: NextRequest) {
     const receipts: Receipt[] = [];
 
     if (createCombinedReceipt !== false) {
-      // Group transactions by parishId + contactId combination
-      // Only transactions with SAME parish AND SAME contact can be merged
-      // Transactions without contact (no-contact) will get individual receipts
-      const groupedTransactions = new Map<string, (Income | Expense)[]>();
-
-      for (const t of transactions) {
-        const parishId = t.parishId.toString();
-        const contactId = type === 'income'
-          ? ((t as Income).senderId?.toString() || '')
-          : ((t as Expense).receiverId?.toString() || '');
-
-        // If no contact, each transaction gets its own receipt (use unique key)
-        // If has contact, group by parishId + contactId
-        const groupKey = contactId
-          ? `${parishId}::${contactId}`
-          : `individual::${t._id!.toString()}`;
-
-        if (!groupedTransactions.has(groupKey)) {
-          groupedTransactions.set(groupKey, []);
-        }
-        groupedTransactions.get(groupKey)!.push(t);
-      }
-
-      // Create separate receipt for each group
+      // Create individual receipt for each transaction
       const year = now.getFullYear();
       let receiptCount = await receiptsCollection.countDocuments({
         receiptNo: { $regex: `^REC-${year}-` }
       });
 
-      for (const [, groupTransactions] of groupedTransactions) {
+      for (const transaction of transactions) {
         receiptCount++;
         const receiptNo = `REC-${year}-${String(receiptCount).padStart(4, '0')}`;
 
-        // Calculate total amount for this group
-        const totalAmount = groupTransactions.reduce((sum, t) => sum + t.amount, 0);
+        // Build items array with single transaction detail
+        const items = [{
+          referenceId: transaction._id!,
+          code: type === 'income' ? (transaction as Income).incomeCode : (transaction as Expense).expenseCode,
+          amount: transaction.amount,
+          date: type === 'income' ? (transaction as Income).incomeDate : (transaction as Expense).expenseDate,
+          payerPayee: type === 'income' ? (transaction as Income).payerName : (transaction as Expense).payeeName,
+          description: transaction.description
+        }];
 
-        // Build items array with details
-        const items = groupTransactions.map(t => ({
-          referenceId: t._id!,
-          code: type === 'income' ? (t as Income).incomeCode : (t as Expense).expenseCode,
-          amount: t.amount,
-          date: type === 'income' ? (t as Income).incomeDate : (t as Expense).expenseDate,
-          payerPayee: type === 'income' ? (t as Income).payerName : (t as Expense).payeeName,
-          description: t.description
-        }));
+        // Get payer/payee for display
+        const payerPayeeStr = type === 'income'
+          ? (transaction as Income).payerName || ''
+          : (transaction as Expense).payeeName || '';
 
-        // Get payers/payees for display
-        const payerPayees = groupTransactions
-          .map(t => type === 'income' ? (t as Income).payerName : (t as Expense).payeeName)
-          .filter(Boolean);
-        const payerPayeeStr = payerPayees.length > 0
-          ? payerPayees[0] // Use first one since they should all be the same contact
-          : '';
-
-        // Build description
-        const descriptions = groupTransactions.map(t => t.description).filter(Boolean);
-        const description = descriptions.length > 0
-          ? descriptions.join('; ')
-          : `Phiếu ${type === 'income' ? 'thu' : 'chi'} tổng hợp ${groupTransactions.length} khoản`;
-
-        const groupObjectIds = groupTransactions.map(t => t._id!);
+        // Use transaction description or generate default
+        const description = transaction.description ||
+          `Phiếu ${type === 'income' ? 'thu' : 'chi'} ${type === 'income' ? (transaction as Income).incomeCode : (transaction as Expense).expenseCode}`;
 
         const newReceipt: Receipt = {
           receiptNo,
           receiptType: type,
-          referenceIds: groupObjectIds,
-          parishId: groupTransactions[0].parishId,
-          amount: totalAmount,
+          referenceIds: [transaction._id!],
+          parishId: transaction.parishId,
+          amount: transaction.amount,
           receiptDate: now,
-          payerPayee: payerPayeeStr || '',
+          payerPayee: payerPayeeStr,
           description,
           items,
           createdBy: userId,
@@ -162,9 +129,9 @@ export async function POST(request: NextRequest) {
         const receiptResult = await receiptsCollection.insertOne(newReceipt);
         receipts.push({ ...newReceipt, _id: receiptResult.insertedId });
 
-        // Update transactions in this group with the receiptId
-        await transactionCollection.updateMany(
-          { _id: { $in: groupObjectIds } },
+        // Update transaction with the receiptId
+        await transactionCollection.updateOne(
+          { _id: transaction._id },
           {
             $set: {
               receiptId: receiptResult.insertedId,

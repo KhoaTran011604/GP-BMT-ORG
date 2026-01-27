@@ -18,6 +18,7 @@ export async function GET(request: NextRequest) {
     const status = searchParams.get('status');
     const parishId = searchParams.get('parishId');
     const assetType = searchParams.get('assetType');
+    const available = searchParams.get('available'); // Filter for assets not currently rented
 
     const assetsCollection = await getCollection('assets');
 
@@ -26,10 +27,27 @@ export async function GET(request: NextRequest) {
     if (parishId) query.parishId = parishId;
     if (assetType) query.assetType = assetType;
 
-    const assets = await assetsCollection
+    let assets = await assetsCollection
       .find(query)
       .sort({ createdAt: -1 })
       .toArray();
+
+    // Filter out assets that are currently rented (have active rental contracts)
+    if (available === 'true') {
+      const rentalContractsCollection = await getCollection('rental_contracts');
+      const activeContracts = await rentalContractsCollection
+        .find({ status: 'active' })
+        .project({ assetId: 1 })
+        .toArray();
+
+      const rentedAssetIds = new Set(
+        activeContracts
+          .map(c => c.assetId?.toString())
+          .filter(Boolean)
+      );
+
+      assets = assets.filter(a => !rentedAssetIds.has(a._id.toString()));
+    }
 
     return NextResponse.json(assets);
   } catch (error) {

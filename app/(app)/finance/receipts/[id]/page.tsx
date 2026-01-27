@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, Printer, Home, Calendar, User, Building, CreditCard, FileText, Image as ImageIcon, List, XCircle } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { formatCompactCurrency } from '@/lib/utils';
+import { formatCompactCurrency, numberToVietnameseWords } from '@/lib/utils';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -28,6 +28,11 @@ interface TransactionInfo {
   bankAccount?: string;
   payerName?: string;
   payeeName?: string;
+  // Sender/Receiver bank info for online transactions
+  senderBankName?: string;
+  senderBankAccount?: string;
+  receiverBankName?: string;
+  receiverBankAccount?: string;
   description?: string;
   fiscalYear?: number;
   fiscalPeriod?: number;
@@ -246,11 +251,6 @@ export default function ReceiptDetailPage() {
           </div>
           <CardTitle className="text-2xl">
             {isIncome ? 'PHIẾU THU' : 'PHIẾU CHI'}
-            {isCombined && (
-              <Badge className="ml-3 bg-purple-100 text-purple-700 text-sm font-normal">
-                Tổng hợp {receipt.items?.length || transactions.length} khoản
-              </Badge>
-            )}
           </CardTitle>
           <CardDescription className="text-base">
             Số: <span className="font-mono font-bold">{receipt.receiptNo}</span>
@@ -304,30 +304,80 @@ export default function ReceiptDetailPage() {
                 <div>
                   <p className="text-sm text-gray-500">Hình thức thanh toán</p>
                   <p className="font-medium">
-                    {transaction?.paymentMethod === 'offline' || transaction?.paymentMethod === 'offline'
+                    {transaction?.paymentMethod === 'offline'
                       ? 'Tiền mặt'
                       : 'Chuyển khoản'}
                   </p>
                 </div>
               </div>
 
-              {transaction?.bankAccount && (
+              {/* Only show bank info for online (transfer) transactions */}
+              {/* {transaction?.paymentMethod === 'online' && transaction?.bankAccount && (
                 <div className="flex items-start gap-3">
                   <Building size={18} className="text-gray-400 mt-0.5" />
                   <div>
-                    <p className="text-sm text-gray-500">Tài khoản ngân hàng</p>
+                    <p className="text-sm text-gray-500">
+                      {isIncome ? 'Tài khoản nhận tiền (Giáo xứ)' : 'Tài khoản chi tiền (Giáo xứ)'}
+                    </p>
                     <p className="font-mono font-medium">{transaction.bankAccount}</p>
                   </div>
                 </div>
-              )}
+              )} */}
             </div>
           </div>
+
+          {/* Sender/Receiver Bank Info - Only for online transactions */}
+          {transaction?.paymentMethod === 'online' && (
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 print:bg-white">
+              <div className="flex items-center gap-2 mb-3">
+                <CreditCard size={18} className="text-blue-600" />
+                <p className="font-medium text-blue-800">Thông tin chuyển khoản</p>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* TK Người gửi (for income) or TK Người nhận (for expense) */}
+                {isIncome ? (
+                  (transaction.senderBankName || transaction.senderBankAccount) && (
+                    <div className="bg-white p-3 rounded-md border">
+                      <p className="text-sm text-gray-500 mb-1">Tài khoản người gửi</p>
+                      <p className="font-medium">
+                        {transaction.senderBankAccount}
+                        {transaction.senderBankName && ` - ${transaction.senderBankName}`}
+                      </p>
+                    </div>
+                  )
+                ) : (
+                  (transaction.receiverBankName || transaction.receiverBankAccount) && (
+                    <div className="bg-white p-3 rounded-md border">
+                      <p className="text-sm text-gray-500 mb-1">Tài khoản người nhận</p>
+                      <p className="font-medium">
+                        {transaction.receiverBankAccount}
+                        {transaction.receiverBankName && ` - ${transaction.receiverBankName}`}
+                      </p>
+                    </div>
+                  )
+                )}
+
+                {/* TK Giáo xứ */}
+                {transaction.bankAccount && (
+                  <div className="bg-white p-3 rounded-md border">
+                    <p className="text-sm text-gray-500 mb-1">
+                      {isIncome ? 'Tài khoản nhận (Giáo xứ)' : 'Tài khoản chi (Giáo xứ)'}
+                    </p>
+                    <p className="font-medium">{transaction.bankAccount}</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
 
           {/* Amount - Highlighted */}
           <div className="text-center bg-gradient-to-br from-gray-50 to-gray-100 p-6 rounded-xl border-2 print:bg-white">
             <p className="text-sm text-gray-600 mb-2 font-medium">TỔNG SỐ TIỀN</p>
             <p className={`text-4xl font-bold ${isIncome ? 'text-green-600' : 'text-red-600'} print:text-black`}>
               {formatCurrency(receipt.amount)}
+            </p>
+            <p className="text-sm text-gray-600 italic mt-2">
+              Bằng chữ: <span className="font-medium">{numberToVietnameseWords(receipt.amount)}</span>
             </p>
             <Badge className={`mt-2 ${isIncome ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
               {isIncome ? 'Thu vào' : 'Chi ra'}
@@ -368,9 +418,6 @@ export default function ReceiptDetailPage() {
                 <h3 className="text-sm font-medium text-gray-600">
                   Chi tiết các khoản {isIncome ? 'thu' : 'chi'} ({receipt.items.length} khoản)
                 </h3>
-                <Badge variant="outline" className="bg-purple-50 text-purple-700 ml-2">
-                  Phiếu tổng hợp
-                </Badge>
               </div>
               <div className="border rounded-lg overflow-hidden">
                 <Table>
@@ -400,9 +447,9 @@ export default function ReceiptDetailPage() {
                       </TableRow>
                     ))}
                     <TableRow className="bg-gray-100 font-semibold">
-                      <TableCell colSpan={5} className="text-right">TỔNG CỘNG:</TableCell>
-                      <TableCell className={`text-right ${isIncome ? 'text-green-700' : 'text-red-700'}`}>
-                        {formatCurrency(receipt.amount)}
+                      <TableCell colSpan={5} className="text-right text-base">TỔNG CỘNG:</TableCell>
+                      <TableCell className={`text-right text-base ${isIncome ? 'text-green-700' : 'text-red-700'}`}>
+                        {formatCompactCurrency(receipt.amount)}
                       </TableCell>
                     </TableRow>
                   </TableBody>

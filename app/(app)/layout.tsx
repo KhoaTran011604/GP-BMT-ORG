@@ -29,7 +29,6 @@ import {
   Bell,
   Search,
   User,
-  Building,
   CreditCard,
   Receipt,
   Briefcase,
@@ -39,6 +38,8 @@ import {
   FolderOpen,
   Landmark,
   Shield,
+  History,
+  KeyRound,
 } from 'lucide-react';
 
 interface MenuItem {
@@ -64,7 +65,7 @@ const menuData: MenuItem[] = [
     label: 'Giáo xứ',
     icon: <Church size={20} />,
     href: '/parish',
-    roles: ['super_admin', 'cha_quan_ly'], // Only Super Admin and Cha Quản lý
+    roles: ['super_admin', 'cha_quan_ly', 'cha_xu'], // Only Super Admin and Cha Quản lý
   },
   {
     id: 'people',
@@ -100,9 +101,8 @@ const menuData: MenuItem[] = [
     label: 'Hành chính & Tài sản',
     icon: <FolderOpen size={20} />,
     children: [
-      { id: 'projects', label: 'Công trình & Dự án', icon: <Building size={18} />, href: '/admin/projects' },
       { id: 'assets', label: 'Quản lý Tài sản', icon: <Landmark size={18} />, href: '/admin/assets' },
-      { id: 'rental-contracts', label: 'Hợp đồng Cho thuê BDS', icon: <FileSignature size={18} />, href: '/admin/rental-contracts' },
+      { id: 'rental-contracts', label: 'Hợp đồng Cho thuê', icon: <FileSignature size={18} />, href: '/admin/rental-contracts' },
     ],
     roles: ['super_admin', 'cha_quan_ly', 'cha_xu'], // Super Admin, Cha Quản lý, and Cha xứ
   },
@@ -112,6 +112,7 @@ const menuData: MenuItem[] = [
     icon: <Settings size={20} />,
     children: [
       { id: 'users', label: 'Phân quyền (RBAC)', icon: <Shield size={18} />, href: '/settings/users' },
+      { id: 'audit-logs', label: 'Nhật ký hệ thống', icon: <History size={18} />, href: '/settings/audit-logs' },
     ],
     roles: ['super_admin'], // Only Super Admin
   },
@@ -388,11 +389,15 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                     </button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-48">
-                    <DropdownMenuItem>
-                      <User size={16} className="mr-2" /> Hồ sơ cá nhân
+                    <DropdownMenuItem asChild>
+                      <Link href="/settings/profile">
+                        <User size={16} className="mr-2" /> Hồ sơ cá nhân
+                      </Link>
                     </DropdownMenuItem>
-                    <DropdownMenuItem>
-                      <Settings size={16} className="mr-2" /> Cài đặt
+                    <DropdownMenuItem asChild>
+                      <Link href="/settings/account">
+                        <Settings size={16} className="mr-2" /> Cài đặt
+                      </Link>
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={handleLogout} className="text-red-600">
@@ -522,11 +527,15 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                   <p className="font-medium">{user.fullName}</p>
                   <p className="text-sm text-gray-500">{user.email}</p>
                 </div>
-                <DropdownMenuItem>
-                  <User size={16} className="mr-2" /> Hồ sơ cá nhân
+                <DropdownMenuItem asChild>
+                  <Link href="/settings/profile">
+                    <User size={16} className="mr-2" /> Hồ sơ cá nhân
+                  </Link>
                 </DropdownMenuItem>
-                <DropdownMenuItem>
-                  <Settings size={16} className="mr-2" /> Cài đặt tài khoản
+                <DropdownMenuItem asChild>
+                  <Link href="/settings/account">
+                    <Settings size={16} className="mr-2" /> Cài đặt tài khoản
+                  </Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleLogout} className="text-red-600">

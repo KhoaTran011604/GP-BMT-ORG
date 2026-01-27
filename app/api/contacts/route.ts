@@ -57,7 +57,7 @@ export async function POST(request: NextRequest) {
     await verifyToken(token);
 
     const body = await request.json();
-    const { name, phone } = body;
+    const { name, phone, bankName, bankAccountNumber } = body;
 
     if (!name || !name.trim()) {
       return NextResponse.json(
@@ -72,6 +72,8 @@ export async function POST(request: NextRequest) {
     const newContact: Contact = {
       name: name.trim(),
       phone: phone?.trim() || undefined,
+      bankName: bankName?.trim() || undefined,
+      bankAccountNumber: bankAccountNumber?.trim() || undefined,
       status: 'active',
       createdAt: now,
       updatedAt: now,
