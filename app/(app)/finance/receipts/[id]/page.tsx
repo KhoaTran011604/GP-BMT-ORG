@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, Printer, Home, Calendar, User, Building, CreditCard, FileText, Image as ImageIcon, List, XCircle } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { formatCompactCurrency } from '@/lib/utils';
+import { formatCompactCurrency, numberToVietnameseWords } from '@/lib/utils';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -251,11 +251,6 @@ export default function ReceiptDetailPage() {
           </div>
           <CardTitle className="text-2xl">
             {isIncome ? 'PHIẾU THU' : 'PHIẾU CHI'}
-            {isCombined && (
-              <Badge className="ml-3 bg-purple-100 text-purple-700 text-sm font-normal">
-                Tổng hợp {receipt.items?.length || transactions.length} khoản
-              </Badge>
-            )}
           </CardTitle>
           <CardDescription className="text-base">
             Số: <span className="font-mono font-bold">{receipt.receiptNo}</span>
@@ -381,6 +376,9 @@ export default function ReceiptDetailPage() {
             <p className={`text-4xl font-bold ${isIncome ? 'text-green-600' : 'text-red-600'} print:text-black`}>
               {formatCurrency(receipt.amount)}
             </p>
+            <p className="text-sm text-gray-600 italic mt-2">
+              Bằng chữ: <span className="font-medium">{numberToVietnameseWords(receipt.amount)}</span>
+            </p>
             <Badge className={`mt-2 ${isIncome ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
               {isIncome ? 'Thu vào' : 'Chi ra'}
             </Badge>
@@ -420,9 +418,6 @@ export default function ReceiptDetailPage() {
                 <h3 className="text-sm font-medium text-gray-600">
                   Chi tiết các khoản {isIncome ? 'thu' : 'chi'} ({receipt.items.length} khoản)
                 </h3>
-                <Badge variant="outline" className="bg-purple-50 text-purple-700 ml-2">
-                  Phiếu tổng hợp
-                </Badge>
               </div>
               <div className="border rounded-lg overflow-hidden">
                 <Table>
@@ -452,9 +447,9 @@ export default function ReceiptDetailPage() {
                       </TableRow>
                     ))}
                     <TableRow className="bg-gray-100 font-semibold">
-                      <TableCell colSpan={5} className="text-right">TỔNG CỘNG:</TableCell>
-                      <TableCell className={`text-right ${isIncome ? 'text-green-700' : 'text-red-700'}`}>
-                        {formatCurrency(receipt.amount)}
+                      <TableCell colSpan={5} className="text-right text-base">TỔNG CỘNG:</TableCell>
+                      <TableCell className={`text-right text-base ${isIncome ? 'text-green-700' : 'text-red-700'}`}>
+                        {formatCompactCurrency(receipt.amount)}
                       </TableCell>
                     </TableRow>
                   </TableBody>

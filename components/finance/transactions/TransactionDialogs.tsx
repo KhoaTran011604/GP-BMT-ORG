@@ -412,7 +412,7 @@ export function BatchApproveDialog({
                         <>
                             <div className="bg-blue-50 border border-blue-200 p-4 rounded-lg">
                                 <p className="text-sm text-blue-800">
-                                    <strong>Phiếu tổng hợp:</strong> Hệ thống sẽ tự động tạo <strong>1 phiếu {transactionType === 'income' ? 'thu' : 'chi'} tổng hợp</strong> chứa chi tiết tất cả {selectedCount} khoản đã chọn.
+                                    <strong>Tạo phiếu riêng biệt:</strong> Hệ thống sẽ tự động tạo <strong>{selectedCount} phiếu {transactionType === 'income' ? 'thu' : 'chi'} riêng biệt</strong> (mỗi khoản sẽ có 1 phiếu riêng).
                                 </p>
                             </div>
                             <div className="bg-amber-50 border border-amber-200 p-4 rounded-lg">
