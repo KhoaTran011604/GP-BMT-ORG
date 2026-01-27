@@ -67,10 +67,10 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
 
     // Validate required fields
-    if (!body.contractCode || !body.parishId || !body.propertyName || !body.tenantName ||
+    if (!body.contractCode || !body.parishId || !body.assetId || !body.propertyName || !body.tenantName ||
       !body.startDate || !body.endDate || !body.rentAmount) {
       return NextResponse.json(
-        { error: 'Missing required fields' },
+        { error: 'Thiếu thông tin bắt buộc (Mã hợp đồng, Giáo xứ, Tài sản, Tên BDS, Tên bên thuê, Ngày bắt đầu, Ngày kết thúc, Tiền thuê)' },
         { status: 400 }
       );
     }
@@ -104,11 +104,29 @@ export async function POST(request: NextRequest) {
       if (existingContact && existingContact._id) {
         // Use existing contact
         tenantContactId = existingContact._id;
+
+        // Update bank info if contact doesn't have it and user provided it
+        const needsBankUpdate = (!existingContact.bankName && body.tenantBankName) ||
+                                (!existingContact.bankAccountNumber && body.tenantBankAccount);
+        if (needsBankUpdate) {
+          await contactsCollection.updateOne(
+            { _id: existingContact._id },
+            {
+              $set: {
+                ...(body.tenantBankName && !existingContact.bankName ? { bankName: body.tenantBankName } : {}),
+                ...(body.tenantBankAccount && !existingContact.bankAccountNumber ? { bankAccountNumber: body.tenantBankAccount } : {}),
+                updatedAt: new Date()
+              }
+            }
+          );
+        }
       } else {
         // Create new contact
         const newContact: Contact = {
           name: body.tenantName,
           phone: normalizedPhone,
+          bankName: body.tenantBankName || undefined,
+          bankAccountNumber: body.tenantBankAccount || undefined,
           status: 'active',
           createdAt: new Date(),
           updatedAt: new Date()
@@ -122,6 +140,7 @@ export async function POST(request: NextRequest) {
     const newContract: RentalContract = {
       contractCode: body.contractCode,
       parishId: new ObjectId(body.parishId),
+      assetId: new ObjectId(body.assetId),
       propertyName: body.propertyName,
       propertyAddress: body.propertyAddress,
       propertyArea: body.propertyArea,
@@ -131,6 +150,8 @@ export async function POST(request: NextRequest) {
       tenantPhone: body.tenantPhone,
       tenantAddress: body.tenantAddress,
       tenantEmail: body.tenantEmail,
+      tenantBankName: body.tenantBankName,
+      tenantBankAccount: body.tenantBankAccount,
       tenantContactId: tenantContactId,
       startDate: new Date(body.startDate),
       endDate: new Date(body.endDate),

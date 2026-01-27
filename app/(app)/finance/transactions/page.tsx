@@ -21,7 +21,7 @@ import { useAuth } from '@/lib/auth-context';
 import { DateRangePicker } from '@/components/finance/transactions/DateRangePicker';
 import { TransactionStats } from '@/components/finance/transactions/TransactionStats';
 import { TransactionFilters } from '@/components/finance/transactions/TransactionFilters';
-import { TransactionTable, TransactionItem } from '@/components/finance/transactions/TransactionTable';
+import { TransactionTable } from '@/components/finance/transactions/TransactionTable';
 import { TransactionFormDialog } from '@/components/finance/transactions/TransactionFormDialog';
 import { TransactionTypeToggle } from '@/components/finance/transactions/TransactionTypeToggle';
 import {
@@ -63,6 +63,11 @@ interface TransactionItem {
   // Contact references
   senderId?: string;   // for income
   receiverId?: string; // for expense
+  // Bank info for sender/receiver (online transactions)
+  senderBankName?: string;
+  senderBankAccount?: string;
+  receiverBankName?: string;
+  receiverBankAccount?: string;
 }
 
 export default function TransactionsPage() {
@@ -74,7 +79,7 @@ export default function TransactionsPage() {
   const [parishes, setParishes] = useState<Parish[]>([]);
   const [expenseCategories, setExpenseCategories] = useState<ExpenseCategory[]>([]);
   const [bankAccounts, setBankAccounts] = useState<BankAccount[]>([]);
-  const [contacts, setContacts] = useState<{ _id: string; name: string; phone?: string }[]>([]);
+  const [contacts, setContacts] = useState<{ _id: string; name: string; phone?: string; bankName?: string; bankAccountNumber?: string }[]>([]);
   const [showQuickAddContact, setShowQuickAddContact] = useState(false);
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState('all');
@@ -119,6 +124,8 @@ export default function TransactionsPage() {
     bankAccountId: '', // FK to bank_accounts
     contactId: '', // FK to contacts - senderId for income, receiverId for expense
     payerPayeeName: '',
+    contactBankName: '', // Bank name of the contact (sender/receiver)
+    contactBankAccount: '', // Bank account of the contact (sender/receiver)
     description: '',
     transactionDate: new Date().toISOString().split('T')[0],
     images: [] as string[],
@@ -235,6 +242,8 @@ export default function TransactionsPage() {
       bankAccountId: '',
       contactId: '',
       payerPayeeName: '',
+      contactBankName: '',
+      contactBankAccount: '',
       description: '',
       transactionDate: new Date().toISOString().split('T')[0],
       images: [],
@@ -279,6 +288,8 @@ export default function TransactionsPage() {
         bankAccount: bankAccountDisplay,
         senderId: formData.contactId || undefined,
         payerName: contactName,
+        senderBankName: formData.paymentMethod === 'online' ? (formData.contactBankName || undefined) : undefined,
+        senderBankAccount: formData.paymentMethod === 'online' ? (formData.contactBankAccount || undefined) : undefined,
         description: formData.description || undefined,
         incomeDate: formData.transactionDate,
         images: formData.images,
@@ -293,6 +304,8 @@ export default function TransactionsPage() {
         bankAccount: bankAccountDisplay,
         receiverId: formData.contactId || undefined,
         payeeName: contactName,
+        receiverBankName: formData.paymentMethod === 'online' ? (formData.contactBankName || undefined) : undefined,
+        receiverBankAccount: formData.paymentMethod === 'online' ? (formData.contactBankAccount || undefined) : undefined,
         description: formData.description || undefined,
         expenseDate: formData.transactionDate,
         images: formData.images,
@@ -351,16 +364,21 @@ export default function TransactionsPage() {
         : null;
       const contactName = selectedContact?.name || formData.payerPayeeName || undefined;
 
+      // Clear bank info if payment method is offline
+      const isOffline = formData.paymentMethod === 'offline';
+
       const body = selectedItem.type === 'income' ? {
         parishId: formData.parishId,
         fundId: formData.fundId,
         categoryId: formData.categoryId || undefined,
         amount: parseFloat(formData.amount),
         paymentMethod: formData.paymentMethod,
-        bankAccountId: formData.bankAccountId || undefined,
-        bankAccount: bankAccountDisplay,
+        bankAccountId: isOffline ? null : (formData.bankAccountId || undefined),
+        bankAccount: isOffline ? null : bankAccountDisplay,
         senderId: formData.contactId || undefined,
         payerName: contactName,
+        senderBankName: isOffline ? null : (formData.contactBankName || undefined),
+        senderBankAccount: isOffline ? null : (formData.contactBankAccount || undefined),
         description: formData.description || undefined,
         incomeDate: formData.transactionDate,
         images: formData.images,
@@ -370,11 +388,13 @@ export default function TransactionsPage() {
         categoryId: formData.categoryId || undefined,
         fundId: formData.fundId || undefined,
         amount: parseFloat(formData.amount),
-        paymentMethod: formData.paymentMethod === 'offline' ? 'offline' : 'online',
-        bankAccountId: formData.bankAccountId || undefined,
-        bankAccount: bankAccountDisplay,
+        paymentMethod: isOffline ? 'offline' : 'online',
+        bankAccountId: isOffline ? null : (formData.bankAccountId || undefined),
+        bankAccount: isOffline ? null : bankAccountDisplay,
         receiverId: formData.contactId || undefined,
         payeeName: contactName,
+        receiverBankName: isOffline ? null : (formData.contactBankName || undefined),
+        receiverBankAccount: isOffline ? null : (formData.contactBankAccount || undefined),
         description: formData.description || undefined,
         expenseDate: formData.transactionDate,
         images: formData.images,
@@ -557,6 +577,8 @@ export default function TransactionsPage() {
           bankAccountId: fullData.bankAccountId?.toString() || '',
           contactId: item.type === 'income' ? (fullData.senderId?.toString() || '') : (fullData.receiverId?.toString() || ''),
           payerPayeeName: item.type === 'income' ? (fullData.payerName || '') : (fullData.payeeName || ''),
+          contactBankName: item.type === 'income' ? (fullData.senderBankName || '') : (fullData.receiverBankName || ''),
+          contactBankAccount: item.type === 'income' ? (fullData.senderBankAccount || '') : (fullData.receiverBankAccount || ''),
           description: fullData.description || '',
           transactionDate: new Date(item.type === 'income' ? fullData.incomeDate : fullData.expenseDate).toISOString().split('T')[0],
           images: fullData.images || [],
@@ -574,6 +596,8 @@ export default function TransactionsPage() {
         bankAccountId: '',
         contactId: item.type === 'income' ? (item.senderId || '') : (item.receiverId || ''),
         payerPayeeName: item.payerPayee || '',
+        contactBankName: item.type === 'income' ? (item.senderBankName || '') : (item.receiverBankName || ''),
+        contactBankAccount: item.type === 'income' ? (item.senderBankAccount || '') : (item.receiverBankAccount || ''),
         description: item.description || '',
         transactionDate: new Date(item.date).toISOString().split('T')[0],
         images: item.images || [],
@@ -1008,7 +1032,18 @@ export default function TransactionsPage() {
                 <Label>{createType === 'income' ? 'Người gửi (Đối tượng)' : 'Người nhận (Đối tượng)'}</Label>
                 <ContactCombobox
                   value={formData.contactId}
-                  onChange={(v) => setFormData({ ...formData, contactId: v })}
+                  onChange={(v) => {
+                    const selectedContact = contacts.find(c => c._id === v);
+                    const hasBank = selectedContact?.bankAccountNumber;
+                    setFormData({
+                      ...formData,
+                      contactId: v,
+                      contactBankName: selectedContact?.bankName || '',
+                      contactBankAccount: selectedContact?.bankAccountNumber || '',
+                      // Reset payment method to offline if contact has no bank info
+                      paymentMethod: (formData.paymentMethod === 'online' && !hasBank) ? 'offline' : formData.paymentMethod
+                    });
+                  }}
                   onCreateNew={() => setShowQuickAddContact(true)}
                   contacts={contacts}
                   placeholder={createType === 'income' ? 'Chọn người gửi...' : 'Chọn người nhận...'}
@@ -1017,18 +1052,54 @@ export default function TransactionsPage() {
 
               <div className="space-y-2">
                 <Label>Hình thức</Label>
-                <Select
-                  value={formData.paymentMethod}
-                  onValueChange={(v) => setFormData({ ...formData, paymentMethod: v })}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="offline">Tiền mặt</SelectItem>
-                    <SelectItem value="online">Chuyển khoản</SelectItem>
-                  </SelectContent>
-                </Select>
+                {(() => {
+                  const selectedContact = formData.contactId ? contacts.find(c => c._id === formData.contactId) : null;
+                  const contactHasBankInfo = selectedContact && selectedContact.bankAccountNumber;
+                  const canSelectOnline = !formData.contactId || contactHasBankInfo;
+
+                  return (
+                    <>
+                      <Select
+                        value={formData.paymentMethod}
+                        onValueChange={(v) => {
+                          if (v === 'online' && !canSelectOnline) {
+                            alert(createType === 'income'
+                              ? 'Người gửi chưa cung cấp tài khoản ngân hàng'
+                              : 'Người nhận chưa cung cấp tài khoản ngân hàng');
+                            return;
+                          }
+                          // Reset bank info when changing to offline
+                          if (v === 'offline') {
+                            setFormData({
+                              ...formData,
+                              paymentMethod: v,
+                              bankAccountId: '',
+                              contactBankName: '',
+                              contactBankAccount: ''
+                            });
+                          } else {
+                            setFormData({ ...formData, paymentMethod: v });
+                          }
+                        }}
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="offline">Tiền mặt</SelectItem>
+                          <SelectItem value="online" disabled={!canSelectOnline}>
+                            Chuyển khoản {!canSelectOnline && '(Thiếu TK ngân hàng)'}
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
+                      {formData.contactId && !contactHasBankInfo && (
+                        <p className="text-xs text-amber-600">
+                          {createType === 'income' ? 'Người gửi' : 'Người nhận'} chưa cung cấp tài khoản ngân hàng
+                        </p>
+                      )}
+                    </>
+                  );
+                })()}
               </div>
 
               {formData.paymentMethod === 'online' && (
@@ -1071,6 +1142,27 @@ export default function TransactionsPage() {
                     </div>
                   )}
                 </div>
+              )}
+
+              {formData.paymentMethod === 'online' && (
+                <>
+                  <div className="space-y-2">
+                    <Label>Ngân hàng {createType === 'income' ? 'người gửi' : 'người nhận'}</Label>
+                    <Input
+                      placeholder="VD: Vietcombank, BIDV..."
+                      value={formData.contactBankName}
+                      onChange={(e) => setFormData({ ...formData, contactBankName: e.target.value })}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>STK {createType === 'income' ? 'người gửi' : 'người nhận'}</Label>
+                    <Input
+                      placeholder="Số tài khoản"
+                      value={formData.contactBankAccount}
+                      onChange={(e) => setFormData({ ...formData, contactBankAccount: e.target.value })}
+                    />
+                  </div>
+                </>
               )}
 
               <div className="space-y-2 col-span-2">
@@ -1230,7 +1322,18 @@ export default function TransactionsPage() {
                 <Label>{selectedItem?.type === 'income' ? 'Người gửi (Đối tượng)' : 'Người nhận (Đối tượng)'}</Label>
                 <ContactCombobox
                   value={formData.contactId}
-                  onChange={(v) => setFormData({ ...formData, contactId: v })}
+                  onChange={(v) => {
+                    const selectedContact = contacts.find(c => c._id === v);
+                    const hasBank = selectedContact?.bankAccountNumber;
+                    setFormData({
+                      ...formData,
+                      contactId: v,
+                      contactBankName: selectedContact?.bankName || '',
+                      contactBankAccount: selectedContact?.bankAccountNumber || '',
+                      // Reset payment method to offline if contact has no bank info
+                      paymentMethod: (formData.paymentMethod === 'online' && !hasBank) ? 'offline' : formData.paymentMethod
+                    });
+                  }}
                   onCreateNew={() => setShowQuickAddContact(true)}
                   contacts={contacts}
                   placeholder={selectedItem?.type === 'income' ? 'Chọn người gửi...' : 'Chọn người nhận...'}
@@ -1239,18 +1342,54 @@ export default function TransactionsPage() {
 
               <div className="space-y-2">
                 <Label>Hình thức</Label>
-                <Select
-                  value={formData.paymentMethod}
-                  onValueChange={(v) => setFormData({ ...formData, paymentMethod: v })}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="offline">Tiền mặt</SelectItem>
-                    <SelectItem value="online">Chuyển khoản</SelectItem>
-                  </SelectContent>
-                </Select>
+                {(() => {
+                  const selectedContact = formData.contactId ? contacts.find(c => c._id === formData.contactId) : null;
+                  const contactHasBankInfo = selectedContact && selectedContact.bankAccountNumber;
+                  const canSelectOnline = !formData.contactId || contactHasBankInfo;
+
+                  return (
+                    <>
+                      <Select
+                        value={formData.paymentMethod}
+                        onValueChange={(v) => {
+                          if (v === 'online' && !canSelectOnline) {
+                            alert(selectedItem?.type === 'income'
+                              ? 'Người gửi chưa cung cấp tài khoản ngân hàng'
+                              : 'Người nhận chưa cung cấp tài khoản ngân hàng');
+                            return;
+                          }
+                          // Reset bank info when changing to offline
+                          if (v === 'offline') {
+                            setFormData({
+                              ...formData,
+                              paymentMethod: v,
+                              bankAccountId: '',
+                              contactBankName: '',
+                              contactBankAccount: ''
+                            });
+                          } else {
+                            setFormData({ ...formData, paymentMethod: v });
+                          }
+                        }}
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="offline">Tiền mặt</SelectItem>
+                          <SelectItem value="online" disabled={!canSelectOnline}>
+                            Chuyển khoản {!canSelectOnline && '(Thiếu TK ngân hàng)'}
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
+                      {formData.contactId && !contactHasBankInfo && (
+                        <p className="text-xs text-amber-600">
+                          {selectedItem?.type === 'income' ? 'Người gửi' : 'Người nhận'} chưa cung cấp tài khoản ngân hàng
+                        </p>
+                      )}
+                    </>
+                  );
+                })()}
               </div>
 
               {formData.paymentMethod === 'online' && (
@@ -1286,6 +1425,27 @@ export default function TransactionsPage() {
                     </div>
                   )}
                 </div>
+              )}
+
+              {formData.paymentMethod === 'online' && (
+                <>
+                  <div className="space-y-2">
+                    <Label>Ngân hàng {selectedItem?.type === 'income' ? 'người gửi' : 'người nhận'}</Label>
+                    <Input
+                      placeholder="VD: Vietcombank, BIDV..."
+                      value={formData.contactBankName}
+                      onChange={(e) => setFormData({ ...formData, contactBankName: e.target.value })}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>STK {selectedItem?.type === 'income' ? 'người gửi' : 'người nhận'}</Label>
+                    <Input
+                      placeholder="Số tài khoản"
+                      value={formData.contactBankAccount}
+                      onChange={(e) => setFormData({ ...formData, contactBankAccount: e.target.value })}
+                    />
+                  </div>
+                </>
               )}
 
               <div className="space-y-2 col-span-2">
@@ -1401,6 +1561,7 @@ export default function TransactionsPage() {
         selectedCount={selectedIds.size}
         transactionType={activeTab}
         transactions={filteredTransactions.filter(t => selectedIds.has(t._id))}
+        contacts={contacts}
         onConfirm={() => handleBatchApprove(true)}
         processing={batchProcessing}
       />
@@ -1411,7 +1572,12 @@ export default function TransactionsPage() {
         onOpenChange={setShowQuickAddContact}
         onCreated={(newContact) => {
           setContacts([...contacts, newContact]);
-          setFormData({ ...formData, contactId: newContact._id });
+          setFormData({
+            ...formData,
+            contactId: newContact._id,
+            contactBankName: newContact.bankName || '',
+            contactBankAccount: newContact.bankAccountNumber || ''
+          });
         }}
       />
 

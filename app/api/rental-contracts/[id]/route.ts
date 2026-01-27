@@ -79,6 +79,7 @@ export async function PUT(
     };
 
     // Update allowed fields
+    if (body.assetId !== undefined) updateData.assetId = new ObjectId(body.assetId);
     if (body.propertyName !== undefined) updateData.propertyName = body.propertyName;
     if (body.propertyAddress !== undefined) updateData.propertyAddress = body.propertyAddress;
     if (body.propertyArea !== undefined) updateData.propertyArea = body.propertyArea;
@@ -88,6 +89,8 @@ export async function PUT(
     if (body.tenantPhone !== undefined) updateData.tenantPhone = body.tenantPhone;
     if (body.tenantAddress !== undefined) updateData.tenantAddress = body.tenantAddress;
     if (body.tenantEmail !== undefined) updateData.tenantEmail = body.tenantEmail;
+    if (body.tenantBankName !== undefined) updateData.tenantBankName = body.tenantBankName;
+    if (body.tenantBankAccount !== undefined) updateData.tenantBankAccount = body.tenantBankAccount;
     if (body.startDate !== undefined) updateData.startDate = new Date(body.startDate);
     if (body.endDate !== undefined) updateData.endDate = new Date(body.endDate);
     if (body.rentAmount !== undefined) updateData.rentAmount = body.rentAmount;

@@ -38,6 +38,8 @@ interface ContactItem {
   _id: string;
   name: string;
   phone?: string;
+  bankName?: string;
+  bankAccountNumber?: string;
   status: 'active' | 'inactive';
   createdAt: string;
   updatedAt: string;
@@ -56,6 +58,8 @@ export default function ContactsPage() {
   const [formData, setFormData] = useState({
     name: '',
     phone: '',
+    bankName: '',
+    bankAccountNumber: '',
   });
 
   const [submitting, setSubmitting] = useState(false);
@@ -83,6 +87,8 @@ export default function ContactsPage() {
     setFormData({
       name: '',
       phone: '',
+      bankName: '',
+      bankAccountNumber: '',
     });
   };
 
@@ -100,6 +106,8 @@ export default function ContactsPage() {
         body: JSON.stringify({
           name: formData.name.trim(),
           phone: formData.phone.trim() || undefined,
+          bankName: formData.bankName.trim() || undefined,
+          bankAccountNumber: formData.bankAccountNumber.trim() || undefined,
         }),
       });
 
@@ -136,6 +144,8 @@ export default function ContactsPage() {
         body: JSON.stringify({
           name: formData.name.trim(),
           phone: formData.phone.trim() || undefined,
+          bankName: formData.bankName.trim() || undefined,
+          bankAccountNumber: formData.bankAccountNumber.trim() || undefined,
         }),
       });
 
@@ -188,6 +198,8 @@ export default function ContactsPage() {
     setFormData({
       name: contact.name,
       phone: contact.phone || '',
+      bankName: contact.bankName || '',
+      bankAccountNumber: contact.bankAccountNumber || '',
     });
     setShowEditDialog(true);
   };
@@ -295,6 +307,8 @@ export default function ContactsPage() {
                 <TableRow>
                   <TableHead>Tên</TableHead>
                   <TableHead>Số điện thoại</TableHead>
+                  <TableHead>Ngân hàng</TableHead>
+                  <TableHead>Số tài khoản</TableHead>
                   <TableHead>Trạng thái</TableHead>
                   <TableHead>Thao tác</TableHead>
                 </TableRow>
@@ -304,6 +318,8 @@ export default function ContactsPage() {
                   <TableRow key={contact._id}>
                     <TableCell className="font-medium">{contact.name}</TableCell>
                     <TableCell>{contact.phone || '-'}</TableCell>
+                    <TableCell>{contact.bankName || '-'}</TableCell>
+                    <TableCell>{contact.bankAccountNumber || '-'}</TableCell>
                     <TableCell>
                       <Badge
                         className={
@@ -375,6 +391,24 @@ export default function ContactsPage() {
                 onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
               />
             </div>
+
+            <div className="space-y-2">
+              <Label>Tên ngân hàng</Label>
+              <Input
+                placeholder="VD: Vietcombank, BIDV, Techcombank..."
+                value={formData.bankName}
+                onChange={(e) => setFormData({ ...formData, bankName: e.target.value })}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label>Số tài khoản</Label>
+              <Input
+                placeholder="Nhập số tài khoản ngân hàng"
+                value={formData.bankAccountNumber}
+                onChange={(e) => setFormData({ ...formData, bankAccountNumber: e.target.value })}
+              />
+            </div>
           </div>
 
           <DialogFooter>
@@ -412,6 +446,24 @@ export default function ContactsPage() {
               <Input
                 value={formData.phone}
                 onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label>Tên ngân hàng</Label>
+              <Input
+                placeholder="VD: Vietcombank, BIDV, Techcombank..."
+                value={formData.bankName}
+                onChange={(e) => setFormData({ ...formData, bankName: e.target.value })}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label>Số tài khoản</Label>
+              <Input
+                placeholder="Nhập số tài khoản ngân hàng"
+                value={formData.bankAccountNumber}
+                onChange={(e) => setFormData({ ...formData, bankAccountNumber: e.target.value })}
               />
             </div>
           </div>

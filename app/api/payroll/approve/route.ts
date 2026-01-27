@@ -85,6 +85,10 @@ export async function POST(request: NextRequest) {
       const staff = await staffCollection.findOne({ _id: staffIdObj });
       const staffPhone = staff?.phone;
 
+      // Get staff bank info for syncing to contact
+      const staffBankName = staff?.bankName;
+      const staffBankAccountNumber = staff?.bankAccountNumber;
+
       if (staffPhone) {
         // Find existing contact by phone
         let contact = await contactsCollection.findOne({ phone: staffPhone });
@@ -92,11 +96,33 @@ export async function POST(request: NextRequest) {
         if (contact) {
           // Use existing contact
           receiverId = contact._id;
+
+          // Sync bank info from staff to contact if contact doesn't have it
+          if (staffBankName && staffBankAccountNumber && (!contact.bankName || !contact.bankAccountNumber)) {
+            await contactsCollection.updateOne(
+              { _id: contact._id },
+              {
+                $set: {
+                  bankName: contact.bankName || staffBankName,
+                  bankAccountNumber: contact.bankAccountNumber || staffBankAccountNumber,
+                  updatedAt: now
+                }
+              }
+            );
+            // Update local contact reference for expense creation
+            contact = {
+              ...contact,
+              bankName: contact.bankName || staffBankName,
+              bankAccountNumber: contact.bankAccountNumber || staffBankAccountNumber
+            };
+          }
         } else {
-          // Create new contact
+          // Create new contact with bank info from staff
           const newContact: Contact = {
             name: staffName,
             phone: staffPhone,
+            bankName: staffBankName,
+            bankAccountNumber: staffBankAccountNumber,
             status: 'active',
             createdAt: now,
             updatedAt: now
@@ -118,6 +144,9 @@ export async function POST(request: NextRequest) {
         bankAccountId: bankAccountId ? new ObjectId(bankAccountId) : undefined,
         bankAccount,
         receiverId: receiverId,
+        // Include receiver bank info for online payment method
+        receiverBankName: paymentMethod === 'online' ? staffBankName : undefined,
+        receiverBankAccount: paymentMethod === 'online' ? staffBankAccountNumber : undefined,
         payeeName: staffName,
         description: `Chi lương tháng ${period} - ${staffCode} - ${staffName}`,
         fiscalYear: year,

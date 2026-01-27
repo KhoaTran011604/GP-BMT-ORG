@@ -29,7 +29,6 @@ import {
   Bell,
   Search,
   User,
-  Building,
   CreditCard,
   Receipt,
   Briefcase,
@@ -64,7 +63,7 @@ const menuData: MenuItem[] = [
     label: 'Giáo xứ',
     icon: <Church size={20} />,
     href: '/parish',
-    roles: ['super_admin', 'cha_quan_ly'], // Only Super Admin and Cha Quản lý
+    roles: ['super_admin', 'cha_quan_ly', 'cha_xu'], // Only Super Admin and Cha Quản lý
   },
   {
     id: 'people',
@@ -100,9 +99,8 @@ const menuData: MenuItem[] = [
     label: 'Hành chính & Tài sản',
     icon: <FolderOpen size={20} />,
     children: [
-      { id: 'projects', label: 'Công trình & Dự án', icon: <Building size={18} />, href: '/admin/projects' },
       { id: 'assets', label: 'Quản lý Tài sản', icon: <Landmark size={18} />, href: '/admin/assets' },
-      { id: 'rental-contracts', label: 'Hợp đồng Cho thuê BDS', icon: <FileSignature size={18} />, href: '/admin/rental-contracts' },
+      { id: 'rental-contracts', label: 'Hợp đồng Cho thuê', icon: <FileSignature size={18} />, href: '/admin/rental-contracts' },
     ],
     roles: ['super_admin', 'cha_quan_ly', 'cha_xu'], // Super Admin, Cha Quản lý, and Cha xứ
   },

@@ -45,6 +45,8 @@ export async function GET(request: NextRequest) {
       hireDate: s.hireDate,
       contractType: s.contractType,
       status: s.status,
+      bankName: s.bankName,
+      bankAccountNumber: s.bankAccountNumber,
     }));
 
     return NextResponse.json(formattedStaff);
@@ -103,6 +105,8 @@ export async function POST(request: NextRequest) {
       hireDate: body.hireDate ? new Date(body.hireDate) : new Date(),
       contractType: body.contractType || 'full_time',
       status: body.status || 'active',
+      bankName: body.bankName,
+      bankAccountNumber: body.bankAccountNumber,
       createdAt: new Date(),
       updatedAt: new Date(),
     };

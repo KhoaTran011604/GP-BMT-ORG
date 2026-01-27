@@ -5,6 +5,8 @@ export interface Contact {
   _id?: ObjectId;
   name: string;
   phone?: string;
+  bankName?: string; // Tên ngân hàng
+  bankAccountNumber?: string; // Số tài khoản ngân hàng
   status: 'active' | 'inactive';
   createdAt: Date;
   updatedAt: Date;
@@ -101,6 +103,8 @@ export interface Income {
   bankAccount?: string; // Display string (for backwards compatibility)
   payerName?: string;
   senderId?: ObjectId; // FK to contacts - Đối tượng nhận gửi (người nộp)
+  senderBankName?: string; // Tên ngân hàng người gửi (cho phương thức online)
+  senderBankAccount?: string; // STK người gửi (cho phương thức online)
   description?: string;
   fiscalYear: number;
   fiscalPeriod: number;
@@ -148,6 +152,8 @@ export interface Expense {
   bankAccount?: string; // Display string (for backwards compatibility)
   payeeName?: string;
   receiverId?: ObjectId; // FK to contacts - Đối tượng nhận gửi (người nhận)
+  receiverBankName?: string; // Tên ngân hàng người nhận (cho phương thức online)
+  receiverBankAccount?: string; // STK người nhận (cho phương thức online)
   description?: string;
   fiscalYear: number;
   fiscalPeriod: number;
@@ -206,6 +212,8 @@ export interface Staff {
   hireDate: Date;
   contractType: string;
   status: 'active' | 'resigned';
+  bankName?: string; // Tên ngân hàng
+  bankAccountNumber?: string; // Số tài khoản ngân hàng
   createdAt: Date;
   updatedAt: Date;
 }
@@ -265,6 +273,7 @@ export interface RentalContract {
   _id?: ObjectId;
   contractCode: string;
   parishId: ObjectId;
+  assetId: ObjectId; // FK to assets - Liên kết với tài sản
   // Thông tin BDS
   propertyName: string;
   propertyAddress: string;
@@ -276,6 +285,8 @@ export interface RentalContract {
   tenantPhone?: string;
   tenantAddress?: string;
   tenantEmail?: string;
+  tenantBankName?: string; // Tên ngân hàng bên thuê
+  tenantBankAccount?: string; // Số tài khoản bên thuê
   tenantContactId?: ObjectId; // FK to contacts - liên kết với đối tượng nhận gửi
   // Thông tin hợp đồng
   startDate: Date;

@@ -37,6 +37,8 @@ interface Staff {
   hireDate: string;
   contractType: string;
   status: 'active' | 'resigned';
+  bankName?: string;
+  bankAccountNumber?: string;
   hasActiveContract?: boolean;
   activeContractId?: string;
   basicSalary?: number;
@@ -101,6 +103,8 @@ export default function StaffPage() {
     department: '',
     hireDate: '',
     status: 'active' as 'active' | 'resigned',
+    bankName: '',
+    bankAccountNumber: '',
   });
 
   // Contract dialog
@@ -215,6 +219,8 @@ export default function StaffPage() {
       department: staffMember.department,
       hireDate: staffMember.hireDate ? staffMember.hireDate.split('T')[0] : '',
       status: staffMember.status,
+      bankName: staffMember.bankName || '',
+      bankAccountNumber: staffMember.bankAccountNumber || '',
     });
     setIsStaffDialogOpen(true);
   };
@@ -309,6 +315,8 @@ export default function StaffPage() {
       department: '',
       hireDate: '',
       status: 'active',
+      bankName: '',
+      bankAccountNumber: '',
     });
   };
 
@@ -649,6 +657,24 @@ export default function StaffPage() {
                 />
               </div>
             </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label>Tên ngân hàng</Label>
+                <Input
+                  value={staffFormData.bankName}
+                  onChange={(e) => setStaffFormData({ ...staffFormData, bankName: e.target.value })}
+                  placeholder="VD: Vietcombank, BIDV..."
+                />
+              </div>
+              <div>
+                <Label>Số tài khoản</Label>
+                <Input
+                  value={staffFormData.bankAccountNumber}
+                  onChange={(e) => setStaffFormData({ ...staffFormData, bankAccountNumber: e.target.value })}
+                  placeholder="Số tài khoản ngân hàng"
+                />
+              </div>
+            </div>
             <div>
               <Label>Địa chỉ *</Label>
               <Input
@@ -892,6 +918,29 @@ export default function StaffPage() {
                     </Badge>
                   </div>
                 </div>
+              </div>
+
+              {/* Bank Info */}
+              <div className="border-t pt-4">
+                <h4 className="font-medium mb-3">Thông tin Ngân hàng</h4>
+                {(detailStaff.bankName || detailStaff.bankAccountNumber) ? (
+                  <div className="grid grid-cols-2 gap-4 bg-blue-50 p-4 rounded-lg">
+                    <div className="space-y-1">
+                      <p className="text-sm text-gray-500">Tên ngân hàng</p>
+                      <p className="font-medium">{detailStaff.bankName || '-'}</p>
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-sm text-gray-500">Số tài khoản</p>
+                      <p className="font-mono font-medium">{detailStaff.bankAccountNumber || '-'}</p>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="bg-gray-50 border border-gray-200 p-4 rounded-lg">
+                    <p className="text-sm text-gray-600">
+                      Chưa có thông tin ngân hàng. Thông tin này dùng để chi lương qua chuyển khoản.
+                    </p>
+                  </div>
+                )}
               </div>
 
               {/* Contract Info */}

@@ -94,6 +94,8 @@ export async function PUT(
       bankAccount,
       payerName,
       senderId,
+      senderBankName,
+      senderBankAccount,
       description,
       incomeDate,
       images,
@@ -114,11 +116,14 @@ export async function PUT(
     if (bankAccountId !== undefined) {
       updateData.bankAccountId = bankAccountId ? new ObjectId(bankAccountId) : undefined;
     }
-    if (bankAccount !== undefined) updateData.bankAccount = bankAccount;
+    if (bankAccount !== undefined) updateData.bankAccount = bankAccount || undefined;
     if (payerName !== undefined) updateData.payerName = payerName;
     if (senderId !== undefined) {
       updateData.senderId = senderId ? new ObjectId(senderId) : undefined;
     }
+    // Handle sender bank info - clear when offline
+    if (senderBankName !== undefined) updateData.senderBankName = senderBankName || undefined;
+    if (senderBankAccount !== undefined) updateData.senderBankAccount = senderBankAccount || undefined;
     if (description !== undefined) updateData.description = description;
     if (incomeDate) {
       updateData.incomeDate = new Date(incomeDate);

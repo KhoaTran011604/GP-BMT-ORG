@@ -47,22 +47,38 @@ interface ContractIncome {
   description?: string;
 }
 
+interface Asset {
+  _id: string;
+  assetCode: string;
+  assetName: string;
+  assetType: 'land' | 'building' | 'vehicle' | 'equipment';
+  location: string;
+  area?: number;
+  status: string;
+}
+
 interface RentalContractItem {
   _id: string;
   contractCode: string;
   parishId: string;
+  assetId?: string; // FK to assets - Liên kết với tài sản
   propertyName: string;
   propertyAddress: string;
   propertyArea?: number;
   propertyType: string;
   tenantName: string;
   tenantPhone?: string;
+  tenantBankName?: string; // Tên ngân hàng bên thuê
+  tenantBankAccount?: string; // Số tài khoản bên thuê
   tenantContactId?: string; // FK to contacts - liên kết với đối tượng nhận gửi
   startDate: Date;
   endDate: Date;
   rentAmount: number;
   paymentCycle: string;
   depositAmount: number;
+  paymentMethod?: string; // Phương thức thanh toán từ HĐ
+  bankAccountId?: string; // TK ngân hàng nhận tiền từ HĐ
+  bankAccount?: string; // Hiển thị TK ngân hàng
   status: string;
   createdAt: Date;
 }
@@ -73,6 +89,7 @@ export default function RentalContractsPage() {
   const [parishes, setParishes] = useState<Parish[]>([]);
   const [funds, setFunds] = useState<Fund[]>([]);
   const [bankAccounts, setBankAccounts] = useState<BankAccount[]>([]);
+  const [assets, setAssets] = useState<Asset[]>([]);
   const [contacts, setContacts] = useState<{ _id: string; name: string; phone?: string }[]>([]);
   const [showQuickAddContact, setShowQuickAddContact] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -91,6 +108,7 @@ export default function RentalContractsPage() {
   const [formData, setFormData] = useState({
     contractCode: '',
     parishId: '',
+    assetId: '',
     propertyName: '',
     propertyAddress: '',
     propertyArea: '',
@@ -100,6 +118,8 @@ export default function RentalContractsPage() {
     tenantPhone: '',
     tenantAddress: '',
     tenantEmail: '',
+    tenantBankName: '', // Tên ngân hàng bên thuê
+    tenantBankAccount: '', // Số tài khoản bên thuê
     startDate: new Date().toISOString().split('T')[0],
     endDate: '',
     rentAmount: '',
@@ -133,10 +153,11 @@ export default function RentalContractsPage() {
 
   const fetchParishesAndFunds = async () => {
     try {
-      const [parishesRes, fundsRes, bankAccountsRes, contactsRes] = await Promise.all([
+      const [parishesRes, fundsRes, bankAccountsRes, assetsRes, contactsRes] = await Promise.all([
         fetch('/api/parishes'),
         fetch('/api/funds'),
         fetch('/api/bank-accounts?status=active'),
+        fetch('/api/assets?status=active&available=true'), // Only get available (not rented) assets
         fetch('/api/contacts?status=active')
       ]);
 
@@ -155,12 +176,18 @@ export default function RentalContractsPage() {
         setBankAccounts(bankAccountsData.data || []);
       }
 
+      if (assetsRes.ok) {
+        const assetsData = await assetsRes.json();
+        // Assets API returns array directly
+        setAssets(Array.isArray(assetsData) ? assetsData : (assetsData.data || []));
+      }
+
       if (contactsRes.ok) {
         const contactsData = await contactsRes.json();
         setContacts(contactsData.data || []);
       }
     } catch (error) {
-      console.error('Error fetching parishes/funds/bankAccounts/contacts:', error);
+      console.error('Error fetching parishes/funds/bankAccounts/assets/contacts:', error);
     }
   };
 
@@ -204,6 +231,7 @@ export default function RentalContractsPage() {
     setFormData({
       contractCode: '',
       parishId: '',
+      assetId: '',
       propertyName: '',
       propertyAddress: '',
       propertyArea: '',
@@ -213,6 +241,8 @@ export default function RentalContractsPage() {
       tenantPhone: '',
       tenantAddress: '',
       tenantEmail: '',
+      tenantBankName: '',
+      tenantBankAccount: '',
       startDate: new Date().toISOString().split('T')[0],
       endDate: '',
       rentAmount: '',
@@ -226,10 +256,41 @@ export default function RentalContractsPage() {
     });
   };
 
+  // Map asset type to property type
+  const mapAssetTypeToPropertyType = (assetType: string) => {
+    const mapping: { [key: string]: string } = {
+      'land': 'land',
+      'building': 'house',
+      'vehicle': 'other',
+      'equipment': 'other'
+    };
+    return mapping[assetType] || 'other';
+  };
+
+  // Handle asset selection - auto-fill property info
+  const handleAssetSelect = (assetId: string) => {
+    const selectedAsset = assets.find(a => a._id === assetId);
+    if (selectedAsset) {
+      setFormData(prev => ({
+        ...prev,
+        assetId,
+        propertyName: selectedAsset.assetName,
+        propertyAddress: selectedAsset.location || '',
+        propertyArea: selectedAsset.area?.toString() || '',
+        propertyType: mapAssetTypeToPropertyType(selectedAsset.assetType)
+      }));
+    } else {
+      setFormData(prev => ({ ...prev, assetId }));
+    }
+  };
+
+  // Check if tenant has bank info for online payment
+  const canSelectOnlinePayment = formData.tenantBankName.trim() !== '' && formData.tenantBankAccount.trim() !== '';
+
   const handleCreate = async () => {
-    if (!formData.contractCode || !formData.parishId || !formData.propertyName ||
+    if (!formData.contractCode || !formData.parishId || !formData.assetId || !formData.propertyName ||
         !formData.tenantName || !formData.startDate || !formData.endDate || !formData.rentAmount) {
-      alert('Vui lòng điền đầy đủ thông tin bắt buộc');
+      alert('Vui lòng điền đầy đủ thông tin bắt buộc (bao gồm Tài sản)');
       return;
     }
 
@@ -328,6 +389,7 @@ export default function RentalContractsPage() {
     setFormData({
       contractCode: contract.contractCode,
       parishId: contract.parishId,
+      assetId: contract.assetId || '',
       propertyName: contract.propertyName,
       propertyAddress: contract.propertyAddress,
       propertyArea: contract.propertyArea?.toString() || '',
@@ -337,6 +399,8 @@ export default function RentalContractsPage() {
       tenantPhone: contract.tenantPhone || '',
       tenantAddress: '',
       tenantEmail: '',
+      tenantBankName: contract.tenantBankName || '',
+      tenantBankAccount: contract.tenantBankAccount || '',
       startDate: new Date(contract.startDate).toISOString().split('T')[0],
       endDate: new Date(contract.endDate).toISOString().split('T')[0],
       rentAmount: contract.rentAmount.toString(),
@@ -473,7 +537,7 @@ export default function RentalContractsPage() {
     <div className="container mx-auto p-6 space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold">Quản lý Hợp đồng Cho thuê BDS</h1>
+          <h1 className="text-3xl font-bold">Quản lý Hợp đồng Cho thuê</h1>
           <p className="text-gray-500">Quản lý hợp đồng và chuyển đổi thành giao dịch</p>
         </div>
         <Button onClick={() => {
@@ -541,7 +605,7 @@ export default function RentalContractsPage() {
               <TableHeader>
                 <TableRow>
                   <TableHead>Mã HĐ</TableHead>
-                  <TableHead>Tên BDS</TableHead>
+                  <TableHead>Tên tài sản</TableHead>
                   <TableHead>Bên thuê</TableHead>
                   <TableHead>Giá thuê</TableHead>
                   <TableHead>Chu kỳ</TableHead>
@@ -611,7 +675,9 @@ export default function RentalContractsPage() {
                               setConvertData({
                                 ...convertData,
                                 amount: contract.rentAmount.toString(),
-                                contactId: contract.tenantContactId || '' // Mặc định chọn người thuê
+                                contactId: contract.tenantContactId || '',
+                                paymentMethod: contract.paymentMethod || 'offline',
+                                bankAccountId: contract.bankAccountId || ''
                               });
                               setShowConvertDialog(true);
                             }}
@@ -680,15 +746,45 @@ export default function RentalContractsPage() {
               </div>
             </div>
 
+            <div className="space-y-2">
+              <Label>Tài sản cho thuê * (chỉ hiển thị tài sản chưa được thuê)</Label>
+              <Select
+                value={formData.assetId}
+                onValueChange={handleAssetSelect}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Chọn tài sản" />
+                </SelectTrigger>
+                <SelectContent>
+                  {assets.length === 0 ? (
+                    <div className="p-2 text-sm text-gray-500 text-center">
+                      Không có tài sản khả dụng
+                    </div>
+                  ) : (
+                    assets.map((asset) => (
+                      <SelectItem key={asset._id} value={asset._id}>
+                        {asset.assetCode} - {asset.assetName} {asset.area ? `(${asset.area} m²)` : ''}
+                      </SelectItem>
+                    ))
+                  )}
+                </SelectContent>
+              </Select>
+            </div>
+
             <div className="border-t pt-4">
-              <h3 className="font-semibold mb-3">Thông tin Bất động sản</h3>
+              <h3 className="font-semibold mb-3">Thông tin Bất động sản (tự động điền từ tài sản)</h3>
+              {formData.assetId && (
+                <p className="text-sm text-blue-600 mb-3">Thông tin tài sản được tự động điền từ tài sản đã chọn</p>
+              )}
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2 col-span-2">
-                  <Label>Tên BDS *</Label>
+                  <Label>Tên tài sản *</Label>
                   <Input
                     placeholder="VD: Nhà 2 tầng đường Nguyễn Văn A"
                     value={formData.propertyName}
                     onChange={(e) => setFormData({ ...formData, propertyName: e.target.value })}
+                    readOnly={!!formData.assetId}
+                    className={formData.assetId ? 'bg-gray-50' : ''}
                   />
                 </div>
 
@@ -698,16 +794,19 @@ export default function RentalContractsPage() {
                     placeholder="Địa chỉ đầy đủ"
                     value={formData.propertyAddress}
                     onChange={(e) => setFormData({ ...formData, propertyAddress: e.target.value })}
+                    readOnly={!!formData.assetId}
+                    className={formData.assetId ? 'bg-gray-50' : ''}
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label>Loại BDS</Label>
+                  <Label>Loại tài sản</Label>
                   <Select
                     value={formData.propertyType}
                     onValueChange={(v) => setFormData({ ...formData, propertyType: v })}
+                    disabled={!!formData.assetId}
                   >
-                    <SelectTrigger>
+                    <SelectTrigger className={formData.assetId ? 'bg-gray-50' : ''}>
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -727,6 +826,8 @@ export default function RentalContractsPage() {
                     placeholder="0"
                     value={formData.propertyArea}
                     onChange={(e) => setFormData({ ...formData, propertyArea: e.target.value })}
+                    readOnly={!!formData.assetId}
+                    className={formData.assetId ? 'bg-gray-50' : ''}
                   />
                 </div>
               </div>
@@ -779,6 +880,27 @@ export default function RentalContractsPage() {
                     value={formData.tenantAddress}
                     onChange={(e) => setFormData({ ...formData, tenantAddress: e.target.value })}
                   />
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Ngân hàng (bên thuê)</Label>
+                  <Input
+                    placeholder="VD: Vietcombank"
+                    value={formData.tenantBankName}
+                    onChange={(e) => setFormData({ ...formData, tenantBankName: e.target.value })}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Số tài khoản (bên thuê)</Label>
+                  <Input
+                    placeholder="VD: 0123456789"
+                    value={formData.tenantBankAccount}
+                    onChange={(e) => setFormData({ ...formData, tenantBankAccount: e.target.value })}
+                  />
+                  {!canSelectOnlinePayment && (
+                    <p className="text-xs text-amber-600">Nhập ngân hàng và STK để chọn thanh toán chuyển khoản</p>
+                  )}
                 </div>
               </div>
             </div>
@@ -845,14 +967,19 @@ export default function RentalContractsPage() {
                   <Label>Hình thức thanh toán</Label>
                   <Select
                     value={formData.paymentMethod}
-                    onValueChange={(v) => setFormData({ ...formData, paymentMethod: v, bankAccountId: '', bankAccount: '' })}
+                    onValueChange={(v) => {
+                      if (v === 'online' && !canSelectOnlinePayment) return;
+                      setFormData({ ...formData, paymentMethod: v, bankAccountId: '', bankAccount: '' });
+                    }}
                   >
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="offline">Tiền mặt</SelectItem>
-                      <SelectItem value="online">Chuyển khoản</SelectItem>
+                      <SelectItem value="online" disabled={!canSelectOnlinePayment}>
+                        Chuyển khoản {!canSelectOnlinePayment && '(cần nhập TK bên thuê)'}
+                      </SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -941,7 +1068,7 @@ export default function RentalContractsPage() {
           </DialogHeader>
 
           <div className="space-y-4">
-            {/* Same form structure as Create Dialog */}
+            {/* Contract details */}
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Giá thuê (VNĐ) *</Label>
@@ -960,6 +1087,30 @@ export default function RentalContractsPage() {
                   value={formData.endDate}
                   onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
                 />
+              </div>
+            </div>
+
+            {/* Tenant bank info */}
+            <div className="border-t pt-4">
+              <h3 className="font-semibold mb-3">Thông tin Ngân hàng Bên thuê</h3>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Ngân hàng (bên thuê)</Label>
+                  <Input
+                    placeholder="VD: Vietcombank"
+                    value={formData.tenantBankName}
+                    onChange={(e) => setFormData({ ...formData, tenantBankName: e.target.value })}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Số tài khoản (bên thuê)</Label>
+                  <Input
+                    placeholder="VD: 0123456789"
+                    value={formData.tenantBankAccount}
+                    onChange={(e) => setFormData({ ...formData, tenantBankAccount: e.target.value })}
+                  />
+                </div>
               </div>
             </div>
           </div>
@@ -1167,7 +1318,7 @@ export default function RentalContractsPage() {
                   </span>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500">Tên BDS</p>
+                  <p className="text-sm text-gray-500">Tên tài sản</p>
                   <p className="font-semibold">{selectedContract.propertyName}</p>
                 </div>
                 <div>
@@ -1219,7 +1370,9 @@ export default function RentalContractsPage() {
                         setConvertData({
                           ...convertData,
                           amount: selectedContract.rentAmount.toString(),
-                          contactId: selectedContract.tenantContactId || '' // Mặc định chọn người thuê
+                          contactId: selectedContract.tenantContactId || '',
+                          paymentMethod: selectedContract.paymentMethod || 'offline',
+                          bankAccountId: selectedContract.bankAccountId || ''
                         });
                         setShowDetailDialog(false);
                         setShowConvertDialog(true);

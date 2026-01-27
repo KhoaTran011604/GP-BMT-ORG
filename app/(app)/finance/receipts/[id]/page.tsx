@@ -28,6 +28,11 @@ interface TransactionInfo {
   bankAccount?: string;
   payerName?: string;
   payeeName?: string;
+  // Sender/Receiver bank info for online transactions
+  senderBankName?: string;
+  senderBankAccount?: string;
+  receiverBankName?: string;
+  receiverBankAccount?: string;
   description?: string;
   fiscalYear?: number;
   fiscalPeriod?: number;
@@ -304,24 +309,71 @@ export default function ReceiptDetailPage() {
                 <div>
                   <p className="text-sm text-gray-500">Hình thức thanh toán</p>
                   <p className="font-medium">
-                    {transaction?.paymentMethod === 'offline' || transaction?.paymentMethod === 'offline'
+                    {transaction?.paymentMethod === 'offline'
                       ? 'Tiền mặt'
                       : 'Chuyển khoản'}
                   </p>
                 </div>
               </div>
 
-              {transaction?.bankAccount && (
+              {/* Only show bank info for online (transfer) transactions */}
+              {/* {transaction?.paymentMethod === 'online' && transaction?.bankAccount && (
                 <div className="flex items-start gap-3">
                   <Building size={18} className="text-gray-400 mt-0.5" />
                   <div>
-                    <p className="text-sm text-gray-500">Tài khoản ngân hàng</p>
+                    <p className="text-sm text-gray-500">
+                      {isIncome ? 'Tài khoản nhận tiền (Giáo xứ)' : 'Tài khoản chi tiền (Giáo xứ)'}
+                    </p>
                     <p className="font-mono font-medium">{transaction.bankAccount}</p>
                   </div>
                 </div>
-              )}
+              )} */}
             </div>
           </div>
+
+          {/* Sender/Receiver Bank Info - Only for online transactions */}
+          {transaction?.paymentMethod === 'online' && (
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 print:bg-white">
+              <div className="flex items-center gap-2 mb-3">
+                <CreditCard size={18} className="text-blue-600" />
+                <p className="font-medium text-blue-800">Thông tin chuyển khoản</p>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* TK Người gửi (for income) or TK Người nhận (for expense) */}
+                {isIncome ? (
+                  (transaction.senderBankName || transaction.senderBankAccount) && (
+                    <div className="bg-white p-3 rounded-md border">
+                      <p className="text-sm text-gray-500 mb-1">Tài khoản người gửi</p>
+                      <p className="font-medium">
+                        {transaction.senderBankAccount}
+                        {transaction.senderBankName && ` - ${transaction.senderBankName}`}
+                      </p>
+                    </div>
+                  )
+                ) : (
+                  (transaction.receiverBankName || transaction.receiverBankAccount) && (
+                    <div className="bg-white p-3 rounded-md border">
+                      <p className="text-sm text-gray-500 mb-1">Tài khoản người nhận</p>
+                      <p className="font-medium">
+                        {transaction.receiverBankAccount}
+                        {transaction.receiverBankName && ` - ${transaction.receiverBankName}`}
+                      </p>
+                    </div>
+                  )
+                )}
+
+                {/* TK Giáo xứ */}
+                {transaction.bankAccount && (
+                  <div className="bg-white p-3 rounded-md border">
+                    <p className="text-sm text-gray-500 mb-1">
+                      {isIncome ? 'Tài khoản nhận (Giáo xứ)' : 'Tài khoản chi (Giáo xứ)'}
+                    </p>
+                    <p className="font-medium">{transaction.bankAccount}</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
 
           {/* Amount - Highlighted */}
           <div className="text-center bg-gradient-to-br from-gray-50 to-gray-100 p-6 rounded-xl border-2 print:bg-white">

@@ -249,9 +249,6 @@ export default function AssetsPage() {
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-1">
-                        <Button variant="ghost" size="sm" onClick={() => handleViewDetail(a)}>
-                          Chi tiết
-                        </Button>
                         <Button variant="ghost" size="sm" onClick={() => handleEdit(a)}>
                           <Edit className="w-4 h-4" />
                         </Button>

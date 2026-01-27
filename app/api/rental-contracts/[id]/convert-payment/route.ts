@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import getDatabase from '@/lib/db';
-import { RentalContract, Income } from '@/lib/schemas';
+import { RentalContract, Income, Contact } from '@/lib/schemas';
 import { verifyToken, getTokenFromCookie } from '@/lib/auth';
 import { ObjectId } from 'mongodb';
 
@@ -37,6 +37,7 @@ export async function POST(
     const db = await getDatabase();
     const contractsCollection = db.collection<RentalContract>('rental_contracts');
     const incomesCollection = db.collection<Income>('incomes');
+    const contactsCollection = db.collection<Contact>('contacts');
 
     // Get contract details
     const contract = await contractsCollection.findOne({ _id: new ObjectId(id) });
@@ -53,6 +54,27 @@ export async function POST(
       senderId = new ObjectId(body.senderId);
     } else if (contract.tenantContactId) {
       senderId = contract.tenantContactId;
+    }
+
+    // Get sender bank info from contact or contract
+    let senderBankName: string | undefined;
+    let senderBankAccount: string | undefined;
+
+    if (senderId) {
+      // Try to get bank info from contact
+      const contact = await contactsCollection.findOne({ _id: senderId });
+      if (contact) {
+        senderBankName = contact.bankName;
+        senderBankAccount = contact.bankAccountNumber;
+      }
+    }
+
+    // Fallback to contract's tenant bank info if not found in contact
+    if (!senderBankName && contract.tenantBankName) {
+      senderBankName = contract.tenantBankName;
+    }
+    if (!senderBankAccount && contract.tenantBankAccount) {
+      senderBankAccount = contract.tenantBankAccount;
     }
 
     // Generate income code
@@ -88,6 +110,8 @@ export async function POST(
       bankAccountId: body.bankAccountId ? new ObjectId(body.bankAccountId) : undefined,
       bankAccount: body.bankAccount || contract.bankAccount,
       senderId: senderId,
+      senderBankName: senderBankName,
+      senderBankAccount: senderBankAccount,
       payerName: body.payerName || contract.tenantName,
       description: `Tiền thuê ${contract.propertyName} - Kỳ ${body.paymentPeriod} - HĐ ${contract.contractCode}`,
       fiscalYear: year,
