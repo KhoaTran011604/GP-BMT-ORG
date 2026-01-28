@@ -10,12 +10,12 @@ import {
   TabsList,
   TabsTrigger,
 } from '@/components/ui/tabs';
-import { Plus, ArrowDownCircle, ArrowUpCircle, Printer } from 'lucide-react';
+import { Plus, ArrowDownCircle, ArrowUpCircle, Printer, RefreshCcw, Eye, Pencil, Trash2 } from 'lucide-react';
 import { ImageGallery } from '@/components/finance/ImageGallery';
 import { StatusBadge } from '@/components/finance/StatusBadge';
 import { ContactCombobox } from '@/components/finance/ContactCombobox';
 import { QuickAddContactDialog } from '@/components/finance/QuickAddContactDialog';
-import { Fund, Parish, ExpenseCategory, BankAccount } from '@/lib/schemas';
+import { Fund, Parish, ExpenseCategory, BankAccount, Adjustment } from '@/lib/schemas';
 import { useAuth } from '@/lib/auth-context';
 
 import { DateRangePicker } from '@/components/finance/transactions/DateRangePicker';
@@ -35,8 +35,27 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { ImageUpload } from '@/components/finance/ImageUpload';
+import { formatCompactCurrency } from '@/lib/utils';
 
-type TransactionType = 'income' | 'expense';
+type TransactionType = 'income' | 'expense' | 'adjustment';
+
+interface AdjustmentItem {
+  _id: string;
+  adjustmentCode: string;
+  parishId: string;
+  fundId?: string;
+  bankAccountId?: string;
+  adjustmentType: 'increase' | 'decrease';
+  amount: number;
+  description: string;
+  adjustmentDate: Date;
+  fiscalYear: number;
+  fiscalPeriod: number;
+  images: string[];
+  notes?: string;
+  createdBy: string;
+  createdAt: Date;
+}
 
 interface TransactionItem {
   _id: string;
@@ -75,6 +94,7 @@ export default function TransactionsPage() {
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState<TransactionType>('income');
   const [transactions, setTransactions] = useState<TransactionItem[]>([]);
+  const [adjustments, setAdjustments] = useState<AdjustmentItem[]>([]);
   const [funds, setFunds] = useState<Fund[]>([]);
   const [parishes, setParishes] = useState<Parish[]>([]);
   const [expenseCategories, setExpenseCategories] = useState<ExpenseCategory[]>([]);
@@ -133,6 +153,22 @@ export default function TransactionsPage() {
   });
   const [submitting, setSubmitting] = useState(false);
 
+  // Adjustment-related states
+  const [showAdjustmentDialog, setShowAdjustmentDialog] = useState(false);
+  const [showEditAdjustmentDialog, setShowEditAdjustmentDialog] = useState(false);
+  const [selectedAdjustment, setSelectedAdjustment] = useState<AdjustmentItem | null>(null);
+  const [adjustmentFormData, setAdjustmentFormData] = useState({
+    parishId: '',
+    fundId: '',
+    bankAccountId: '',
+    adjustmentType: 'increase' as 'increase' | 'decrease',
+    amount: '',
+    description: '',
+    adjustmentDate: new Date().toISOString().split('T')[0],
+    images: [] as string[],
+    notes: ''
+  });
+
   useEffect(() => {
     fetchData();
   }, [activeTab, statusFilter, dateFrom, dateTo]);
@@ -183,6 +219,25 @@ export default function TransactionsPage() {
   const fetchData = async () => {
     setLoading(true);
     try {
+      // Handle adjustment tab separately
+      if (activeTab === 'adjustment') {
+        const params = new URLSearchParams();
+        if (dateFrom) {
+          params.append('startDate', dateFrom);
+        }
+        if (dateTo) {
+          params.append('endDate', dateTo);
+        }
+
+        const response = await fetch(`/api/adjustments?${params}`);
+        if (response.ok) {
+          const result = await response.json();
+          setAdjustments(result.data || []);
+        }
+        setLoading(false);
+        return;
+      }
+
       const endpoint = activeTab === 'income' ? '/api/incomes' : '/api/expenses';
       const params = new URLSearchParams();
       if (statusFilter !== 'all') {
@@ -249,6 +304,137 @@ export default function TransactionsPage() {
       images: [],
       notes: ''
     });
+  };
+
+  const resetAdjustmentForm = () => {
+    setAdjustmentFormData({
+      parishId: '',
+      fundId: '',
+      bankAccountId: '',
+      adjustmentType: 'increase',
+      amount: '',
+      description: '',
+      adjustmentDate: new Date().toISOString().split('T')[0],
+      images: [],
+      notes: ''
+    });
+  };
+
+  const handleCreateAdjustment = async () => {
+    if (!adjustmentFormData.parishId || !adjustmentFormData.fundId || !adjustmentFormData.amount || !adjustmentFormData.adjustmentDate || !adjustmentFormData.description) {
+      alert('Vui lòng điền đầy đủ thông tin bắt buộc');
+      return;
+    }
+
+    setSubmitting(true);
+    try {
+      const response = await fetch('/api/adjustments', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          parishId: adjustmentFormData.parishId,
+          fundId: adjustmentFormData.fundId || undefined,
+          bankAccountId: adjustmentFormData.bankAccountId || undefined,
+          adjustmentType: adjustmentFormData.adjustmentType,
+          amount: parseFloat(adjustmentFormData.amount),
+          description: adjustmentFormData.description,
+          adjustmentDate: adjustmentFormData.adjustmentDate,
+          paymentMethod: adjustmentFormData.bankAccountId ? 'online' : 'offline',
+          images: adjustmentFormData.images,
+          notes: adjustmentFormData.notes || undefined
+        })
+      });
+
+      if (response.ok) {
+        setShowAdjustmentDialog(false);
+        resetAdjustmentForm();
+        fetchData();
+      } else {
+        const error = await response.json();
+        alert(`Lỗi: ${error.error || 'Không thể tạo phiếu điều chỉnh'}`);
+      }
+    } catch (error) {
+      console.error('Error creating adjustment:', error);
+      alert('Không thể tạo phiếu điều chỉnh');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleUpdateAdjustment = async () => {
+    if (!selectedAdjustment || !adjustmentFormData.fundId || !adjustmentFormData.amount || !adjustmentFormData.parishId || !adjustmentFormData.adjustmentDate || !adjustmentFormData.description) {
+      alert('Vui lòng điền đầy đủ thông tin bắt buộc');
+      return;
+    }
+
+    setSubmitting(true);
+    try {
+      const response = await fetch(`/api/adjustments/${selectedAdjustment._id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          parishId: adjustmentFormData.parishId,
+          fundId: adjustmentFormData.fundId || undefined,
+          bankAccountId: adjustmentFormData.bankAccountId || undefined,
+          adjustmentType: adjustmentFormData.adjustmentType,
+          amount: parseFloat(adjustmentFormData.amount),
+          description: adjustmentFormData.description,
+          adjustmentDate: adjustmentFormData.adjustmentDate,
+          paymentMethod: adjustmentFormData.bankAccountId ? 'online' : 'offline',
+          images: adjustmentFormData.images,
+          notes: adjustmentFormData.notes || undefined
+        })
+      });
+
+      if (response.ok) {
+        setShowEditAdjustmentDialog(false);
+        setSelectedAdjustment(null);
+        resetAdjustmentForm();
+        fetchData();
+      } else {
+        const error = await response.json();
+        alert(`Lỗi: ${error.error || 'Không thể cập nhật'}`);
+      }
+    } catch (error) {
+      console.error('Error updating adjustment:', error);
+      alert('Không thể cập nhật phiếu điều chỉnh');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleDeleteAdjustment = async (item: AdjustmentItem) => {
+    if (!confirm('Bạn có chắc muốn xóa phiếu điều chỉnh này?')) return;
+
+    try {
+      const response = await fetch(`/api/adjustments/${item._id}`, { method: 'DELETE' });
+
+      if (response.ok) {
+        fetchData();
+      } else {
+        const error = await response.json();
+        alert(`Lỗi: ${error.error || 'Không thể xóa'}`);
+      }
+    } catch (error) {
+      console.error('Error deleting adjustment:', error);
+      alert('Không thể xóa phiếu điều chỉnh');
+    }
+  };
+
+  const openEditAdjustmentDialog = (item: AdjustmentItem) => {
+    setSelectedAdjustment(item);
+    setAdjustmentFormData({
+      parishId: item.parishId || '',
+      fundId: item.fundId || '',
+      bankAccountId: item.bankAccountId || '',
+      adjustmentType: item.adjustmentType,
+      amount: item.amount.toString(),
+      description: item.description || '',
+      adjustmentDate: new Date(item.adjustmentDate).toISOString().split('T')[0],
+      images: item.images || [],
+      notes: item.notes || ''
+    });
+    setShowEditAdjustmentDialog(true);
   };
 
   const handleCreate = async () => {
@@ -667,6 +853,56 @@ export default function TransactionsPage() {
     totalAmount: filteredTransactions.reduce((sum, t) => sum + t.amount, 0)
   };
 
+  // Filter adjustments (client-side)
+  const filteredAdjustments = adjustments.filter(a => {
+    // Search filter
+    if (searchTerm) {
+      const search = searchTerm.toLowerCase();
+      const matchesSearch =
+        a.adjustmentCode?.toLowerCase().includes(search) ||
+        a.description?.toLowerCase().includes(search);
+      if (!matchesSearch) return false;
+    }
+
+    // Parish filter
+    if (parishFilter !== 'all' && a.parishId !== parishFilter) {
+      return false;
+    }
+
+    // Fund filter
+    if (fundFilter !== 'all' && a.fundId !== fundFilter) {
+      return false;
+    }
+
+    // Amount range filter
+    if (amountMin && a.amount < parseFloat(amountMin)) {
+      return false;
+    }
+    if (amountMax && a.amount > parseFloat(amountMax)) {
+      return false;
+    }
+
+    // Fiscal year filter
+    if (fiscalYearFilter !== 'all' && a.fiscalYear?.toString() !== fiscalYearFilter) {
+      return false;
+    }
+
+    // Fiscal period filter
+    if (fiscalPeriodFilter !== 'all' && a.fiscalPeriod?.toString() !== fiscalPeriodFilter) {
+      return false;
+    }
+
+    return true;
+  });
+
+  const adjustmentStats = {
+    total: filteredAdjustments.length,
+    increase: filteredAdjustments.filter(a => a.adjustmentType === 'increase').length,
+    decrease: filteredAdjustments.filter(a => a.adjustmentType === 'decrease').length,
+    totalIncreaseAmount: filteredAdjustments.filter(a => a.adjustmentType === 'increase').reduce((sum, a) => sum + a.amount, 0),
+    totalDecreaseAmount: filteredAdjustments.filter(a => a.adjustmentType === 'decrease').reduce((sum, a) => sum + a.amount, 0)
+  };
+
   // Multi-select helpers
   const pendingTransactions = filteredTransactions.filter(t => t.status === 'pending');
   const allPendingSelected = pendingTransactions.length > 0 && pendingTransactions.every(t => selectedIds.has(t._id));
@@ -776,38 +1012,97 @@ export default function TransactionsPage() {
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold">Quản lý Giao dịch</h1>
-          <p className="text-gray-500">Tạo và quản lý các khoản thu chi</p>
+          <p className="text-gray-500">Tạo và quản lý các khoản thu chi{activeTab === 'adjustment' ? ' và điều chỉnh' : ''}</p>
         </div>
-        <Button onClick={() => {
-          resetForm();
-          setCreateType(activeTab);
-          setShowCreateDialog(true);
-        }} className="gap-2">
-          <Plus size={18} />
-          Tạo giao dịch
-        </Button>
+        {activeTab === 'adjustment' ? (
+          <Button onClick={() => {
+            resetAdjustmentForm();
+            setShowAdjustmentDialog(true);
+          }} className="gap-2">
+            <Plus size={18} />
+            Tạo điều chỉnh
+          </Button>
+        ) : (
+          <Button onClick={() => {
+            resetForm();
+            setCreateType(activeTab as 'income' | 'expense');
+            setShowCreateDialog(true);
+          }} className="gap-2">
+            <Plus size={18} />
+            Tạo giao dịch
+          </Button>
+        )}
       </div>
 
       <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as TransactionType)}>
         <TabsContent value={activeTab} className="space-y-4">
-          <TransactionStats
-            total={stats.total}
-            pending={stats.pending}
-            approved={stats.approved}
-            rejected={stats.rejected}
-            totalAmount={stats.totalAmount}
-            type={activeTab}
-          />
+          {activeTab !== 'adjustment' ? (
+            <TransactionStats
+              total={stats.total}
+              pending={stats.pending}
+              approved={stats.approved}
+              rejected={stats.rejected}
+              totalAmount={stats.totalAmount}
+              type={activeTab}
+            />
+          ) : (
+            <div className="grid gap-4 md:grid-cols-4">
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Tổng phiếu</CardTitle>
+                  <RefreshCcw className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{adjustmentStats.total}</div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Phiếu tăng</CardTitle>
+                  <ArrowUpCircle className="h-4 w-4 text-green-500" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-green-600">{adjustmentStats.increase}</div>
+                  <p className="text-xs text-muted-foreground">
+                    {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(adjustmentStats.totalIncreaseAmount)}
+                  </p>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Phiếu giảm</CardTitle>
+                  <ArrowDownCircle className="h-4 w-4 text-red-500" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-red-600">{adjustmentStats.decrease}</div>
+                  <p className="text-xs text-muted-foreground">
+                    {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(adjustmentStats.totalDecreaseAmount)}
+                  </p>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Chênh lệch</CardTitle>
+                  <RefreshCcw className="h-4 w-4 text-blue-500" />
+                </CardHeader>
+                <CardContent>
+                  <div className={`text-2xl font-bold ${adjustmentStats.totalIncreaseAmount - adjustmentStats.totalDecreaseAmount >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                    {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(adjustmentStats.totalIncreaseAmount - adjustmentStats.totalDecreaseAmount)}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          )}
 
           <Card>
             <CardHeader className="space-y-4 pb-4">
               <div className="flex flex-row items-center justify-between">
                 <div>
                   <CardTitle>
-                    {activeTab === 'income' ? 'Danh sách khoản thu' : 'Danh sách khoản chi'}
+                    {activeTab === 'income' ? 'Danh sách khoản thu' : activeTab === 'expense' ? 'Danh sách khoản chi' : 'Danh sách điều chỉnh'}
                   </CardTitle>
                   <CardDescription>
-                    Quản lý các giao dịch {activeTab === 'income' ? 'thu' : 'chi'}
+                    {activeTab === 'adjustment' ? 'Quản lý các phiếu điều chỉnh số dư' : `Quản lý các giao dịch ${activeTab === 'income' ? 'thu' : 'chi'}`}
                   </CardDescription>
                 </div>
                 <div className="flex items-center gap-3">
@@ -859,36 +1154,143 @@ export default function TransactionsPage() {
               </div>
             </CardHeader>
             <CardContent>
-              <TransactionTable
-                transactions={filteredTransactions}
-                activeTab={activeTab}
-                loading={loading}
-                selectedIds={selectedIds}
-                onToggleSelect={toggleSelect}
-                onToggleSelectAll={toggleSelectAll}
-                allPendingSelected={allPendingSelected}
-                pendingCount={pendingTransactions.length}
-                onViewImages={(item) => {
-                  setSelectedItem(item);
-                  setShowGallery(true);
-                }}
-                onViewDetail={(item) => {
-                  setSelectedForDetail(item);
-                  setShowDetailDialog(true);
-                }}
-                onEdit={openEditDialog}
-                onDelete={handleDelete}
-                onPrint={(item) => {
-                  setSelectedItem(item);
-                  fetchReceipt(item._id);
-                }}
-                loadingReceipt={loadingReceipt}
-                userRole={user?.role}
-                onClearSelection={clearSelection}
-                onBatchApprove={() => setShowBatchApproveDialog(true)}
-                hasActiveFilters={hasActiveFilters}
-                onResetFilters={resetFilters}
-              />
+              {activeTab === 'adjustment' ? (
+                // Adjustment Table
+                <div className="space-y-4">
+                  {loading ? (
+                    <div className="text-center py-8 text-gray-500">Đang tải...</div>
+                  ) : filteredAdjustments.length === 0 ? (
+                    <div className="text-center py-8 text-gray-500">
+                      {hasActiveFilters ? 'Không tìm thấy phiếu điều chỉnh phù hợp' : 'Chưa có phiếu điều chỉnh nào'}
+                    </div>
+                  ) : (
+                    <div className="overflow-x-auto">
+                      <table className="w-full">
+                        <thead>
+                          <tr className="border-b text-left text-sm text-gray-500">
+                            <th className="pb-3 font-medium">Mã phiếu</th>
+                            <th className="pb-3 font-medium">Ngày</th>
+                            <th className="pb-3 font-medium">Loại</th>
+                            <th className="pb-3 font-medium">Quỹ/Tài khoản</th>
+                            <th className="pb-3 font-medium text-right">Số tiền</th>
+                            <th className="pb-3 font-medium text-right">Thao tác</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {filteredAdjustments.map((item) => {
+                            const fund = funds.find(f => f._id?.toString() === item.fundId);
+                            const bankAccount = bankAccounts.find(ba => ba._id?.toString() === item.bankAccountId);
+                            return (
+                              <tr key={item._id} className="border-b hover:bg-gray-50">
+                                <td className="py-3 font-mono text-sm">{item.adjustmentCode}</td>
+                                <td className="py-3 text-sm">
+                                  {new Date(item.adjustmentDate).toLocaleDateString('vi-VN')}
+                                </td>
+                                <td className="py-3">
+                                  <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                                    item.adjustmentType === 'increase'
+                                      ? 'bg-green-100 text-green-800'
+                                      : 'bg-red-100 text-red-800'
+                                  }`}>
+                                    {item.adjustmentType === 'increase' ? 'Tăng' : 'Giảm'}
+                                  </span>
+                                </td>
+                                <td className="py-3 text-sm">
+                                  {fund ? fund.fundName : bankAccount ? `${bankAccount.accountNumber} - ${bankAccount.bankName}` : '-'}
+                                </td>
+                                <td className={`py-3 text-right font-medium ${
+                                  item.adjustmentType === 'increase' ? 'text-green-600' : 'text-red-600'
+                                }`}>
+                                  {item.adjustmentType === 'increase' ? '+' : '-'}
+                                  {formatCompactCurrency(item.amount)}
+                                </td>
+                                <td className="py-3 text-right">
+                                  <div className="flex justify-end gap-1">
+                                    {item.images && item.images.length > 0 ? (
+                                      <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={() => {
+                                          setSelectedItem({
+                                            _id: item._id,
+                                            images: item.images,
+                                            type: 'adjustment',
+                                            code: item.adjustmentCode,
+                                            date: item.adjustmentDate,
+                                            amount: item.amount,
+                                            payerPayee: '',
+                                            paymentMethod: '',
+                                            status: 'approved'
+                                          } as any);
+                                          setShowGallery(true);
+                                        }}
+                                        title="Xem ảnh"
+                                      >
+                                        <Eye size={16} className="mr-1" />
+                                        {item.images.length}
+                                      </Button>
+                                    ) : (
+                                      <span className="text-gray-400 text-sm px-2">-</span>
+                                    )}
+                                    <Button
+                                      variant="ghost"
+                                      size="icon"
+                                      onClick={() => openEditAdjustmentDialog(item)}
+                                      title="Sửa"
+                                    >
+                                      <Pencil size={16} />
+                                    </Button>
+                                    <Button
+                                      variant="ghost"
+                                      size="icon"
+                                      className="text-red-600 hover:text-red-700"
+                                      onClick={() => handleDeleteAdjustment(item)}
+                                      title="Xóa"
+                                    >
+                                      <Trash2 size={16} />
+                                    </Button>
+                                  </div>
+                                </td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <TransactionTable
+                  transactions={filteredTransactions}
+                  activeTab={activeTab}
+                  loading={loading}
+                  selectedIds={selectedIds}
+                  onToggleSelect={toggleSelect}
+                  onToggleSelectAll={toggleSelectAll}
+                  allPendingSelected={allPendingSelected}
+                  pendingCount={pendingTransactions.length}
+                  onViewImages={(item) => {
+                    setSelectedItem(item);
+                    setShowGallery(true);
+                  }}
+                  onViewDetail={(item) => {
+                    setSelectedForDetail(item);
+                    setShowDetailDialog(true);
+                  }}
+                  onEdit={openEditDialog}
+                  onDelete={handleDelete}
+                  onPrint={(item) => {
+                    setSelectedItem(item);
+                    fetchReceipt(item._id);
+                  }}
+                  loadingReceipt={loadingReceipt}
+                  userRole={user?.role}
+                  onClearSelection={clearSelection}
+                  onBatchApprove={() => setShowBatchApproveDialog(true)}
+                  hasActiveFilters={hasActiveFilters}
+                  onResetFilters={resetFilters}
+                />
+              )}
             </CardContent>
           </Card>
         </TabsContent>
@@ -1105,11 +1507,7 @@ export default function TransactionsPage() {
               {formData.paymentMethod === 'online' && (
                 <div className="space-y-2 col-span-2">
                   <Label>Tài khoản ngân hàng {createType === 'income' ? '(nhận tiền)' : '(chi tiền)'}</Label>
-                  {bankAccounts.filter(ba =>
-                    createType === 'income'
-                      ? ba.accountType === 'income' || ba.accountType === 'both'
-                      : ba.accountType === 'expense' || ba.accountType === 'both'
-                  ).length > 0 ? (
+                  {bankAccounts.length > 0 ? (
                     <Select
                       value={formData.bankAccountId}
                       onValueChange={(v) => setFormData({ ...formData, bankAccountId: v })}
@@ -1118,22 +1516,16 @@ export default function TransactionsPage() {
                         <SelectValue placeholder="Chọn tài khoản ngân hàng" />
                       </SelectTrigger>
                       <SelectContent>
-                        {bankAccounts
-                          .filter(ba =>
-                            createType === 'income'
-                              ? ba.accountType === 'income' || ba.accountType === 'both'
-                              : ba.accountType === 'expense' || ba.accountType === 'both'
-                          )
-                          .map((ba) => (
-                            <SelectItem key={ba._id!.toString()} value={ba._id!.toString()}>
-                              <div className="flex items-center gap-2">
-                                <span className="font-mono">{ba.accountNumber}</span>
-                                <span className="text-gray-500">-</span>
-                                <span>{ba.bankName}</span>
-                                {ba.isDefault && <span className="text-yellow-500">★</span>}
-                              </div>
-                            </SelectItem>
-                          ))}
+                        {bankAccounts.map((ba) => (
+                          <SelectItem key={ba._id!.toString()} value={ba._id!.toString()}>
+                            <div className="flex items-center gap-2">
+                              <span className="font-mono">{ba.accountNumber}</span>
+                              <span className="text-gray-500">-</span>
+                              <span>{ba.bankName}</span>
+                              {ba.isDefault && <span className="text-yellow-500">★</span>}
+                            </div>
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                   ) : (
@@ -1395,11 +1787,7 @@ export default function TransactionsPage() {
               {formData.paymentMethod === 'online' && (
                 <div className="space-y-2 col-span-2">
                   <Label>Tài khoản ngân hàng {selectedItem?.type === 'income' ? '(nhận tiền)' : '(chi tiền)'}</Label>
-                  {bankAccounts.filter(ba =>
-                    selectedItem?.type === 'income'
-                      ? ba.accountType === 'income' || ba.accountType === 'both'
-                      : ba.accountType === 'expense' || ba.accountType === 'both'
-                  ).length > 0 ? (
+                  {bankAccounts.length > 0 ? (
                     <Select
                       value={formData.bankAccountId}
                       onValueChange={(v) => setFormData({ ...formData, bankAccountId: v })}
@@ -1408,11 +1796,7 @@ export default function TransactionsPage() {
                         <SelectValue placeholder="Chọn tài khoản ngân hàng" />
                       </SelectTrigger>
                       <SelectContent>
-                        {bankAccounts.filter(ba =>
-                          selectedItem?.type === 'income'
-                            ? ba.accountType === 'income' || ba.accountType === 'both'
-                            : ba.accountType === 'expense' || ba.accountType === 'both'
-                        ).map((ba) => (
+                        {bankAccounts.map((ba) => (
                           <SelectItem key={ba._id!.toString()} value={ba._id!.toString()}>
                             {ba.accountNumber} - {ba.bankName} ({ba.accountName})
                           </SelectItem>
@@ -1421,7 +1805,7 @@ export default function TransactionsPage() {
                     </Select>
                   ) : (
                     <div className="text-sm text-muted-foreground p-2 border rounded">
-                      Chưa có tài khoản ngân hàng phù hợp. <a href="/finance/bank-accounts" className="text-blue-600 hover:underline">Thêm tài khoản</a>
+                      Chưa có tài khoản ngân hàng. <a href="/finance/bank-accounts" className="text-blue-600 hover:underline">Thêm tài khoản</a>
                     </div>
                   )}
                 </div>
@@ -1580,6 +1964,302 @@ export default function TransactionsPage() {
           });
         }}
       />
+
+      {/* Adjustment Create Dialog */}
+      <Dialog open={showAdjustmentDialog} onOpenChange={setShowAdjustmentDialog}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Tạo phiếu điều chỉnh mới</DialogTitle>
+            <DialogDescription>
+              Điền thông tin để tạo phiếu điều chỉnh số dư
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Giáo xứ *</Label>
+                <Select
+                  value={adjustmentFormData.parishId}
+                  onValueChange={(v) => setAdjustmentFormData({ ...adjustmentFormData, parishId: v })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Chọn giáo xứ" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {parishes.filter(p => p._id).map((p) => (
+                      <SelectItem key={p._id!.toString()} value={p._id!.toString()}>
+                        {p.parishName}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label>Loại điều chỉnh *</Label>
+                <Select
+                  value={adjustmentFormData.adjustmentType}
+                  onValueChange={(v) => setAdjustmentFormData({ ...adjustmentFormData, adjustmentType: v as 'increase' | 'decrease' })}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="increase">Tăng (+)</SelectItem>
+                    <SelectItem value="decrease">Giảm (-)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label>Quỹ *</Label>
+                <Select
+                  value={adjustmentFormData.fundId}
+                  onValueChange={(v) => setAdjustmentFormData({ ...adjustmentFormData, fundId: v })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Chọn quỹ để điều chỉnh" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {funds.filter(f => f._id).map((f) => (
+                      <SelectItem key={f._id!.toString()} value={f._id!.toString()}>
+                        {f.fundName}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label>Tài khoản ngân hàng (tùy chọn)</Label>
+                <Select
+                  value={adjustmentFormData.bankAccountId || "__none__"}
+                  onValueChange={(v) => setAdjustmentFormData({ ...adjustmentFormData, bankAccountId: v === "__none__" ? "" : v })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Chọn tài khoản để điều chỉnh" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="__none__">-- Không chọn --</SelectItem>
+                    {bankAccounts.map((ba) => (
+                      <SelectItem key={ba._id!.toString()} value={ba._id!.toString()}>
+                        {ba.accountNumber} - {ba.bankName}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground">Mặc định thanh toán tiền mặt. Chọn tài khoản để chuyển khoản.</p>
+              </div>
+
+              <div className="space-y-2">
+                <Label>Số tiền *</Label>
+                <Input
+                  type="number"
+                  placeholder="0"
+                  value={adjustmentFormData.amount}
+                  onChange={(e) => setAdjustmentFormData({ ...adjustmentFormData, amount: e.target.value })}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label>Ngày *</Label>
+                <Input
+                  type="date"
+                  value={adjustmentFormData.adjustmentDate}
+                  onChange={(e) => setAdjustmentFormData({ ...adjustmentFormData, adjustmentDate: e.target.value })}
+                />
+              </div>
+
+              <div className="space-y-2 col-span-2">
+                <Label>Lý do điều chỉnh *</Label>
+                <Textarea
+                  placeholder="Nhập lý do điều chỉnh"
+                  value={adjustmentFormData.description}
+                  onChange={(e) => setAdjustmentFormData({ ...adjustmentFormData, description: e.target.value })}
+                />
+              </div>
+
+              <div className="space-y-2 col-span-2">
+                <Label>Hình ảnh chứng từ (tối đa 5 ảnh)</Label>
+                <ImageUpload
+                  images={adjustmentFormData.images}
+                  onChange={(imgs) => setAdjustmentFormData({ ...adjustmentFormData, images: imgs })}
+                  maxImages={5}
+                />
+              </div>
+
+              <div className="space-y-2 col-span-2">
+                <Label>Ghi chú</Label>
+                <Textarea
+                  placeholder="Ghi chú thêm"
+                  value={adjustmentFormData.notes}
+                  onChange={(e) => setAdjustmentFormData({ ...adjustmentFormData, notes: e.target.value })}
+                />
+              </div>
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowAdjustmentDialog(false)}>
+              Hủy
+            </Button>
+            <Button onClick={handleCreateAdjustment} disabled={submitting}>
+              {submitting ? 'Đang tạo...' : 'Tạo phiếu'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Adjustment Edit Dialog */}
+      <Dialog open={showEditAdjustmentDialog} onOpenChange={setShowEditAdjustmentDialog}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Sửa phiếu điều chỉnh</DialogTitle>
+            <DialogDescription>
+              Cập nhật thông tin phiếu điều chỉnh
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Giáo xứ *</Label>
+                <Select
+                  value={adjustmentFormData.parishId}
+                  onValueChange={(v) => setAdjustmentFormData({ ...adjustmentFormData, parishId: v })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Chọn giáo xứ" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {parishes.filter(p => p._id).map((p) => (
+                      <SelectItem key={p._id!.toString()} value={p._id!.toString()}>
+                        {p.parishName}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label>Loại điều chỉnh *</Label>
+                <Select
+                  value={adjustmentFormData.adjustmentType}
+                  onValueChange={(v) => setAdjustmentFormData({ ...adjustmentFormData, adjustmentType: v as 'increase' | 'decrease' })}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="increase">Tăng (+)</SelectItem>
+                    <SelectItem value="decrease">Giảm (-)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label>Quỹ *</Label>
+                <Select
+                  value={adjustmentFormData.fundId}
+                  onValueChange={(v) => setAdjustmentFormData({ ...adjustmentFormData, fundId: v })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Chọn quỹ để điều chỉnh" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {funds.filter(f => f._id).map((f) => (
+                      <SelectItem key={f._id!.toString()} value={f._id!.toString()}>
+                        {f.fundName}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label>Tài khoản ngân hàng (tùy chọn)</Label>
+                <Select
+                  value={adjustmentFormData.bankAccountId || "__none__"}
+                  onValueChange={(v) => setAdjustmentFormData({ ...adjustmentFormData, bankAccountId: v === "__none__" ? "" : v })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Chọn tài khoản để điều chỉnh" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="__none__">-- Không chọn --</SelectItem>
+                    {bankAccounts.map((ba) => (
+                      <SelectItem key={ba._id!.toString()} value={ba._id!.toString()}>
+                        {ba.accountNumber} - {ba.bankName}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground">Mặc định thanh toán tiền mặt. Chọn tài khoản để chuyển khoản.</p>
+              </div>
+
+              <div className="space-y-2">
+                <Label>Số tiền *</Label>
+                <Input
+                  type="number"
+                  placeholder="0"
+                  value={adjustmentFormData.amount}
+                  onChange={(e) => setAdjustmentFormData({ ...adjustmentFormData, amount: e.target.value })}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label>Ngày *</Label>
+                <Input
+                  type="date"
+                  value={adjustmentFormData.adjustmentDate}
+                  onChange={(e) => setAdjustmentFormData({ ...adjustmentFormData, adjustmentDate: e.target.value })}
+                />
+              </div>
+
+              <div className="space-y-2 col-span-2">
+                <Label>Lý do điều chỉnh *</Label>
+                <Textarea
+                  placeholder="Nhập lý do điều chỉnh"
+                  value={adjustmentFormData.description}
+                  onChange={(e) => setAdjustmentFormData({ ...adjustmentFormData, description: e.target.value })}
+                />
+              </div>
+
+              <div className="space-y-2 col-span-2">
+                <Label>Hình ảnh chứng từ (tối đa 5 ảnh)</Label>
+                <ImageUpload
+                  images={adjustmentFormData.images}
+                  onChange={(imgs) => setAdjustmentFormData({ ...adjustmentFormData, images: imgs })}
+                  maxImages={5}
+                />
+              </div>
+
+              <div className="space-y-2 col-span-2">
+                <Label>Ghi chú</Label>
+                <Textarea
+                  placeholder="Ghi chú thêm"
+                  value={adjustmentFormData.notes}
+                  onChange={(e) => setAdjustmentFormData({ ...adjustmentFormData, notes: e.target.value })}
+                />
+              </div>
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => {
+              setShowEditAdjustmentDialog(false);
+              setSelectedAdjustment(null);
+              resetAdjustmentForm();
+            }}>
+              Hủy
+            </Button>
+            <Button onClick={handleUpdateAdjustment} disabled={submitting}>
+              {submitting ? 'Đang lưu...' : 'Lưu thay đổi'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Image Gallery */}
       {selectedItem && (

@@ -50,6 +50,19 @@ interface BankAccountItem {
   createdAt: Date;
 }
 
+interface AccountBalance {
+  _id: string;
+  accountCode: string;
+  accountName: string;
+  accountNumber: string;
+  bankName: string;
+  totalIncome: number;
+  totalExpense: number;
+  totalAdjustmentIncrease: number;
+  totalAdjustmentDecrease: number;
+  balance: number;
+}
+
 const bankList = [
   'Vietcombank',
   'VietinBank',
@@ -83,6 +96,7 @@ const bankList = [
 export default function BankAccountsPage() {
   const { user } = useAuth();
   const [accounts, setAccounts] = useState<BankAccountItem[]>([]);
+  const [balances, setBalances] = useState<Map<string, AccountBalance>>(new Map());
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState('active');
 
@@ -115,10 +129,24 @@ export default function BankAccountsPage() {
         params.append('status', statusFilter);
       }
 
-      const response = await fetch(`/api/bank-accounts?${params}`);
-      if (response.ok) {
-        const result = await response.json();
+      const [accountsRes, balancesRes] = await Promise.all([
+        fetch(`/api/bank-accounts?${params}`),
+        fetch('/api/balances?type=bank_account')
+      ]);
+
+      if (accountsRes.ok) {
+        const result = await accountsRes.json();
         setAccounts(result.data || []);
+      }
+
+      if (balancesRes.ok) {
+        const balancesResult = await balancesRes.json();
+        const balancesData = balancesResult.data || [];
+        const balancesMap = new Map<string, AccountBalance>();
+        balancesData.forEach((b: AccountBalance) => {
+          balancesMap.set(b._id.toString(), b);
+        });
+        setBalances(balancesMap);
       }
     } catch (error) {
       console.error('Error fetching accounts:', error);
@@ -242,10 +270,13 @@ export default function BankAccountsPage() {
     setShowEditDialog(true);
   };
 
+  // Calculate total balance from calculated balances
+  const totalCalculatedBalance = Array.from(balances.values()).reduce((sum, b) => sum + b.balance, 0);
+
   const stats = {
     total: accounts.length,
     active: accounts.filter(a => a.status === 'active').length,
-    totalBalance: accounts.reduce((sum, a) => sum + (a.balance || 0), 0)
+    totalBalance: totalCalculatedBalance
   };
 
   return (
@@ -324,59 +355,72 @@ export default function BankAccountsPage() {
                   <TableHead>Tên TK</TableHead>
                   <TableHead>Số TK</TableHead>
                   <TableHead>Ngân hàng</TableHead>
+                  <TableHead className="text-right">Số dư</TableHead>
                   <TableHead>Trạng thái</TableHead>
                   <TableHead>Thao tác</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {accounts.map((account) => (
-                  <TableRow key={account._id}>
-                    <TableCell className="font-mono">
-                      <div className="flex items-center gap-2">
-                        {account.accountCode}
-                        {account.isDefault && (
-                          <Star size={14} className="text-yellow-500 fill-yellow-500" />
+                {accounts.map((account) => {
+                  const accountBalance = balances.get(account._id);
+                  return (
+                    <TableRow key={account._id}>
+                      <TableCell className="font-mono">
+                        <div className="flex items-center gap-2">
+                          {account.accountCode}
+                          {account.isDefault && (
+                            <Star size={14} className="text-yellow-500 fill-yellow-500" />
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell className="font-medium">{account.accountName}</TableCell>
+                      <TableCell className="font-mono">{account.accountNumber}</TableCell>
+                      <TableCell>
+                        <div>{account.bankName}</div>
+                        {account.bankBranch && (
+                          <div className="text-sm text-gray-500">{account.bankBranch}</div>
                         )}
-                      </div>
-                    </TableCell>
-                    <TableCell className="font-medium">{account.accountName}</TableCell>
-                    <TableCell className="font-mono">{account.accountNumber}</TableCell>
-                    <TableCell>
-                      <div>{account.bankName}</div>
-                      {account.bankBranch && (
-                        <div className="text-sm text-gray-500">{account.bankBranch}</div>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      <Badge className={account.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}>
-                        {account.status === 'active' ? 'Hoạt động' : 'Vô hiệu'}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex gap-1">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => openEditDialog(account)}
-                          title="Sửa"
-                        >
-                          <Pencil size={16} />
-                        </Button>
-                        {account.status === 'active' && (
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <div className={`font-medium ${accountBalance && accountBalance.balance >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                          {accountBalance
+                            ? formatCompactCurrency(accountBalance.balance)
+                            : '-'
+                          }
+                        </div>
+  
+                      </TableCell>
+                      <TableCell>
+                        <Badge className={account.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}>
+                          {account.status === 'active' ? 'Hoạt động' : 'Vô hiệu'}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex gap-1">
                           <Button
                             variant="ghost"
                             size="icon"
-                            className="text-red-600 hover:text-red-700"
-                            onClick={() => handleDelete(account)}
-                            title="Vô hiệu hóa"
+                            onClick={() => openEditDialog(account)}
+                            title="Sửa"
                           >
-                            <Trash2 size={16} />
+                            <Pencil size={16} />
                           </Button>
-                        )}
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
+                          {account.status === 'active' && (
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="text-red-600 hover:text-red-700"
+                              onClick={() => handleDelete(account)}
+                              title="Vô hiệu hóa"
+                            >
+                              <Trash2 size={16} />
+                            </Button>
+                          )}
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
               </TableBody>
             </Table>
           )}

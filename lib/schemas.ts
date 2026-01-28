@@ -374,6 +374,26 @@ export interface MediaFile {
   status: 'active' | 'archived' | 'deleted';
 }
 
+// Adjustment Schema (Phiếu điều chỉnh - không cần duyệt)
+export interface Adjustment {
+  _id?: ObjectId;
+  adjustmentCode: string; // ADJ-YYYY-####
+  parishId: ObjectId;
+  fundId?: ObjectId; // FK to funds - dùng để tính balance của quỹ
+  bankAccountId?: ObjectId; // FK to bank_accounts - dùng để tính balance của tài khoản
+  adjustmentType: 'increase' | 'decrease'; // Tăng hoặc giảm
+  amount: number; // Số tiền điều chỉnh (luôn dương)
+  description: string; // Lý do điều chỉnh
+  adjustmentDate: Date;
+  fiscalYear: number;
+  fiscalPeriod: number; // 1-12 (tháng)
+  images: string[]; // Chứng từ đính kèm
+  notes?: string;
+  createdBy: ObjectId;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
 // Audit Log Schema (Nhật ký hệ thống)
 export interface AuditLog {
   _id?: ObjectId;
