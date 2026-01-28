@@ -30,7 +30,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Pencil, Trash2, Building2, Star, ArrowDownCircle, ArrowUpCircle, RefreshCw } from 'lucide-react';
+import { Plus, Pencil, Trash2, Building2, Star } from 'lucide-react';
 import { useAuth } from '@/lib/auth-context';
 import { formatCompactCurrency } from '@/lib/utils';
 
@@ -48,6 +48,19 @@ interface BankAccountItem {
   status: 'active' | 'inactive';
   notes?: string;
   createdAt: Date;
+}
+
+interface AccountBalance {
+  _id: string;
+  accountCode: string;
+  accountName: string;
+  accountNumber: string;
+  bankName: string;
+  totalIncome: number;
+  totalExpense: number;
+  totalAdjustmentIncrease: number;
+  totalAdjustmentDecrease: number;
+  balance: number;
 }
 
 const bankList = [
@@ -83,9 +96,9 @@ const bankList = [
 export default function BankAccountsPage() {
   const { user } = useAuth();
   const [accounts, setAccounts] = useState<BankAccountItem[]>([]);
+  const [balances, setBalances] = useState<Map<string, AccountBalance>>(new Map());
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState('active');
-  const [typeFilter, setTypeFilter] = useState('all');
 
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);
@@ -97,7 +110,6 @@ export default function BankAccountsPage() {
     accountNumber: '',
     bankName: '',
     bankBranch: '',
-    accountType: 'both' as 'income' | 'expense' | 'both',
     balance: '',
     isDefault: false,
     notes: ''
@@ -107,7 +119,7 @@ export default function BankAccountsPage() {
 
   useEffect(() => {
     fetchAccounts();
-  }, [statusFilter, typeFilter]);
+  }, [statusFilter]);
 
   const fetchAccounts = async () => {
     setLoading(true);
@@ -116,14 +128,25 @@ export default function BankAccountsPage() {
       if (statusFilter !== 'all') {
         params.append('status', statusFilter);
       }
-      if (typeFilter !== 'all') {
-        params.append('accountType', typeFilter);
+
+      const [accountsRes, balancesRes] = await Promise.all([
+        fetch(`/api/bank-accounts?${params}`),
+        fetch('/api/balances?type=bank_account')
+      ]);
+
+      if (accountsRes.ok) {
+        const result = await accountsRes.json();
+        setAccounts(result.data || []);
       }
 
-      const response = await fetch(`/api/bank-accounts?${params}`);
-      if (response.ok) {
-        const result = await response.json();
-        setAccounts(result.data || []);
+      if (balancesRes.ok) {
+        const balancesResult = await balancesRes.json();
+        const balancesData = balancesResult.data || [];
+        const balancesMap = new Map<string, AccountBalance>();
+        balancesData.forEach((b: AccountBalance) => {
+          balancesMap.set(b._id.toString(), b);
+        });
+        setBalances(balancesMap);
       }
     } catch (error) {
       console.error('Error fetching accounts:', error);
@@ -139,7 +162,6 @@ export default function BankAccountsPage() {
       accountNumber: '',
       bankName: '',
       bankBranch: '',
-      accountType: 'both',
       balance: '',
       isDefault: false,
       notes: ''
@@ -241,7 +263,6 @@ export default function BankAccountsPage() {
       accountNumber: account.accountNumber,
       bankName: account.bankName,
       bankBranch: account.bankBranch || '',
-      accountType: account.accountType,
       balance: account.balance?.toString() || '',
       isDefault: account.isDefault,
       notes: account.notes || ''
@@ -249,28 +270,13 @@ export default function BankAccountsPage() {
     setShowEditDialog(true);
   };
 
-  const getAccountTypeLabel = (type: string) => {
-    const labels: { [key: string]: string } = {
-      income: 'Chỉ thu',
-      expense: 'Chỉ chi',
-      both: 'Thu & Chi'
-    };
-    return labels[type] || type;
-  };
-
-  const getAccountTypeColor = (type: string) => {
-    const colors: { [key: string]: string } = {
-      income: 'bg-green-100 text-green-800',
-      expense: 'bg-red-100 text-red-800',
-      both: 'bg-blue-100 text-blue-800'
-    };
-    return colors[type] || 'bg-gray-100 text-gray-800';
-  };
+  // Calculate total balance from calculated balances
+  const totalCalculatedBalance = Array.from(balances.values()).reduce((sum, b) => sum + b.balance, 0);
 
   const stats = {
     total: accounts.length,
     active: accounts.filter(a => a.status === 'active').length,
-    totalBalance: accounts.reduce((sum, a) => sum + (a.balance || 0), 0)
+    totalBalance: totalCalculatedBalance
   };
 
   return (
@@ -289,7 +295,7 @@ export default function BankAccountsPage() {
         </Button>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
         <Card>
           <CardHeader className="pb-2">
             <CardDescription>Tổng tài khoản</CardDescription>
@@ -304,18 +310,8 @@ export default function BankAccountsPage() {
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardDescription>TK Thu</CardDescription>
-            <CardTitle className="text-xl text-green-600">
-              {accounts.filter(a => a.accountType === 'income' || a.accountType === 'both').length}
-            </CardTitle>
-          </CardHeader>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardDescription>TK Chi</CardDescription>
-            <CardTitle className="text-xl text-red-600">
-              {accounts.filter(a => a.accountType === 'expense' || a.accountType === 'both').length}
-            </CardTitle>
+            <CardDescription>Tổng số dư</CardDescription>
+            <CardTitle className="text-xl text-blue-600">{formatCompactCurrency(stats.totalBalance)}</CardTitle>
           </CardHeader>
         </Card>
       </div>
@@ -326,29 +322,16 @@ export default function BankAccountsPage() {
             <CardTitle>Danh sách Tài khoản</CardTitle>
             <CardDescription>Quản lý các tài khoản ngân hàng của Giáo phận</CardDescription>
           </div>
-          <div className="flex gap-2">
-            <Select value={typeFilter} onValueChange={setTypeFilter}>
-              <SelectTrigger className="w-32">
-                <SelectValue placeholder="Loại TK" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Tất cả</SelectItem>
-                <SelectItem value="income">Chỉ thu</SelectItem>
-                <SelectItem value="expense">Chỉ chi</SelectItem>
-                <SelectItem value="both">Thu & Chi</SelectItem>
-              </SelectContent>
-            </Select>
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-36">
-                <SelectValue placeholder="Trạng thái" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Tất cả</SelectItem>
-                <SelectItem value="active">Đang hoạt động</SelectItem>
-                <SelectItem value="inactive">Đã vô hiệu</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+          <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <SelectTrigger className="w-36">
+              <SelectValue placeholder="Trạng thái" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Tất cả</SelectItem>
+              <SelectItem value="active">Đang hoạt động</SelectItem>
+              <SelectItem value="inactive">Đã vô hiệu</SelectItem>
+            </SelectContent>
+          </Select>
         </CardHeader>
         <CardContent>
           {loading ? (
@@ -372,68 +355,72 @@ export default function BankAccountsPage() {
                   <TableHead>Tên TK</TableHead>
                   <TableHead>Số TK</TableHead>
                   <TableHead>Ngân hàng</TableHead>
-                  <TableHead>Loại</TableHead>
+                  <TableHead className="text-right">Số dư</TableHead>
                   <TableHead>Trạng thái</TableHead>
                   <TableHead>Thao tác</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {accounts.map((account) => (
-                  <TableRow key={account._id}>
-                    <TableCell className="font-mono">
-                      <div className="flex items-center gap-2">
-                        {account.accountCode}
-                        {account.isDefault && (
-                          <Star size={14} className="text-yellow-500 fill-yellow-500" />
+                {accounts.map((account) => {
+                  const accountBalance = balances.get(account._id);
+                  return (
+                    <TableRow key={account._id}>
+                      <TableCell className="font-mono">
+                        <div className="flex items-center gap-2">
+                          {account.accountCode}
+                          {account.isDefault && (
+                            <Star size={14} className="text-yellow-500 fill-yellow-500" />
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell className="font-medium">{account.accountName}</TableCell>
+                      <TableCell className="font-mono">{account.accountNumber}</TableCell>
+                      <TableCell>
+                        <div>{account.bankName}</div>
+                        {account.bankBranch && (
+                          <div className="text-sm text-gray-500">{account.bankBranch}</div>
                         )}
-                      </div>
-                    </TableCell>
-                    <TableCell className="font-medium">{account.accountName}</TableCell>
-                    <TableCell className="font-mono">{account.accountNumber}</TableCell>
-                    <TableCell>
-                      <div>{account.bankName}</div>
-                      {account.bankBranch && (
-                        <div className="text-sm text-gray-500">{account.bankBranch}</div>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      <Badge className={getAccountTypeColor(account.accountType)}>
-                        {account.accountType === 'income' && <ArrowDownCircle size={12} className="mr-1" />}
-                        {account.accountType === 'expense' && <ArrowUpCircle size={12} className="mr-1" />}
-                        {account.accountType === 'both' && <RefreshCw size={12} className="mr-1" />}
-                        {getAccountTypeLabel(account.accountType)}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <Badge className={account.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}>
-                        {account.status === 'active' ? 'Hoạt động' : 'Vô hiệu'}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex gap-1">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => openEditDialog(account)}
-                          title="Sửa"
-                        >
-                          <Pencil size={16} />
-                        </Button>
-                        {account.status === 'active' && (
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <div className={`font-medium ${accountBalance && accountBalance.balance >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                          {accountBalance
+                            ? formatCompactCurrency(accountBalance.balance)
+                            : '-'
+                          }
+                        </div>
+  
+                      </TableCell>
+                      <TableCell>
+                        <Badge className={account.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}>
+                          {account.status === 'active' ? 'Hoạt động' : 'Vô hiệu'}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex gap-1">
                           <Button
                             variant="ghost"
                             size="icon"
-                            className="text-red-600 hover:text-red-700"
-                            onClick={() => handleDelete(account)}
-                            title="Vô hiệu hóa"
+                            onClick={() => openEditDialog(account)}
+                            title="Sửa"
                           >
-                            <Trash2 size={16} />
+                            <Pencil size={16} />
                           </Button>
-                        )}
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
+                          {account.status === 'active' && (
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="text-red-600 hover:text-red-700"
+                              onClick={() => handleDelete(account)}
+                              title="Vô hiệu hóa"
+                            >
+                              <Trash2 size={16} />
+                            </Button>
+                          )}
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
               </TableBody>
             </Table>
           )}
@@ -451,32 +438,13 @@ export default function BankAccountsPage() {
           </DialogHeader>
 
           <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>Mã tài khoản *</Label>
-                <Input
-                  placeholder="VD: TK-001"
-                  value={formData.accountCode}
-                  onChange={(e) => setFormData({ ...formData, accountCode: e.target.value })}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label>Loại tài khoản *</Label>
-                <Select
-                  value={formData.accountType}
-                  onValueChange={(v) => setFormData({ ...formData, accountType: v as any })}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="income">Chỉ thu</SelectItem>
-                    <SelectItem value="expense">Chỉ chi</SelectItem>
-                    <SelectItem value="both">Thu & Chi</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+            <div className="space-y-2">
+              <Label>Mã tài khoản *</Label>
+              <Input
+                placeholder="VD: TK-001"
+                value={formData.accountCode}
+                onChange={(e) => setFormData({ ...formData, accountCode: e.target.value })}
+              />
             </div>
 
             <div className="space-y-2">
@@ -571,32 +539,13 @@ export default function BankAccountsPage() {
           </DialogHeader>
 
           <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>Mã tài khoản</Label>
-                <Input
-                  value={formData.accountCode}
-                  disabled
-                  className="bg-gray-100"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label>Loại tài khoản</Label>
-                <Select
-                  value={formData.accountType}
-                  onValueChange={(v) => setFormData({ ...formData, accountType: v as any })}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="income">Chỉ thu</SelectItem>
-                    <SelectItem value="expense">Chỉ chi</SelectItem>
-                    <SelectItem value="both">Thu & Chi</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+            <div className="space-y-2">
+              <Label>Mã tài khoản</Label>
+              <Input
+                value={formData.accountCode}
+                disabled
+                className="bg-gray-100"
+              />
             </div>
 
             <div className="space-y-2">

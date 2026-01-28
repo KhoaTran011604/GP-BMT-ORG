@@ -88,6 +88,9 @@ export async function PUT(
     if (body.bankName !== undefined) {
       updateData.bankName = body.bankName?.trim() || undefined;
     }
+    if (body.bankBranch !== undefined) {
+      updateData.bankBranch = body.bankBranch?.trim() || undefined;
+    }
     if (body.bankAccountNumber !== undefined) {
       updateData.bankAccountNumber = body.bankAccountNumber?.trim() || undefined;
     }

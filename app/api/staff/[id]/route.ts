@@ -46,6 +46,7 @@ export async function GET(
       contractType: staff.contractType,
       status: staff.status,
       bankName: staff.bankName,
+      bankBranch: staff.bankBranch,
       bankAccountNumber: staff.bankAccountNumber,
     });
   } catch (error) {
@@ -121,6 +122,7 @@ export async function PUT(
       contractType: body.contractType || existingStaff.contractType,
       status: body.status || existingStaff.status,
       bankName: body.bankName,
+      bankBranch: body.bankBranch,
       bankAccountNumber: body.bankAccountNumber,
       updatedAt: new Date(),
     };

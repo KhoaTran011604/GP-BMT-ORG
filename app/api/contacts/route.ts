@@ -57,7 +57,7 @@ export async function POST(request: NextRequest) {
     await verifyToken(token);
 
     const body = await request.json();
-    const { name, phone, bankName, bankAccountNumber } = body;
+    const { name, phone, bankName, bankBranch, bankAccountNumber } = body;
 
     if (!name || !name.trim()) {
       return NextResponse.json(
@@ -73,6 +73,7 @@ export async function POST(request: NextRequest) {
       name: name.trim(),
       phone: phone?.trim() || undefined,
       bankName: bankName?.trim() || undefined,
+      bankBranch: bankBranch?.trim() || undefined,
       bankAccountNumber: bankAccountNumber?.trim() || undefined,
       status: 'active',
       createdAt: now,

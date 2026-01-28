@@ -68,6 +68,12 @@ interface Parish {
   parishName: string;
 }
 
+interface Fund {
+  _id: string;
+  fundCode: string;
+  fundName: string;
+}
+
 const currentYear = new Date().getFullYear();
 const months = Array.from({ length: 12 }, (_, i) => ({
   value: `${String(i + 1).padStart(2, '0')}/${currentYear}`,
@@ -89,6 +95,8 @@ export default function PayrollPage() {
   const [selectedBankAccount, setSelectedBankAccount] = useState<string>('');
   const [parishes, setParishes] = useState<Parish[]>([]);
   const [selectedParish, setSelectedParish] = useState<string>('');
+  const [funds, setFunds] = useState<Fund[]>([]);
+  const [selectedFund, setSelectedFund] = useState<string>('');
 
   // Success dialog
   const [showSuccessDialog, setShowSuccessDialog] = useState(false);
@@ -122,6 +130,7 @@ export default function PayrollPage() {
     fetchPayrolls();
     fetchBankAccounts();
     fetchParishes();
+    fetchFunds();
   }, [selectedPeriod]);
 
   const fetchPayrolls = async () => {
@@ -164,6 +173,19 @@ export default function PayrollPage() {
       }
     } catch (error) {
       console.error('Error fetching parishes:', error);
+    }
+  };
+
+  const fetchFunds = async () => {
+    try {
+      const res = await fetch('/api/funds');
+      if (res.ok) {
+        const data = await res.json();
+        const fundList = Array.isArray(data.data) ? data.data : (Array.isArray(data) ? data : []);
+        setFunds(fundList);
+      }
+    } catch (error) {
+      console.error('Error fetching funds:', error);
     }
   };
 
@@ -295,6 +317,11 @@ export default function PayrollPage() {
       return;
     }
 
+    if (!selectedFund) {
+      alert('Vui lòng chọn quỹ');
+      return;
+    }
+
     if (paymentMethod === 'online' && !selectedBankAccount) {
       alert('Vui lòng chọn tài khoản ngân hàng');
       return;
@@ -310,6 +337,7 @@ export default function PayrollPage() {
         body: JSON.stringify({
           period: selectedPeriod,
           parishId: selectedParish,
+          fundId: selectedFund,
           paymentMethod,
           bankAccountId: paymentMethod === 'online' ? selectedBankAccount : undefined,
           bankAccount: paymentMethod === 'online' && selectedBank
@@ -615,6 +643,21 @@ export default function PayrollPage() {
                 <SelectContent>
                   {parishes.map((p) => (
                     <SelectItem key={p._id} value={p._id}>{p.parishName}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Fund Selection */}
+            <div>
+              <Label>Nguồn quỹ *</Label>
+              <Select value={selectedFund} onValueChange={setSelectedFund}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Chọn quỹ" />
+                </SelectTrigger>
+                <SelectContent>
+                  {funds.map((f) => (
+                    <SelectItem key={f._id} value={f._id}>{f.fundName}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>

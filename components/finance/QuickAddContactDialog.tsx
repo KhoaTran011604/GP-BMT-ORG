@@ -17,6 +17,7 @@ interface Contact {
   name: string;
   phone?: string;
   bankName?: string;
+  bankBranch?: string;
   bankAccountNumber?: string;
 }
 
@@ -34,6 +35,7 @@ export function QuickAddContactDialog({
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [bankName, setBankName] = useState('');
+  const [bankBranch, setBankBranch] = useState('');
   const [bankAccountNumber, setBankAccountNumber] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
@@ -57,6 +59,7 @@ export function QuickAddContactDialog({
           name: name.trim(),
           phone: phone.trim() || undefined,
           bankName: bankName.trim() || undefined,
+          bankBranch: bankBranch.trim() || undefined,
           bankAccountNumber: bankAccountNumber.trim() || undefined,
         }),
       });
@@ -68,6 +71,7 @@ export function QuickAddContactDialog({
         setName('');
         setPhone('');
         setBankName('');
+        setBankBranch('');
         setBankAccountNumber('');
         onOpenChange(false);
       } else {
@@ -85,6 +89,7 @@ export function QuickAddContactDialog({
     setName('');
     setPhone('');
     setBankName('');
+    setBankBranch('');
     setBankAccountNumber('');
     setError('');
     onOpenChange(false);
@@ -124,14 +129,25 @@ export function QuickAddContactDialog({
                 placeholder="Nhập số điện thoại (tùy chọn)"
               />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="contact-bank-name">Tên ngân hàng</Label>
-              <Input
-                id="contact-bank-name"
-                value={bankName}
-                onChange={(e) => setBankName(e.target.value)}
-                placeholder="VD: Vietcombank, BIDV, Techcombank..."
-              />
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="contact-bank-name">Tên ngân hàng</Label>
+                <Input
+                  id="contact-bank-name"
+                  value={bankName}
+                  onChange={(e) => setBankName(e.target.value)}
+                  placeholder="VD: Vietcombank..."
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="contact-bank-branch">Chi nhánh</Label>
+                <Input
+                  id="contact-bank-branch"
+                  value={bankBranch}
+                  onChange={(e) => setBankBranch(e.target.value)}
+                  placeholder="VD: BMT"
+                />
+              </div>
             </div>
             <div className="space-y-2">
               <Label htmlFor="contact-bank-account">Số tài khoản</Label>

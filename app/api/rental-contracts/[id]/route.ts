@@ -90,6 +90,7 @@ export async function PUT(
     if (body.tenantAddress !== undefined) updateData.tenantAddress = body.tenantAddress;
     if (body.tenantEmail !== undefined) updateData.tenantEmail = body.tenantEmail;
     if (body.tenantBankName !== undefined) updateData.tenantBankName = body.tenantBankName;
+    if (body.tenantBankBranch !== undefined) updateData.tenantBankBranch = body.tenantBankBranch;
     if (body.tenantBankAccount !== undefined) updateData.tenantBankAccount = body.tenantBankAccount;
     if (body.startDate !== undefined) updateData.startDate = new Date(body.startDate);
     if (body.endDate !== undefined) updateData.endDate = new Date(body.endDate);

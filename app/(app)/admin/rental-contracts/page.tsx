@@ -69,6 +69,7 @@ interface RentalContractItem {
   tenantName: string;
   tenantPhone?: string;
   tenantBankName?: string; // Tên ngân hàng bên thuê
+  tenantBankBranch?: string; // Chi nhánh ngân hàng bên thuê
   tenantBankAccount?: string; // Số tài khoản bên thuê
   tenantContactId?: string; // FK to contacts - liên kết với đối tượng nhận gửi
   startDate: Date;
@@ -119,6 +120,7 @@ export default function RentalContractsPage() {
     tenantAddress: '',
     tenantEmail: '',
     tenantBankName: '', // Tên ngân hàng bên thuê
+    tenantBankBranch: '', // Chi nhánh ngân hàng bên thuê
     tenantBankAccount: '', // Số tài khoản bên thuê
     startDate: new Date().toISOString().split('T')[0],
     endDate: '',
@@ -242,6 +244,7 @@ export default function RentalContractsPage() {
       tenantAddress: '',
       tenantEmail: '',
       tenantBankName: '',
+      tenantBankBranch: '',
       tenantBankAccount: '',
       startDate: new Date().toISOString().split('T')[0],
       endDate: '',
@@ -400,6 +403,7 @@ export default function RentalContractsPage() {
       tenantAddress: '',
       tenantEmail: '',
       tenantBankName: contract.tenantBankName || '',
+      tenantBankBranch: contract.tenantBankBranch || '',
       tenantBankAccount: contract.tenantBankAccount || '',
       startDate: new Date(contract.startDate).toISOString().split('T')[0],
       endDate: new Date(contract.endDate).toISOString().split('T')[0],
@@ -882,22 +886,25 @@ export default function RentalContractsPage() {
                   />
                 </div>
 
-                <div className="space-y-2">
-                  <Label>Ngân hàng (bên thuê)</Label>
-                  <Input
-                    placeholder="VD: Vietcombank"
-                    value={formData.tenantBankName}
-                    onChange={(e) => setFormData({ ...formData, tenantBankName: e.target.value })}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label>Số tài khoản (bên thuê)</Label>
-                  <Input
-                    placeholder="VD: 0123456789"
-                    value={formData.tenantBankAccount}
-                    onChange={(e) => setFormData({ ...formData, tenantBankAccount: e.target.value })}
-                  />
+                <div className="space-y-2 col-span-2">
+                  <Label>Thông tin ngân hàng (bên thuê)</Label>
+                  <div className="grid grid-cols-3 gap-2">
+                    <Input
+                      placeholder="Ngân hàng"
+                      value={formData.tenantBankName}
+                      onChange={(e) => setFormData({ ...formData, tenantBankName: e.target.value })}
+                    />
+                    <Input
+                      placeholder="Chi nhánh"
+                      value={formData.tenantBankBranch}
+                      onChange={(e) => setFormData({ ...formData, tenantBankBranch: e.target.value })}
+                    />
+                    <Input
+                      placeholder="Số tài khoản"
+                      value={formData.tenantBankAccount}
+                      onChange={(e) => setFormData({ ...formData, tenantBankAccount: e.target.value })}
+                    />
+                  </div>
                   {!canSelectOnlinePayment && (
                     <p className="text-xs text-amber-600">Nhập ngân hàng và STK để chọn thanh toán chuyển khoản</p>
                   )}
@@ -1093,24 +1100,22 @@ export default function RentalContractsPage() {
             {/* Tenant bank info */}
             <div className="border-t pt-4">
               <h3 className="font-semibold mb-3">Thông tin Ngân hàng Bên thuê</h3>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>Ngân hàng (bên thuê)</Label>
-                  <Input
-                    placeholder="VD: Vietcombank"
-                    value={formData.tenantBankName}
-                    onChange={(e) => setFormData({ ...formData, tenantBankName: e.target.value })}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label>Số tài khoản (bên thuê)</Label>
-                  <Input
-                    placeholder="VD: 0123456789"
-                    value={formData.tenantBankAccount}
-                    onChange={(e) => setFormData({ ...formData, tenantBankAccount: e.target.value })}
-                  />
-                </div>
+              <div className="grid grid-cols-3 gap-2">
+                <Input
+                  placeholder="Ngân hàng"
+                  value={formData.tenantBankName}
+                  onChange={(e) => setFormData({ ...formData, tenantBankName: e.target.value })}
+                />
+                <Input
+                  placeholder="Chi nhánh"
+                  value={formData.tenantBankBranch}
+                  onChange={(e) => setFormData({ ...formData, tenantBankBranch: e.target.value })}
+                />
+                <Input
+                  placeholder="Số tài khoản"
+                  value={formData.tenantBankAccount}
+                  onChange={(e) => setFormData({ ...formData, tenantBankAccount: e.target.value })}
+                />
               </div>
             </div>
           </div>

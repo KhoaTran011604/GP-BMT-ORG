@@ -38,6 +38,7 @@ interface Staff {
   contractType: string;
   status: 'active' | 'resigned';
   bankName?: string;
+  bankBranch?: string;
   bankAccountNumber?: string;
   hasActiveContract?: boolean;
   activeContractId?: string;
@@ -104,6 +105,7 @@ export default function StaffPage() {
     hireDate: '',
     status: 'active' as 'active' | 'resigned',
     bankName: '',
+    bankBranch: '',
     bankAccountNumber: '',
   });
 
@@ -220,6 +222,7 @@ export default function StaffPage() {
       hireDate: staffMember.hireDate ? staffMember.hireDate.split('T')[0] : '',
       status: staffMember.status,
       bankName: staffMember.bankName || '',
+      bankBranch: staffMember.bankBranch || '',
       bankAccountNumber: staffMember.bankAccountNumber || '',
     });
     setIsStaffDialogOpen(true);
@@ -316,6 +319,7 @@ export default function StaffPage() {
       hireDate: '',
       status: 'active',
       bankName: '',
+      bankBranch: '',
       bankAccountNumber: '',
     });
   };
@@ -657,13 +661,21 @@ export default function StaffPage() {
                 />
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-3 gap-4">
               <div>
                 <Label>Tên ngân hàng</Label>
                 <Input
                   value={staffFormData.bankName}
                   onChange={(e) => setStaffFormData({ ...staffFormData, bankName: e.target.value })}
-                  placeholder="VD: Vietcombank, BIDV..."
+                  placeholder="VD: Vietcombank..."
+                />
+              </div>
+              <div>
+                <Label>Chi nhánh</Label>
+                <Input
+                  value={staffFormData.bankBranch}
+                  onChange={(e) => setStaffFormData({ ...staffFormData, bankBranch: e.target.value })}
+                  placeholder="VD: BMT"
                 />
               </div>
               <div>
@@ -671,7 +683,7 @@ export default function StaffPage() {
                 <Input
                   value={staffFormData.bankAccountNumber}
                   onChange={(e) => setStaffFormData({ ...staffFormData, bankAccountNumber: e.target.value })}
-                  placeholder="Số tài khoản ngân hàng"
+                  placeholder="Số tài khoản"
                 />
               </div>
             </div>
@@ -924,10 +936,14 @@ export default function StaffPage() {
               <div className="border-t pt-4">
                 <h4 className="font-medium mb-3">Thông tin Ngân hàng</h4>
                 {(detailStaff.bankName || detailStaff.bankAccountNumber) ? (
-                  <div className="grid grid-cols-2 gap-4 bg-blue-50 p-4 rounded-lg">
+                  <div className="grid grid-cols-3 gap-4 bg-blue-50 p-4 rounded-lg">
                     <div className="space-y-1">
                       <p className="text-sm text-gray-500">Tên ngân hàng</p>
                       <p className="font-medium">{detailStaff.bankName || '-'}</p>
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-sm text-gray-500">Chi nhánh</p>
+                      <p className="font-medium">{detailStaff.bankBranch || '-'}</p>
                     </div>
                     <div className="space-y-1">
                       <p className="text-sm text-gray-500">Số tài khoản</p>

@@ -229,11 +229,7 @@ export function TransactionFormDialog({
                         {formData.paymentMethod === 'online' && (
                             <div className="space-y-2 col-span-2">
                                 <Label>Tài khoản ngân hàng {transactionType === 'income' ? '(nhận tiền)' : '(chi tiền)'}</Label>
-                                {bankAccounts.filter(ba =>
-                                    transactionType === 'income'
-                                        ? ba.accountType === 'income' || ba.accountType === 'both'
-                                        : ba.accountType === 'expense' || ba.accountType === 'both'
-                                ).length > 0 ? (
+                                {bankAccounts.length > 0 ? (
                                     <Select
                                         value={formData.bankAccountId}
                                         onValueChange={(v) => updateField('bankAccountId', v)}
@@ -242,22 +238,16 @@ export function TransactionFormDialog({
                                             <SelectValue placeholder="Chọn tài khoản ngân hàng" />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            {bankAccounts
-                                                .filter(ba =>
-                                                    transactionType === 'income'
-                                                        ? ba.accountType === 'income' || ba.accountType === 'both'
-                                                        : ba.accountType === 'expense' || ba.accountType === 'both'
-                                                )
-                                                .map((ba) => (
-                                                    <SelectItem key={ba._id!.toString()} value={ba._id!.toString()}>
-                                                        <div className="flex items-center gap-2">
-                                                            <span className="font-mono">{ba.accountNumber}</span>
-                                                            <span className="text-gray-500">-</span>
-                                                            <span>{ba.bankName}</span>
-                                                            {ba.isDefault && <span className="text-yellow-500">★</span>}
-                                                        </div>
-                                                    </SelectItem>
-                                                ))}
+                                            {bankAccounts.map((ba) => (
+                                                <SelectItem key={ba._id!.toString()} value={ba._id!.toString()}>
+                                                    <div className="flex items-center gap-2">
+                                                        <span className="font-mono">{ba.accountNumber}</span>
+                                                        <span className="text-gray-500">-</span>
+                                                        <span>{ba.bankName}</span>
+                                                        {ba.isDefault && <span className="text-yellow-500">★</span>}
+                                                    </div>
+                                                </SelectItem>
+                                            ))}
                                         </SelectContent>
                                     </Select>
                                 ) : (

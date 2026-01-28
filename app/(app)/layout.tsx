@@ -112,7 +112,7 @@ const menuData: MenuItem[] = [
     icon: <Settings size={20} />,
     children: [
       { id: 'users', label: 'Phân quyền (RBAC)', icon: <Shield size={18} />, href: '/settings/users' },
-      { id: 'audit-logs', label: 'Nhật ký hệ thống', icon: <History size={18} />, href: '/settings/audit-logs' },
+      // { id: 'audit-logs', label: 'Nhật ký hệ thống', icon: <History size={18} />, href: '/settings/audit-logs' },
     ],
     roles: ['super_admin'], // Only Super Admin
   },

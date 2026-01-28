@@ -26,11 +26,11 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { period, parishId, paymentMethod = 'offline', bankAccountId, bankAccount } = body;
+    const { period, parishId, fundId, paymentMethod = 'offline', bankAccountId, bankAccount } = body;
 
-    if (!period || !parishId) {
+    if (!period || !parishId || !fundId) {
       return NextResponse.json(
-        { error: 'Missing required fields: period, parishId' },
+        { error: 'Missing required fields: period, parishId, fundId' },
         { status: 400 }
       );
     }
@@ -139,6 +139,7 @@ export async function POST(request: NextRequest) {
         expenseCode,
         parishId: new ObjectId(parishId),
         categoryId: new ObjectId(SALARY_EXPENSE_CATEGORY_ID),
+        fundId: new ObjectId(fundId),
         amount: payroll.netSalary || 0,
         paymentMethod: paymentMethod as 'offline' | 'online',
         bankAccountId: bankAccountId ? new ObjectId(bankAccountId) : undefined,

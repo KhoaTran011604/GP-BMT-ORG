@@ -40,13 +40,32 @@ export async function POST(request: NextRequest) {
 
     if (files.length > 5) {
       return NextResponse.json(
-        { error: 'Maximum 5 images allowed' },
+        { error: 'Maximum 5 files allowed' },
         { status: 400 }
       );
     }
 
+    // Check if documents are allowed (for backward compatibility, default to images only)
+    const allowDocuments = formData.get('allowDocuments') === 'true';
+
+    // Allowed document types (no PDF)
+    const allowedDocumentTypes = [
+      'application/msword',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+    ];
+
     for (const file of files) {
-      if (!file.type.startsWith('image/')) {
+      const isImage = file.type.startsWith('image/');
+      const isDocument = allowedDocumentTypes.includes(file.type);
+
+      if (!isImage && !isDocument) {
+        return NextResponse.json(
+          { error: 'Only image and document files (DOC, DOCX) are allowed' },
+          { status: 400 }
+        );
+      }
+
+      if (!allowDocuments && !isImage) {
         return NextResponse.json(
           { error: 'Only image files are allowed' },
           { status: 400 }
@@ -73,23 +92,30 @@ export async function POST(request: NextRequest) {
         const userId = new ObjectId(decoded.userId);
         const entId = new ObjectId(entityId);
 
-        const mediaFiles: MediaFile[] = urls.map((url, index) => ({
-          fileName: files[index]?.name || url.split('/').pop() || 'unknown',
-          fileKey: url,
-          bucketName: 'cloudinary',
-          fileUrl: url,
-          cdnUrl: url,
-          mimeType: files[index]?.type || 'image/jpeg',
-          fileSize: files[index]?.size,
-          fileType: 'image' as const,
-          entityType: entityType as MediaFile['entityType'],
-          entityId: entId,
-          category: category || 'screenshot',
-          uploadedBy: userId,
-          uploadedAt: now,
-          isPublic: false,
-          status: 'active' as const
-        }));
+        const mediaFiles: MediaFile[] = urls.map((url, index) => {
+          const file = files[index];
+          const mimeType = file?.type || 'image/jpeg';
+          const isImage = mimeType.startsWith('image/');
+          const fileType: 'image' | 'document' | 'video' = isImage ? 'image' : 'document';
+
+          return {
+            fileName: file?.name || url.split('/').pop() || 'unknown',
+            fileKey: url,
+            bucketName: 'cloudinary',
+            fileUrl: url,
+            cdnUrl: url,
+            mimeType,
+            fileSize: file?.size,
+            fileType,
+            entityType: entityType as MediaFile['entityType'],
+            entityId: entId,
+            category: category || (isImage ? 'screenshot' : 'document'),
+            uploadedBy: userId,
+            uploadedAt: now,
+            isPublic: false,
+            status: 'active' as const
+          };
+        });
 
         const result = await collection.insertMany(mediaFiles);
         mediaFileIds = Object.values(result.insertedIds).map(id => id.toString());

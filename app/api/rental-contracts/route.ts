@@ -107,6 +107,7 @@ export async function POST(request: NextRequest) {
 
         // Update bank info if contact doesn't have it and user provided it
         const needsBankUpdate = (!existingContact.bankName && body.tenantBankName) ||
+                                (!existingContact.bankBranch && body.tenantBankBranch) ||
                                 (!existingContact.bankAccountNumber && body.tenantBankAccount);
         if (needsBankUpdate) {
           await contactsCollection.updateOne(
@@ -114,6 +115,7 @@ export async function POST(request: NextRequest) {
             {
               $set: {
                 ...(body.tenantBankName && !existingContact.bankName ? { bankName: body.tenantBankName } : {}),
+                ...(body.tenantBankBranch && !existingContact.bankBranch ? { bankBranch: body.tenantBankBranch } : {}),
                 ...(body.tenantBankAccount && !existingContact.bankAccountNumber ? { bankAccountNumber: body.tenantBankAccount } : {}),
                 updatedAt: new Date()
               }
@@ -126,6 +128,7 @@ export async function POST(request: NextRequest) {
           name: body.tenantName,
           phone: normalizedPhone,
           bankName: body.tenantBankName || undefined,
+          bankBranch: body.tenantBankBranch || undefined,
           bankAccountNumber: body.tenantBankAccount || undefined,
           status: 'active',
           createdAt: new Date(),
@@ -151,6 +154,7 @@ export async function POST(request: NextRequest) {
       tenantAddress: body.tenantAddress,
       tenantEmail: body.tenantEmail,
       tenantBankName: body.tenantBankName,
+      tenantBankBranch: body.tenantBankBranch,
       tenantBankAccount: body.tenantBankAccount,
       tenantContactId: tenantContactId,
       startDate: new Date(body.startDate),

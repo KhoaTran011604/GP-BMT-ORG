@@ -20,6 +20,18 @@ interface Fund {
   status: string;
 }
 
+interface FundBalance {
+  _id: string;
+  fundCode: string;
+  fundName: string;
+  category: string;
+  totalIncome: number;
+  totalExpense: number;
+  totalAdjustmentIncrease: number;
+  totalAdjustmentDecrease: number;
+  balance: number;
+}
+
 const fundGroups = {
   A: {
     title: 'Quỹ chuyển HĐGMVN',
@@ -60,6 +72,7 @@ const fundGroups = {
 
 export default function FundsPage() {
   const [funds, setFunds] = useState<Fund[]>([]);
+  const [balances, setBalances] = useState<Map<string, FundBalance>>(new Map());
   const [loading, setLoading] = useState(true);
   const [selectedGroup, setSelectedGroup] = useState<'A' | 'B' | 'C' | null>('A');
 
@@ -69,16 +82,39 @@ export default function FundsPage() {
 
   const fetchFunds = async () => {
     try {
-      const res = await fetch('/api/funds');
-      if (res.ok) {
-        const data = await res.json();
+      const [fundsRes, balancesRes] = await Promise.all([
+        fetch('/api/funds'),
+        fetch('/api/balances?type=fund')
+      ]);
+
+      if (fundsRes.ok) {
+        const data = await fundsRes.json();
         setFunds(data.data || []);
+      }
+
+      if (balancesRes.ok) {
+        const balancesData = await balancesRes.json();
+        const balancesList = balancesData.data || [];
+        const balancesMap = new Map<string, FundBalance>();
+        balancesList.forEach((b: FundBalance) => {
+          balancesMap.set(b._id.toString(), b);
+        });
+        setBalances(balancesMap);
       }
     } catch (error) {
       console.error('Error fetching funds:', error);
     } finally {
       setLoading(false);
     }
+  };
+
+  // Helper function to get balance by fundCode
+  const getBalanceByFundCode = (fundCode: string): FundBalance | undefined => {
+    const dbFund = funds.find(f => f.fundCode === fundCode);
+    if (dbFund) {
+      return balances.get(dbFund._id);
+    }
+    return undefined;
   };
 
   const getColorClasses = (color: string, isSelected: boolean) => {
@@ -198,14 +234,16 @@ export default function FundsPage() {
                   <TableHead className="w-24">Mã quỹ</TableHead>
                   <TableHead>Tên quỹ</TableHead>
                   <TableHead>Chu kỳ</TableHead>
-                  <TableHead className="text-right">Tổng thu (năm nay)</TableHead>
+                  {/* <TableHead className="text-right">Thu</TableHead>
+                  <TableHead className="text-right">Chi</TableHead> */}
+                  <TableHead className="text-right">Số dư</TableHead>
                   <TableHead>Trạng thái</TableHead>
-                  <TableHead></TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {selectedGroupData.funds.map((fund) => {
                   const dbFund = funds.find(f => f.fundCode === fund.code);
+                  const fundBalance = dbFund ? balances.get(dbFund._id) : undefined;
                   return (
                     <TableRow key={fund.code}>
                       <TableCell className="font-mono font-medium">{fund.code}</TableCell>
@@ -213,16 +251,22 @@ export default function FundsPage() {
                       <TableCell>
                         <Badge variant="outline">{fund.cycle}</Badge>
                       </TableCell>
-                      <TableCell className="text-right font-medium">
-                        {formatCompactCurrency(dbFund?.totalCollected || 0)}
+                      {/* <TableCell className="text-right text-green-600">
+                        {formatCompactCurrency(fundBalance?.totalIncome || 0)}
+                      </TableCell>
+                      <TableCell className="text-right text-red-600">
+                        {formatCompactCurrency(fundBalance?.totalExpense || 0)}
+                      </TableCell> */}
+                      <TableCell className={`text-right font-bold ${fundBalance && fundBalance.balance >= 0 ? 'text-blue-600' : 'text-red-600'}`}>
+                        {fundBalance
+                          ? formatCompactCurrency(fundBalance.balance)
+                          : formatCompactCurrency(0)
+                        }
                       </TableCell>
                       <TableCell>
                         <Badge className="bg-green-100 text-green-800">
                           Hoạt động
                         </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <Button variant="ghost" size="sm">Chi tiết</Button>
                       </TableCell>
                     </TableRow>
                   );

@@ -39,6 +39,7 @@ interface ContactItem {
   name: string;
   phone?: string;
   bankName?: string;
+  bankBranch?: string;
   bankAccountNumber?: string;
   status: 'active' | 'inactive';
   createdAt: string;
@@ -59,6 +60,7 @@ export default function ContactsPage() {
     name: '',
     phone: '',
     bankName: '',
+    bankBranch: '',
     bankAccountNumber: '',
   });
 
@@ -88,6 +90,7 @@ export default function ContactsPage() {
       name: '',
       phone: '',
       bankName: '',
+      bankBranch: '',
       bankAccountNumber: '',
     });
   };
@@ -107,6 +110,7 @@ export default function ContactsPage() {
           name: formData.name.trim(),
           phone: formData.phone.trim() || undefined,
           bankName: formData.bankName.trim() || undefined,
+          bankBranch: formData.bankBranch.trim() || undefined,
           bankAccountNumber: formData.bankAccountNumber.trim() || undefined,
         }),
       });
@@ -145,6 +149,7 @@ export default function ContactsPage() {
           name: formData.name.trim(),
           phone: formData.phone.trim() || undefined,
           bankName: formData.bankName.trim() || undefined,
+          bankBranch: formData.bankBranch.trim() || undefined,
           bankAccountNumber: formData.bankAccountNumber.trim() || undefined,
         }),
       });
@@ -199,6 +204,7 @@ export default function ContactsPage() {
       name: contact.name,
       phone: contact.phone || '',
       bankName: contact.bankName || '',
+      bankBranch: contact.bankBranch || '',
       bankAccountNumber: contact.bankAccountNumber || '',
     });
     setShowEditDialog(true);
@@ -318,7 +324,16 @@ export default function ContactsPage() {
                   <TableRow key={contact._id}>
                     <TableCell className="font-medium">{contact.name}</TableCell>
                     <TableCell>{contact.phone || '-'}</TableCell>
-                    <TableCell>{contact.bankName || '-'}</TableCell>
+                    <TableCell>
+                      {contact.bankName ? (
+                        <>
+                          <div>{contact.bankName}</div>
+                          {contact.bankBranch && (
+                            <div className="text-sm text-gray-500">{contact.bankBranch}</div>
+                          )}
+                        </>
+                      ) : '-'}
+                    </TableCell>
                     <TableCell>{contact.bankAccountNumber || '-'}</TableCell>
                     <TableCell>
                       <Badge
@@ -392,13 +407,23 @@ export default function ContactsPage() {
               />
             </div>
 
-            <div className="space-y-2">
-              <Label>Tên ngân hàng</Label>
-              <Input
-                placeholder="VD: Vietcombank, BIDV, Techcombank..."
-                value={formData.bankName}
-                onChange={(e) => setFormData({ ...formData, bankName: e.target.value })}
-              />
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Tên ngân hàng</Label>
+                <Input
+                  placeholder="VD: Vietcombank..."
+                  value={formData.bankName}
+                  onChange={(e) => setFormData({ ...formData, bankName: e.target.value })}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Chi nhánh</Label>
+                <Input
+                  placeholder="VD: BMT"
+                  value={formData.bankBranch}
+                  onChange={(e) => setFormData({ ...formData, bankBranch: e.target.value })}
+                />
+              </div>
             </div>
 
             <div className="space-y-2">
@@ -449,13 +474,23 @@ export default function ContactsPage() {
               />
             </div>
 
-            <div className="space-y-2">
-              <Label>Tên ngân hàng</Label>
-              <Input
-                placeholder="VD: Vietcombank, BIDV, Techcombank..."
-                value={formData.bankName}
-                onChange={(e) => setFormData({ ...formData, bankName: e.target.value })}
-              />
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Tên ngân hàng</Label>
+                <Input
+                  placeholder="VD: Vietcombank..."
+                  value={formData.bankName}
+                  onChange={(e) => setFormData({ ...formData, bankName: e.target.value })}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Chi nhánh</Label>
+                <Input
+                  placeholder="VD: BMT"
+                  value={formData.bankBranch}
+                  onChange={(e) => setFormData({ ...formData, bankBranch: e.target.value })}
+                />
+              </div>
             </div>
 
             <div className="space-y-2">
