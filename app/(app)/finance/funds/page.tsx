@@ -30,8 +30,6 @@ interface Fund {
   fundCode: string;
   fundName: string;
   category: 'A' | 'B' | 'C';
-  fiscalPeriod: 'monthly' | 'quarterly' | 'yearly';
-  recipientUnit: string;
 }
 
 interface FundBalance {
@@ -67,11 +65,6 @@ const fundGroupsInfo = {
   }
 };
 
-const fiscalPeriodLabels: Record<string, string> = {
-  monthly: 'Hàng tháng',
-  quarterly: 'Hàng quý',
-  yearly: 'Hàng năm',
-};
 
 export default function FundsPage() {
   const [funds, setFunds] = useState<Fund[]>([]);
@@ -90,8 +83,6 @@ export default function FundsPage() {
     fundCode: '',
     fundName: '',
     category: 'A' as 'A' | 'B' | 'C',
-    fiscalPeriod: 'yearly' as 'monthly' | 'quarterly' | 'yearly',
-    recipientUnit: '',
   });
 
   useEffect(() => {
@@ -132,8 +123,6 @@ export default function FundsPage() {
       fundCode: '',
       fundName: '',
       category: selectedGroup || 'A',
-      fiscalPeriod: 'yearly',
-      recipientUnit: '',
     });
   };
 
@@ -227,8 +216,6 @@ export default function FundsPage() {
       fundCode: fund.fundCode,
       fundName: fund.fundName,
       category: fund.category,
-      fiscalPeriod: fund.fiscalPeriod || 'yearly',
-      recipientUnit: fund.recipientUnit || '',
     });
     setShowEditDialog(true);
   };
@@ -385,8 +372,6 @@ export default function FundsPage() {
                   <TableRow>
                     <TableHead className="w-28">Mã quỹ</TableHead>
                     <TableHead>Tên quỹ</TableHead>
-                    <TableHead>Chu kỳ</TableHead>
-                    <TableHead>Đơn vị nhận</TableHead>
                     <TableHead className="text-right">Số dư</TableHead>
                     <TableHead>Trạng thái</TableHead>
                     <TableHead className="text-right">Thao tác</TableHead>
@@ -399,12 +384,6 @@ export default function FundsPage() {
                       <TableRow key={fund._id}>
                         <TableCell className="font-mono font-medium">{fund.fundCode}</TableCell>
                         <TableCell>{fund.fundName}</TableCell>
-                        <TableCell>
-                          <Badge variant="outline">
-                            {fiscalPeriodLabels[fund.fiscalPeriod] || fund.fiscalPeriod}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="text-gray-600">{fund.recipientUnit || '-'}</TableCell>
                         <TableCell className={`text-right font-bold ${fundBalance && fundBalance.balance >= 0 ? 'text-blue-600' : 'text-red-600'}`}>
                           {fundBalance
                             ? formatCompactCurrency(fundBalance.balance)
@@ -514,32 +493,6 @@ export default function FundsPage() {
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>Chu kỳ</Label>
-                <Select
-                  value={formData.fiscalPeriod}
-                  onValueChange={(v) => setFormData({ ...formData, fiscalPeriod: v as 'monthly' | 'quarterly' | 'yearly' })}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="monthly">Hàng tháng</SelectItem>
-                    <SelectItem value="quarterly">Hàng quý</SelectItem>
-                    <SelectItem value="yearly">Hàng năm</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label>Đơn vị nhận</Label>
-                <Input
-                  placeholder="VD: HĐGMVN"
-                  value={formData.recipientUnit}
-                  onChange={(e) => setFormData({ ...formData, recipientUnit: e.target.value })}
-                />
-              </div>
-            </div>
           </div>
 
           <DialogFooter>
@@ -605,32 +558,6 @@ export default function FundsPage() {
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>Chu kỳ</Label>
-                <Select
-                  value={formData.fiscalPeriod}
-                  onValueChange={(v) => setFormData({ ...formData, fiscalPeriod: v as 'monthly' | 'quarterly' | 'yearly' })}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="monthly">Hàng tháng</SelectItem>
-                    <SelectItem value="quarterly">Hàng quý</SelectItem>
-                    <SelectItem value="yearly">Hàng năm</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label>Đơn vị nhận</Label>
-                <Input
-                  placeholder="VD: HĐGMVN"
-                  value={formData.recipientUnit}
-                  onChange={(e) => setFormData({ ...formData, recipientUnit: e.target.value })}
-                />
-              </div>
-            </div>
           </div>
 
           <DialogFooter>
