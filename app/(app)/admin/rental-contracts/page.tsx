@@ -32,7 +32,7 @@ import {
 import { Plus, Pencil, Trash2, FileText, ArrowRightCircle, Eye, Receipt, CheckCircle, XCircle, Loader2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/lib/auth-context';
-import { Parish, Fund, BankAccount } from '@/lib/schemas';
+import { Fund, BankAccount } from '@/lib/schemas';
 import { formatCompactCurrency } from '@/lib/utils';
 import { ContactCombobox } from '@/components/finance/ContactCombobox';
 import { QuickAddContactDialog } from '@/components/finance/QuickAddContactDialog';
@@ -87,7 +87,6 @@ interface RentalContractItem {
 export default function RentalContractsPage() {
   const { user } = useAuth();
   const [contracts, setContracts] = useState<RentalContractItem[]>([]);
-  const [parishes, setParishes] = useState<Parish[]>([]);
   const [funds, setFunds] = useState<Fund[]>([]);
   const [bankAccounts, setBankAccounts] = useState<BankAccount[]>([]);
   const [assets, setAssets] = useState<Asset[]>([]);
@@ -155,18 +154,12 @@ export default function RentalContractsPage() {
 
   const fetchParishesAndFunds = async () => {
     try {
-      const [parishesRes, fundsRes, bankAccountsRes, assetsRes, contactsRes] = await Promise.all([
-        fetch('/api/parishes'),
+      const [fundsRes, bankAccountsRes, assetsRes, contactsRes] = await Promise.all([
         fetch('/api/funds'),
         fetch('/api/bank-accounts?status=active'),
         fetch('/api/assets?status=active&available=true'), // Only get available (not rented) assets
         fetch('/api/contacts?status=active')
       ]);
-
-      if (parishesRes.ok) {
-        const parishesData = await parishesRes.json();
-        setParishes(parishesData.data || []);
-      }
 
       if (fundsRes.ok) {
         const fundsData = await fundsRes.json();
@@ -232,7 +225,7 @@ export default function RentalContractsPage() {
   const resetForm = () => {
     setFormData({
       contractCode: '',
-      parishId: '',
+      parishId: user?.parishId || '',
       assetId: '',
       propertyName: '',
       propertyAddress: '',
@@ -720,34 +713,13 @@ export default function RentalContractsPage() {
           </DialogHeader>
 
           <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>Mã hợp đồng *</Label>
-                <Input
-                  placeholder="VD: HD-2024-001"
-                  value={formData.contractCode}
-                  onChange={(e) => setFormData({ ...formData, contractCode: e.target.value })}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label>Giáo xứ *</Label>
-                <Select
-                  value={formData.parishId}
-                  onValueChange={(v) => setFormData({ ...formData, parishId: v })}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Chọn giáo xứ" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {parishes.filter(p => p._id).map((p) => (
-                      <SelectItem key={p._id!.toString()} value={p._id!.toString()}>
-                        {p.parishName}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+            <div className="space-y-2">
+              <Label>Mã hợp đồng *</Label>
+              <Input
+                placeholder="VD: HD-2024-001"
+                value={formData.contractCode}
+                onChange={(e) => setFormData({ ...formData, contractCode: e.target.value })}
+              />
             </div>
 
             <div className="space-y-2">

@@ -3,21 +3,35 @@
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { formatCompactCurrency } from '@/lib/utils';
-import { ArrowLeft, Building2, Church, Wallet } from 'lucide-react';
+import { ArrowLeft, Building2, Church, Wallet, Plus, Pencil, Trash2 } from 'lucide-react';
 
 interface Fund {
   _id: string;
   fundCode: string;
   fundName: string;
-  group: 'A' | 'B' | 'C';
-  recipient: string;
-  cycle: string;
-  description?: string;
-  totalCollected?: number;
-  status: string;
+  category: 'A' | 'B' | 'C';
+  fiscalPeriod: 'monthly' | 'quarterly' | 'yearly';
+  recipientUnit: string;
 }
 
 interface FundBalance {
@@ -32,42 +46,31 @@ interface FundBalance {
   balance: number;
 }
 
-const fundGroups = {
+const fundGroupsInfo = {
   A: {
     title: 'Quỹ chuyển HĐGMVN',
     description: 'Các quỹ được chuyển về Hội đồng Giám mục Việt Nam',
     color: 'blue',
     icon: Building2,
-    funds: [
-      { code: 'FUND_01', name: 'Quỹ Liên hiệp Truyền giáo', cycle: 'Năm' },
-      { code: 'FUND_02', name: 'Quỹ Thiếu nhi Truyền giáo', cycle: 'Năm' },
-      { code: 'FUND_03', name: 'Quỹ Lễ Thánh Phêrô và Phaolô', cycle: 'Năm' },
-      { code: 'FUND_04', name: 'Quỹ Truyền giáo', cycle: 'Năm' },
-    ]
   },
   B: {
     title: 'Quỹ chuyển TGM BMT',
     description: 'Các quỹ được chuyển về Tòa Giám mục Buôn Ma Thuột',
     color: 'purple',
     icon: Church,
-    funds: [
-      { code: 'FUND_05', name: 'Quỹ Giúp Đại Chủng viện', cycle: 'Năm' },
-      { code: 'FUND_06', name: 'Quỹ Phòng thu Tòa Giám mục', cycle: 'Tháng' },
-      { code: 'FUND_07', name: 'Quỹ Tôn chân Chúa', cycle: 'Năm' },
-    ]
   },
   C: {
     title: 'Quỹ nội bộ & Nguồn thu',
     description: 'Các quỹ nội bộ và nguồn thu khác',
     color: 'green',
     icon: Wallet,
-    funds: [
-      { code: 'FUND_08', name: 'Quỹ giúp Cha hưu', cycle: 'Năm' },
-      { code: 'FUND_09', name: 'Tiền xin lễ (Mass Stipends)', cycle: 'Tháng' },
-      { code: 'FUND_10', name: 'Tiền rổ & Quyên góp', cycle: 'Tháng' },
-      { code: 'FUND_11', name: 'Ân nhân & Tài trợ', cycle: 'Tùy thời' },
-    ]
   }
+};
+
+const fiscalPeriodLabels: Record<string, string> = {
+  monthly: 'Hàng tháng',
+  quarterly: 'Hàng quý',
+  yearly: 'Hàng năm',
 };
 
 export default function FundsPage() {
@@ -76,11 +79,27 @@ export default function FundsPage() {
   const [loading, setLoading] = useState(true);
   const [selectedGroup, setSelectedGroup] = useState<'A' | 'B' | 'C' | null>('A');
 
+  // Dialog states
+  const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const [showEditDialog, setShowEditDialog] = useState(false);
+  const [selectedFund, setSelectedFund] = useState<Fund | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+
+  // Form data
+  const [formData, setFormData] = useState({
+    fundCode: '',
+    fundName: '',
+    category: 'A' as 'A' | 'B' | 'C',
+    fiscalPeriod: 'yearly' as 'monthly' | 'quarterly' | 'yearly',
+    recipientUnit: '',
+  });
+
   useEffect(() => {
     fetchFunds();
   }, []);
 
   const fetchFunds = async () => {
+    setLoading(true);
     try {
       const [fundsRes, balancesRes] = await Promise.all([
         fetch('/api/funds'),
@@ -108,13 +127,110 @@ export default function FundsPage() {
     }
   };
 
-  // Helper function to get balance by fundCode
-  const getBalanceByFundCode = (fundCode: string): FundBalance | undefined => {
-    const dbFund = funds.find(f => f.fundCode === fundCode);
-    if (dbFund) {
-      return balances.get(dbFund._id);
+  const resetForm = () => {
+    setFormData({
+      fundCode: '',
+      fundName: '',
+      category: selectedGroup || 'A',
+      fiscalPeriod: 'yearly',
+      recipientUnit: '',
+    });
+  };
+
+  const handleCreate = async () => {
+    if (!formData.fundCode || !formData.fundName) {
+      alert('Vui lòng điền đầy đủ mã quỹ và tên quỹ');
+      return;
     }
-    return undefined;
+
+    setSubmitting(true);
+    try {
+      const response = await fetch('/api/funds', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      });
+
+      if (response.ok) {
+        setShowCreateDialog(false);
+        resetForm();
+        fetchFunds();
+        alert('Tạo quỹ thành công');
+      } else {
+        const error = await response.json();
+        alert(`Lỗi: ${error.error || 'Không thể tạo quỹ'}`);
+      }
+    } catch (error) {
+      console.error('Error creating fund:', error);
+      alert('Không thể tạo quỹ');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleUpdate = async () => {
+    if (!selectedFund || !formData.fundCode || !formData.fundName) {
+      alert('Vui lòng điền đầy đủ mã quỹ và tên quỹ');
+      return;
+    }
+
+    setSubmitting(true);
+    try {
+      const response = await fetch(`/api/funds/${selectedFund._id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      });
+
+      if (response.ok) {
+        setShowEditDialog(false);
+        setSelectedFund(null);
+        resetForm();
+        fetchFunds();
+        alert('Cập nhật quỹ thành công');
+      } else {
+        const error = await response.json();
+        alert(`Lỗi: ${error.error || 'Không thể cập nhật quỹ'}`);
+      }
+    } catch (error) {
+      console.error('Error updating fund:', error);
+      alert('Không thể cập nhật quỹ');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleDelete = async (fund: Fund) => {
+    if (!confirm(`Bạn có chắc muốn xóa quỹ "${fund.fundName}"?`)) return;
+
+    try {
+      const response = await fetch(`/api/funds/${fund._id}`, {
+        method: 'DELETE',
+      });
+
+      if (response.ok) {
+        fetchFunds();
+        alert('Xóa quỹ thành công');
+      } else {
+        const error = await response.json();
+        alert(`Lỗi: ${error.error || 'Không thể xóa quỹ'}`);
+      }
+    } catch (error) {
+      console.error('Error deleting fund:', error);
+      alert('Không thể xóa quỹ');
+    }
+  };
+
+  const openEditDialog = (fund: Fund) => {
+    setSelectedFund(fund);
+    setFormData({
+      fundCode: fund.fundCode,
+      fundName: fund.fundName,
+      category: fund.category,
+      fiscalPeriod: fund.fiscalPeriod || 'yearly',
+      recipientUnit: fund.recipientUnit || '',
+    });
+    setShowEditDialog(true);
   };
 
   const getColorClasses = (color: string, isSelected: boolean) => {
@@ -138,6 +254,18 @@ export default function FundsPage() {
     return base[color as keyof typeof base] || base.blue;
   };
 
+  // Filter funds by selected group
+  const filteredFunds = selectedGroup
+    ? funds.filter(f => f.category === selectedGroup)
+    : funds;
+
+  // Count funds by category
+  const fundCounts = {
+    A: funds.filter(f => f.category === 'A').length,
+    B: funds.filter(f => f.category === 'B').length,
+    C: funds.filter(f => f.category === 'C').length,
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -146,20 +274,27 @@ export default function FundsPage() {
     );
   }
 
-  const selectedGroupData = selectedGroup ? fundGroups[selectedGroup] : null;
+  const selectedGroupInfo = selectedGroup ? fundGroupsInfo[selectedGroup] : null;
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold">Danh mục Quỹ</h1>
-          <p className="text-gray-600">Quản lý 11 loại quỹ trong Giáo phận</p>
+          <p className="text-gray-600">Quản lý các loại quỹ trong Giáo phận</p>
         </div>
+        <Button onClick={() => {
+          resetForm();
+          setShowCreateDialog(true);
+        }} className="gap-2">
+          <Plus size={18} />
+          Tạo quỹ mới
+        </Button>
       </div>
 
       {/* Fund Group Cards - Clickable */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {(Object.entries(fundGroups) as [keyof typeof fundGroups, typeof fundGroups.A][]).map(([key, group]) => {
+        {(Object.entries(fundGroupsInfo) as [keyof typeof fundGroupsInfo, typeof fundGroupsInfo.A][]).map(([key, group]) => {
           const isSelected = selectedGroup === key;
           const colors = getColorClasses(group.color, isSelected);
           const Icon = group.icon;
@@ -188,7 +323,7 @@ export default function FundsPage() {
               <CardContent>
                 <div className="flex items-center justify-between">
                   <span className={`text-3xl font-bold ${isSelected ? 'text-white' : ''}`}>
-                    {group.funds.length}
+                    {fundCounts[key]}
                   </span>
                   <span className={`text-sm ${isSelected ? 'text-white/80' : 'text-gray-500'}`}>
                     loại quỹ
@@ -206,7 +341,7 @@ export default function FundsPage() {
       </div>
 
       {/* Selected Group Detail */}
-      {selectedGroupData && selectedGroup && (
+      {selectedGroupInfo && selectedGroup && (
         <Card className="animate-in slide-in-from-top-2 duration-300">
           <CardHeader>
             <div className="flex items-center justify-between">
@@ -221,58 +356,93 @@ export default function FundsPage() {
                   Quay lại
                 </Button>
                 <div>
-                  <CardTitle>{selectedGroupData.title}</CardTitle>
-                  <CardDescription>{selectedGroupData.description}</CardDescription>
+                  <CardTitle>{selectedGroupInfo.title}</CardTitle>
+                  <CardDescription>{selectedGroupInfo.description}</CardDescription>
                 </div>
               </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  setFormData({ ...formData, category: selectedGroup });
+                  setShowCreateDialog(true);
+                }}
+                className="gap-1"
+              >
+                <Plus size={14} />
+                Thêm quỹ
+              </Button>
             </div>
           </CardHeader>
           <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-24">Mã quỹ</TableHead>
-                  <TableHead>Tên quỹ</TableHead>
-                  <TableHead>Chu kỳ</TableHead>
-                  {/* <TableHead className="text-right">Thu</TableHead>
-                  <TableHead className="text-right">Chi</TableHead> */}
-                  <TableHead className="text-right">Số dư</TableHead>
-                  <TableHead>Trạng thái</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {selectedGroupData.funds.map((fund) => {
-                  const dbFund = funds.find(f => f.fundCode === fund.code);
-                  const fundBalance = dbFund ? balances.get(dbFund._id) : undefined;
-                  return (
-                    <TableRow key={fund.code}>
-                      <TableCell className="font-mono font-medium">{fund.code}</TableCell>
-                      <TableCell>{fund.name}</TableCell>
-                      <TableCell>
-                        <Badge variant="outline">{fund.cycle}</Badge>
-                      </TableCell>
-                      {/* <TableCell className="text-right text-green-600">
-                        {formatCompactCurrency(fundBalance?.totalIncome || 0)}
-                      </TableCell>
-                      <TableCell className="text-right text-red-600">
-                        {formatCompactCurrency(fundBalance?.totalExpense || 0)}
-                      </TableCell> */}
-                      <TableCell className={`text-right font-bold ${fundBalance && fundBalance.balance >= 0 ? 'text-blue-600' : 'text-red-600'}`}>
-                        {fundBalance
-                          ? formatCompactCurrency(fundBalance.balance)
-                          : formatCompactCurrency(0)
-                        }
-                      </TableCell>
-                      <TableCell>
-                        <Badge className="bg-green-100 text-green-800">
-                          Hoạt động
-                        </Badge>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
+            {filteredFunds.length === 0 ? (
+              <div className="text-center py-8 text-gray-500">
+                Chưa có quỹ nào trong nhóm này
+              </div>
+            ) : (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-28">Mã quỹ</TableHead>
+                    <TableHead>Tên quỹ</TableHead>
+                    <TableHead>Chu kỳ</TableHead>
+                    <TableHead>Đơn vị nhận</TableHead>
+                    <TableHead className="text-right">Số dư</TableHead>
+                    <TableHead>Trạng thái</TableHead>
+                    <TableHead className="text-right">Thao tác</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredFunds.map((fund) => {
+                    const fundBalance = balances.get(fund._id);
+                    return (
+                      <TableRow key={fund._id}>
+                        <TableCell className="font-mono font-medium">{fund.fundCode}</TableCell>
+                        <TableCell>{fund.fundName}</TableCell>
+                        <TableCell>
+                          <Badge variant="outline">
+                            {fiscalPeriodLabels[fund.fiscalPeriod] || fund.fiscalPeriod}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-gray-600">{fund.recipientUnit || '-'}</TableCell>
+                        <TableCell className={`text-right font-bold ${fundBalance && fundBalance.balance >= 0 ? 'text-blue-600' : 'text-red-600'}`}>
+                          {fundBalance
+                            ? formatCompactCurrency(fundBalance.balance)
+                            : formatCompactCurrency(0)
+                          }
+                        </TableCell>
+                        <TableCell>
+                          <Badge className="bg-green-100 text-green-800">
+                            Hoạt động
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex justify-end gap-1">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => openEditDialog(fund)}
+                              title="Sửa"
+                            >
+                              <Pencil size={16} />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="text-red-600 hover:text-red-700"
+                              onClick={() => handleDelete(fund)}
+                              title="Xóa"
+                            >
+                              <Trash2 size={16} />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            )}
           </CardContent>
         </Card>
       )}
@@ -283,14 +453,199 @@ export default function FundsPage() {
           <CardContent className="p-4">
             <h3 className="font-semibold text-amber-800 mb-2">Lưu ý quan trọng</h3>
             <ul className="text-sm text-amber-700 space-y-1">
-              <li>• Các quỹ nhóm A được chuyển về HĐGMVN theo định kỳ hàng năm</li>
-              <li>• Quỹ Phòng thu TGM (FUND_06) được thu hàng tháng</li>
-              <li>• Mọi giao dịch cần được xác thực bởi Cha Quản lý trước khi ghi nhận</li>
-              <li>• Bấm vào một nhóm quỹ để xem chi tiết các quỹ trong nhóm</li>
+              <li>- Các quỹ nhóm A được chuyển về HĐGMVN theo định kỳ hàng năm</li>
+              <li>- Quỹ nhóm B được chuyển về Tòa Giám mục</li>
+              <li>- Mọi giao dịch cần được xác thực bởi Cha Quản lý trước khi ghi nhận</li>
+              <li>- Bấm vào một nhóm quỹ để xem chi tiết các quỹ trong nhóm</li>
             </ul>
           </CardContent>
         </Card>
       )}
+
+      {/* Create Dialog */}
+      <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Tạo quỹ mới</DialogTitle>
+            <DialogDescription>
+              Điền thông tin để tạo quỹ mới
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Mã quỹ *</Label>
+                <Input
+                  placeholder="VD: FUND_12"
+                  value={formData.fundCode}
+                  onChange={(e) => setFormData({ ...formData, fundCode: e.target.value })}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Nhóm quỹ *</Label>
+                <Select
+                  value={formData.category}
+                  onValueChange={(v) => setFormData({ ...formData, category: v as 'A' | 'B' | 'C' })}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="A">Nhóm A</SelectItem>
+                    <SelectItem value="B">Nhóm B</SelectItem>
+                    <SelectItem value="C">Nhóm C</SelectItem>
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground">
+                  {formData.category === 'A' && 'Quỹ chuyển HĐGMVN'}
+                  {formData.category === 'B' && 'Quỹ chuyển TGM BMT'}
+                  {formData.category === 'C' && 'Quỹ nội bộ & Nguồn thu'}
+                </p>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label>Tên quỹ *</Label>
+              <Input
+                placeholder="VD: Quỹ xây dựng nhà thờ"
+                value={formData.fundName}
+                onChange={(e) => setFormData({ ...formData, fundName: e.target.value })}
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Chu kỳ</Label>
+                <Select
+                  value={formData.fiscalPeriod}
+                  onValueChange={(v) => setFormData({ ...formData, fiscalPeriod: v as 'monthly' | 'quarterly' | 'yearly' })}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="monthly">Hàng tháng</SelectItem>
+                    <SelectItem value="quarterly">Hàng quý</SelectItem>
+                    <SelectItem value="yearly">Hàng năm</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>Đơn vị nhận</Label>
+                <Input
+                  placeholder="VD: HĐGMVN"
+                  value={formData.recipientUnit}
+                  onChange={(e) => setFormData({ ...formData, recipientUnit: e.target.value })}
+                />
+              </div>
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowCreateDialog(false)}>
+              Hủy
+            </Button>
+            <Button onClick={handleCreate} disabled={submitting}>
+              {submitting ? 'Đang tạo...' : 'Tạo quỹ'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Dialog */}
+      <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Sửa thông tin quỹ</DialogTitle>
+            <DialogDescription>
+              Cập nhật thông tin quỹ
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Mã quỹ *</Label>
+                <Input
+                  placeholder="VD: FUND_12"
+                  value={formData.fundCode}
+                  onChange={(e) => setFormData({ ...formData, fundCode: e.target.value })}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Nhóm quỹ *</Label>
+                <Select
+                  value={formData.category}
+                  onValueChange={(v) => setFormData({ ...formData, category: v as 'A' | 'B' | 'C' })}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="A">Nhóm A</SelectItem>
+                    <SelectItem value="B">Nhóm B</SelectItem>
+                    <SelectItem value="C">Nhóm C</SelectItem>
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground">
+                  {formData.category === 'A' && 'Quỹ chuyển HĐGMVN'}
+                  {formData.category === 'B' && 'Quỹ chuyển TGM BMT'}
+                  {formData.category === 'C' && 'Quỹ nội bộ & Nguồn thu'}
+                </p>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label>Tên quỹ *</Label>
+              <Input
+                placeholder="VD: Quỹ xây dựng nhà thờ"
+                value={formData.fundName}
+                onChange={(e) => setFormData({ ...formData, fundName: e.target.value })}
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Chu kỳ</Label>
+                <Select
+                  value={formData.fiscalPeriod}
+                  onValueChange={(v) => setFormData({ ...formData, fiscalPeriod: v as 'monthly' | 'quarterly' | 'yearly' })}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="monthly">Hàng tháng</SelectItem>
+                    <SelectItem value="quarterly">Hàng quý</SelectItem>
+                    <SelectItem value="yearly">Hàng năm</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>Đơn vị nhận</Label>
+                <Input
+                  placeholder="VD: HĐGMVN"
+                  value={formData.recipientUnit}
+                  onChange={(e) => setFormData({ ...formData, recipientUnit: e.target.value })}
+                />
+              </div>
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => {
+              setShowEditDialog(false);
+              setSelectedFund(null);
+            }}>
+              Hủy
+            </Button>
+            <Button onClick={handleUpdate} disabled={submitting}>
+              {submitting ? 'Đang lưu...' : 'Lưu thay đổi'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
