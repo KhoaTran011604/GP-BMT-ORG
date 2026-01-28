@@ -22,7 +22,7 @@ import {
 import { ArrowDownCircle, ArrowUpCircle } from 'lucide-react';
 import { ImageUpload } from '@/components/finance/ImageUpload';
 import { ContactCombobox } from '@/components/finance/ContactCombobox';
-import { Fund, Parish, ExpenseCategory, BankAccount } from '@/lib/schemas';
+import { Fund, ExpenseCategory, BankAccount } from '@/lib/schemas';
 
 interface Contact {
     _id: string;
@@ -56,7 +56,6 @@ interface TransactionFormDialogProps {
     onSubmit: () => void;
     submitting: boolean;
     funds: Fund[];
-    parishes: Parish[];
     expenseCategories: ExpenseCategory[];
     bankAccounts: BankAccount[];
     contacts?: Contact[];
@@ -74,7 +73,6 @@ export function TransactionFormDialog({
     onSubmit,
     submitting,
     funds,
-    parishes,
     expenseCategories,
     bankAccounts,
     contacts,
@@ -121,25 +119,6 @@ export function TransactionFormDialog({
                     )}
 
                     <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                            <Label>Giáo xứ *</Label>
-                            <Select
-                                value={formData.parishId}
-                                onValueChange={(v) => updateField('parishId', v)}
-                            >
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Chọn giáo xứ" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {parishes.filter(p => p._id).map((p) => (
-                                        <SelectItem key={p._id!.toString()} value={p._id!.toString()}>
-                                            {p.parishName}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                        </div>
-
                         <div className="space-y-2">
                             <Label>{transactionType === 'income' ? 'Quỹ *' : 'Nguồn quỹ (tùy chọn)'}</Label>
                             <Select

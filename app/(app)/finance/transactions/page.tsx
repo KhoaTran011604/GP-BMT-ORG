@@ -171,7 +171,7 @@ export default function TransactionsPage() {
 
   useEffect(() => {
     fetchData();
-  }, [activeTab, statusFilter, dateFrom, dateTo]);
+  }, [activeTab]);
 
   useEffect(() => {
     fetchFundsAndParishes();
@@ -1149,6 +1149,15 @@ export default function TransactionsPage() {
                     hasActiveFilters={hasActiveFilters}
                     parishes={parishes}
                     funds={funds}
+                    dateFrom={dateFrom}
+                    dateTo={dateTo}
+                    onDateFromChange={setDateFrom}
+                    onDateToChange={setDateTo}
+                    onDateReset={() => {
+                      setDateFrom('');
+                      setDateTo('');
+                    }}
+                    onApplyFilters={fetchData}
                   />
                 </div>
               </div>
@@ -1331,25 +1340,6 @@ export default function TransactionsPage() {
             </div>
 
             <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>Giáo xứ *</Label>
-                <Select
-                  value={formData.parishId}
-                  onValueChange={(v) => setFormData({ ...formData, parishId: v })}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Chọn giáo xứ" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {parishes.filter(p => p._id).map((p) => (
-                      <SelectItem key={p._id!.toString()} value={p._id!.toString()}>
-                        {p.parishName}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
               <div className="space-y-2">
                 <Label>{createType === 'income' ? 'Quỹ *' : 'Nguồn quỹ (tùy chọn)'}</Label>
                 <Select
@@ -1611,25 +1601,6 @@ export default function TransactionsPage() {
 
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>Giáo xứ *</Label>
-                <Select
-                  value={formData.parishId}
-                  onValueChange={(v) => setFormData({ ...formData, parishId: v })}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Chọn giáo xứ" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {parishes.filter(p => p._id).map((p) => (
-                      <SelectItem key={p._id!.toString()} value={p._id!.toString()}>
-                        {p.parishName}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
               <div className="space-y-2">
                 <Label>{selectedItem?.type === 'income' ? 'Quỹ *' : 'Nguồn quỹ (tùy chọn)'}</Label>
                 <Select
@@ -1977,25 +1948,6 @@ export default function TransactionsPage() {
 
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>Giáo xứ *</Label>
-                <Select
-                  value={adjustmentFormData.parishId}
-                  onValueChange={(v) => setAdjustmentFormData({ ...adjustmentFormData, parishId: v })}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Chọn giáo xứ" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {parishes.filter(p => p._id).map((p) => (
-                      <SelectItem key={p._id!.toString()} value={p._id!.toString()}>
-                        {p.parishName}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
               <div className="space-y-2">
                 <Label>Loại điều chỉnh *</Label>
                 <Select
