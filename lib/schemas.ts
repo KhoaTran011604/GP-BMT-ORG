@@ -6,6 +6,7 @@ export interface Contact {
   name: string;
   phone?: string;
   bankName?: string; // Tên ngân hàng
+  bankBranch?: string; // Chi nhánh ngân hàng
   bankAccountNumber?: string; // Số tài khoản ngân hàng
   status: 'active' | 'inactive';
   createdAt: Date;
@@ -213,6 +214,7 @@ export interface Staff {
   contractType: string;
   status: 'active' | 'resigned';
   bankName?: string; // Tên ngân hàng
+  bankBranch?: string; // Chi nhánh ngân hàng
   bankAccountNumber?: string; // Số tài khoản ngân hàng
   createdAt: Date;
   updatedAt: Date;
@@ -286,6 +288,7 @@ export interface RentalContract {
   tenantAddress?: string;
   tenantEmail?: string;
   tenantBankName?: string; // Tên ngân hàng bên thuê
+  tenantBankBranch?: string; // Chi nhánh ngân hàng bên thuê
   tenantBankAccount?: string; // Số tài khoản bên thuê
   tenantContactId?: ObjectId; // FK to contacts - liên kết với đối tượng nhận gửi
   // Thông tin hợp đồng

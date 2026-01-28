@@ -30,7 +30,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Pencil, Trash2, Building2, Star, ArrowDownCircle, ArrowUpCircle, RefreshCw } from 'lucide-react';
+import { Plus, Pencil, Trash2, Building2, Star } from 'lucide-react';
 import { useAuth } from '@/lib/auth-context';
 import { formatCompactCurrency } from '@/lib/utils';
 
@@ -85,7 +85,6 @@ export default function BankAccountsPage() {
   const [accounts, setAccounts] = useState<BankAccountItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState('active');
-  const [typeFilter, setTypeFilter] = useState('all');
 
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);
@@ -97,7 +96,6 @@ export default function BankAccountsPage() {
     accountNumber: '',
     bankName: '',
     bankBranch: '',
-    accountType: 'both' as 'income' | 'expense' | 'both',
     balance: '',
     isDefault: false,
     notes: ''
@@ -107,7 +105,7 @@ export default function BankAccountsPage() {
 
   useEffect(() => {
     fetchAccounts();
-  }, [statusFilter, typeFilter]);
+  }, [statusFilter]);
 
   const fetchAccounts = async () => {
     setLoading(true);
@@ -115,9 +113,6 @@ export default function BankAccountsPage() {
       const params = new URLSearchParams();
       if (statusFilter !== 'all') {
         params.append('status', statusFilter);
-      }
-      if (typeFilter !== 'all') {
-        params.append('accountType', typeFilter);
       }
 
       const response = await fetch(`/api/bank-accounts?${params}`);
@@ -139,7 +134,6 @@ export default function BankAccountsPage() {
       accountNumber: '',
       bankName: '',
       bankBranch: '',
-      accountType: 'both',
       balance: '',
       isDefault: false,
       notes: ''
@@ -241,30 +235,11 @@ export default function BankAccountsPage() {
       accountNumber: account.accountNumber,
       bankName: account.bankName,
       bankBranch: account.bankBranch || '',
-      accountType: account.accountType,
       balance: account.balance?.toString() || '',
       isDefault: account.isDefault,
       notes: account.notes || ''
     });
     setShowEditDialog(true);
-  };
-
-  const getAccountTypeLabel = (type: string) => {
-    const labels: { [key: string]: string } = {
-      income: 'Chỉ thu',
-      expense: 'Chỉ chi',
-      both: 'Thu & Chi'
-    };
-    return labels[type] || type;
-  };
-
-  const getAccountTypeColor = (type: string) => {
-    const colors: { [key: string]: string } = {
-      income: 'bg-green-100 text-green-800',
-      expense: 'bg-red-100 text-red-800',
-      both: 'bg-blue-100 text-blue-800'
-    };
-    return colors[type] || 'bg-gray-100 text-gray-800';
   };
 
   const stats = {
@@ -289,7 +264,7 @@ export default function BankAccountsPage() {
         </Button>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
         <Card>
           <CardHeader className="pb-2">
             <CardDescription>Tổng tài khoản</CardDescription>
@@ -304,18 +279,8 @@ export default function BankAccountsPage() {
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardDescription>TK Thu</CardDescription>
-            <CardTitle className="text-xl text-green-600">
-              {accounts.filter(a => a.accountType === 'income' || a.accountType === 'both').length}
-            </CardTitle>
-          </CardHeader>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardDescription>TK Chi</CardDescription>
-            <CardTitle className="text-xl text-red-600">
-              {accounts.filter(a => a.accountType === 'expense' || a.accountType === 'both').length}
-            </CardTitle>
+            <CardDescription>Tổng số dư</CardDescription>
+            <CardTitle className="text-xl text-blue-600">{formatCompactCurrency(stats.totalBalance)}</CardTitle>
           </CardHeader>
         </Card>
       </div>
@@ -326,29 +291,16 @@ export default function BankAccountsPage() {
             <CardTitle>Danh sách Tài khoản</CardTitle>
             <CardDescription>Quản lý các tài khoản ngân hàng của Giáo phận</CardDescription>
           </div>
-          <div className="flex gap-2">
-            <Select value={typeFilter} onValueChange={setTypeFilter}>
-              <SelectTrigger className="w-32">
-                <SelectValue placeholder="Loại TK" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Tất cả</SelectItem>
-                <SelectItem value="income">Chỉ thu</SelectItem>
-                <SelectItem value="expense">Chỉ chi</SelectItem>
-                <SelectItem value="both">Thu & Chi</SelectItem>
-              </SelectContent>
-            </Select>
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-36">
-                <SelectValue placeholder="Trạng thái" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Tất cả</SelectItem>
-                <SelectItem value="active">Đang hoạt động</SelectItem>
-                <SelectItem value="inactive">Đã vô hiệu</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+          <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <SelectTrigger className="w-36">
+              <SelectValue placeholder="Trạng thái" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Tất cả</SelectItem>
+              <SelectItem value="active">Đang hoạt động</SelectItem>
+              <SelectItem value="inactive">Đã vô hiệu</SelectItem>
+            </SelectContent>
+          </Select>
         </CardHeader>
         <CardContent>
           {loading ? (
@@ -372,7 +324,6 @@ export default function BankAccountsPage() {
                   <TableHead>Tên TK</TableHead>
                   <TableHead>Số TK</TableHead>
                   <TableHead>Ngân hàng</TableHead>
-                  <TableHead>Loại</TableHead>
                   <TableHead>Trạng thái</TableHead>
                   <TableHead>Thao tác</TableHead>
                 </TableRow>
@@ -395,14 +346,6 @@ export default function BankAccountsPage() {
                       {account.bankBranch && (
                         <div className="text-sm text-gray-500">{account.bankBranch}</div>
                       )}
-                    </TableCell>
-                    <TableCell>
-                      <Badge className={getAccountTypeColor(account.accountType)}>
-                        {account.accountType === 'income' && <ArrowDownCircle size={12} className="mr-1" />}
-                        {account.accountType === 'expense' && <ArrowUpCircle size={12} className="mr-1" />}
-                        {account.accountType === 'both' && <RefreshCw size={12} className="mr-1" />}
-                        {getAccountTypeLabel(account.accountType)}
-                      </Badge>
                     </TableCell>
                     <TableCell>
                       <Badge className={account.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}>
@@ -451,32 +394,13 @@ export default function BankAccountsPage() {
           </DialogHeader>
 
           <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>Mã tài khoản *</Label>
-                <Input
-                  placeholder="VD: TK-001"
-                  value={formData.accountCode}
-                  onChange={(e) => setFormData({ ...formData, accountCode: e.target.value })}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label>Loại tài khoản *</Label>
-                <Select
-                  value={formData.accountType}
-                  onValueChange={(v) => setFormData({ ...formData, accountType: v as any })}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="income">Chỉ thu</SelectItem>
-                    <SelectItem value="expense">Chỉ chi</SelectItem>
-                    <SelectItem value="both">Thu & Chi</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+            <div className="space-y-2">
+              <Label>Mã tài khoản *</Label>
+              <Input
+                placeholder="VD: TK-001"
+                value={formData.accountCode}
+                onChange={(e) => setFormData({ ...formData, accountCode: e.target.value })}
+              />
             </div>
 
             <div className="space-y-2">
@@ -571,32 +495,13 @@ export default function BankAccountsPage() {
           </DialogHeader>
 
           <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>Mã tài khoản</Label>
-                <Input
-                  value={formData.accountCode}
-                  disabled
-                  className="bg-gray-100"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label>Loại tài khoản</Label>
-                <Select
-                  value={formData.accountType}
-                  onValueChange={(v) => setFormData({ ...formData, accountType: v as any })}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="income">Chỉ thu</SelectItem>
-                    <SelectItem value="expense">Chỉ chi</SelectItem>
-                    <SelectItem value="both">Thu & Chi</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+            <div className="space-y-2">
+              <Label>Mã tài khoản</Label>
+              <Input
+                value={formData.accountCode}
+                disabled
+                className="bg-gray-100"
+              />
             </div>
 
             <div className="space-y-2">

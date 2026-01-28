@@ -46,6 +46,7 @@ export async function GET(request: NextRequest) {
       contractType: s.contractType,
       status: s.status,
       bankName: s.bankName,
+      bankBranch: s.bankBranch,
       bankAccountNumber: s.bankAccountNumber,
     }));
 
@@ -106,6 +107,7 @@ export async function POST(request: NextRequest) {
       contractType: body.contractType || 'full_time',
       status: body.status || 'active',
       bankName: body.bankName,
+      bankBranch: body.bankBranch,
       bankAccountNumber: body.bankAccountNumber,
       createdAt: new Date(),
       updatedAt: new Date(),
