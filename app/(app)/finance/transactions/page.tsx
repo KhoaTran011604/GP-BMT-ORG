@@ -18,7 +18,6 @@ import { QuickAddContactDialog } from '@/components/finance/QuickAddContactDialo
 import { Fund, Parish, ExpenseCategory, BankAccount, Adjustment } from '@/lib/schemas';
 import { useAuth } from '@/lib/auth-context';
 
-import { DateRangePicker } from '@/components/finance/transactions/DateRangePicker';
 import { TransactionStats } from '@/components/finance/transactions/TransactionStats';
 import { TransactionFilters } from '@/components/finance/transactions/TransactionFilters';
 import { TransactionTable } from '@/components/finance/transactions/TransactionTable';
@@ -1064,7 +1063,7 @@ export default function TransactionsPage() {
                 <CardContent>
                   <div className="text-2xl font-bold text-green-600">{adjustmentStats.increase}</div>
                   <p className="text-xs text-muted-foreground">
-                    {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(adjustmentStats.totalIncreaseAmount)}
+                    {formatCompactCurrency(adjustmentStats.totalIncreaseAmount)}
                   </p>
                 </CardContent>
               </Card>
@@ -1076,7 +1075,7 @@ export default function TransactionsPage() {
                 <CardContent>
                   <div className="text-2xl font-bold text-red-600">{adjustmentStats.decrease}</div>
                   <p className="text-xs text-muted-foreground">
-                    {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(adjustmentStats.totalDecreaseAmount)}
+                    {formatCompactCurrency(adjustmentStats.totalDecreaseAmount)}
                   </p>
                 </CardContent>
               </Card>
@@ -1087,7 +1086,7 @@ export default function TransactionsPage() {
                 </CardHeader>
                 <CardContent>
                   <div className={`text-2xl font-bold ${adjustmentStats.totalIncreaseAmount - adjustmentStats.totalDecreaseAmount >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                    {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(adjustmentStats.totalIncreaseAmount - adjustmentStats.totalDecreaseAmount)}
+                    {formatCompactCurrency(adjustmentStats.totalIncreaseAmount - adjustmentStats.totalDecreaseAmount)}
                   </div>
                 </CardContent>
               </Card>
@@ -1106,18 +1105,6 @@ export default function TransactionsPage() {
                   </CardDescription>
                 </div>
                 <div className="flex items-center gap-3">
-                  {/* Date Range Picker - Positioned prominently */}
-                  <DateRangePicker
-                    dateFrom={dateFrom}
-                    dateTo={dateTo}
-                    onDateFromChange={setDateFrom}
-                    onDateToChange={setDateTo}
-                    onReset={() => {
-                      setDateFrom('');
-                      setDateTo('');
-                    }}
-                  />
-
                   {/* Toggle Switch for Income/Expense */}
                   <TransactionTypeToggle
                     value={activeTab}
