@@ -29,6 +29,7 @@ import {
 import { CheckCircle, Send, Wallet, Building, Plus, AlertCircle, Pencil } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { formatCurrency } from '@/lib/utils';
+import { useAuth } from '@/lib/auth-context';
 
 interface StaffWithContract {
   _id: string;
@@ -63,11 +64,6 @@ interface BankAccount {
   bankName: string;
 }
 
-interface Parish {
-  _id: string;
-  parishName: string;
-}
-
 interface Fund {
   _id: string;
   fundCode: string;
@@ -82,6 +78,7 @@ const months = Array.from({ length: 12 }, (_, i) => ({
 
 export default function PayrollPage() {
   const router = useRouter();
+  const { user } = useAuth();
   const [payrolls, setPayrolls] = useState<Payroll[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedPeriod, setSelectedPeriod] = useState(months[new Date().getMonth()].value);
@@ -93,8 +90,6 @@ export default function PayrollPage() {
   const [paymentMethod, setPaymentMethod] = useState<'offline' | 'online'>('offline');
   const [bankAccounts, setBankAccounts] = useState<BankAccount[]>([]);
   const [selectedBankAccount, setSelectedBankAccount] = useState<string>('');
-  const [parishes, setParishes] = useState<Parish[]>([]);
-  const [selectedParish, setSelectedParish] = useState<string>('');
   const [funds, setFunds] = useState<Fund[]>([]);
   const [selectedFund, setSelectedFund] = useState<string>('');
 
@@ -129,7 +124,6 @@ export default function PayrollPage() {
   useEffect(() => {
     fetchPayrolls();
     fetchBankAccounts();
-    fetchParishes();
     fetchFunds();
   }, [selectedPeriod]);
 
@@ -157,22 +151,6 @@ export default function PayrollPage() {
       }
     } catch (error) {
       console.error('Error fetching bank accounts:', error);
-    }
-  };
-
-  const fetchParishes = async () => {
-    try {
-      const res = await fetch('/api/parishes');
-      if (res.ok) {
-        const data = await res.json();
-        const parishList = Array.isArray(data.data) ? data.data : (Array.isArray(data) ? data : []);
-        setParishes(parishList);
-        if (parishList.length > 0) {
-          setSelectedParish(parishList[0]._id);
-        }
-      }
-    } catch (error) {
-      console.error('Error fetching parishes:', error);
     }
   };
 
@@ -312,8 +290,8 @@ export default function PayrollPage() {
   };
 
   const handleApprovePayroll = async () => {
-    if (!selectedParish) {
-      alert('Vui lòng chọn giáo xứ');
+    if (!user?.parishId) {
+      alert('Không tìm thấy thông tin giáo xứ của người dùng');
       return;
     }
 
@@ -336,7 +314,7 @@ export default function PayrollPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           period: selectedPeriod,
-          parishId: selectedParish,
+          parishId: user.parishId,
           fundId: selectedFund,
           paymentMethod,
           bankAccountId: paymentMethod === 'online' ? selectedBankAccount : undefined,
@@ -631,21 +609,6 @@ export default function PayrollPage() {
                   <p className="text-2xl font-bold text-green-600">{formatCurrency(draftTotals.netSalary)}</p>
                 </div>
               </div>
-            </div>
-
-            {/* Parish Selection */}
-            <div>
-              <Label>Giáo xứ *</Label>
-              <Select value={selectedParish} onValueChange={setSelectedParish}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Chọn giáo xứ" />
-                </SelectTrigger>
-                <SelectContent>
-                  {parishes.map((p) => (
-                    <SelectItem key={p._id} value={p._id}>{p.parishName}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
             </div>
 
             {/* Fund Selection */}
