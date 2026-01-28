@@ -101,7 +101,16 @@ export async function PUT(
       updatedAt: new Date()
     };
 
-    if (fullName) updateData.fullName = fullName;
+    // Chỉ được sửa tên của chính mình, không được sửa tên người khác
+    if (fullName) {
+      if (decoded.userId !== id) {
+        return NextResponse.json(
+          { error: 'Không được phép sửa tên của người dùng khác' },
+          { status: 403 }
+        );
+      }
+      updateData.fullName = fullName;
+    }
     if (role && existingUser.role !== 'super_admin') updateData.role = role;
     if (parishId !== undefined) {
       updateData.parishId = parishId ? new ObjectId(parishId) : null;

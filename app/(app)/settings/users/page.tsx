@@ -170,11 +170,15 @@ export default function UsersPage() {
     setSubmitting(true);
     try {
       const updateData: any = {
-        fullName: formData.fullName,
         role: formData.role,
         parishId: formData.parishId || null,
         status: formData.status,
       };
+
+      // Chỉ được sửa tên của chính mình
+      if (selectedUser._id === currentUser?.id) {
+        updateData.fullName = formData.fullName;
+      }
 
       const res = await fetch(`/api/users/${selectedUser._id}`, {
         method: 'PUT',
@@ -609,13 +613,20 @@ export default function UsersPage() {
               />
             </div>
             <div>
-              <Label>Họ và Tên *</Label>
+              <Label>Họ và Tên {selectedUser?._id === currentUser?.id ? '*' : ''}</Label>
               <Input
                 value={formData.fullName}
                 onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
                 placeholder="Nhập họ và tên"
-                required
+                required={selectedUser?._id === currentUser?.id}
+                disabled={selectedUser?._id !== currentUser?.id}
+                className={selectedUser?._id !== currentUser?.id ? 'bg-gray-50' : ''}
               />
+              {selectedUser?._id !== currentUser?.id && (
+                <p className="text-xs text-amber-600 mt-1">
+                  Không được phép sửa tên của người dùng khác
+                </p>
+              )}
             </div>
             <div>
               <Label>Vai trò *</Label>
