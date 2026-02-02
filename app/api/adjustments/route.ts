@@ -25,6 +25,10 @@ export async function GET(request: NextRequest) {
     const fiscalPeriod = searchParams.get('fiscalPeriod');
     const startDate = searchParams.get('startDate');
     const endDate = searchParams.get('endDate');
+    const amountMin = searchParams.get('amountMin');
+    const amountMax = searchParams.get('amountMax');
+    const search = searchParams.get('search');
+    const paymentMethod = searchParams.get('paymentMethod');
 
     const db = await getDatabase();
     const collection = db.collection<Adjustment>('adjustments');
@@ -63,6 +67,33 @@ export async function GET(request: NextRequest) {
       if (endDate) {
         filter.adjustmentDate.$lte = new Date(endDate);
       }
+    }
+
+    // Filter by amount range
+    if (amountMin || amountMax) {
+      filter.amount = {};
+      if (amountMin) {
+        filter.amount.$gte = parseFloat(amountMin);
+      }
+      if (amountMax) {
+        filter.amount.$lte = parseFloat(amountMax);
+      }
+    }
+
+    // Search by adjustmentCode or description
+    if (search) {
+      filter.$or = [
+        { adjustmentCode: { $regex: search, $options: 'i' } },
+        { description: { $regex: search, $options: 'i' } },
+      ];
+    }
+
+    // Filter by payment method based on bankAccountId
+    // online = bankAccountId exists (not null), offline = bankAccountId is null
+    if (paymentMethod === 'online') {
+      filter.bankAccountId = { $ne: null };
+    } else if (paymentMethod === 'offline') {
+      filter.bankAccountId = null;
     }
 
     const adjustments = await collection

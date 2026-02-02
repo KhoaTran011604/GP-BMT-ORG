@@ -25,6 +25,10 @@ export async function GET(request: NextRequest) {
     const startDate = searchParams.get('startDate');
     const endDate = searchParams.get('endDate');
     const rentalContractId = searchParams.get('rentalContractId');
+    const paymentMethod = searchParams.get('paymentMethod');
+    const amountMin = searchParams.get('amountMin');
+    const amountMax = searchParams.get('amountMax');
+    const search = searchParams.get('search');
 
     const db = await getDatabase();
     const collection = db.collection<Income>('incomes');
@@ -64,6 +68,31 @@ export async function GET(request: NextRequest) {
     // Filter by rental contract ID
     if (rentalContractId) {
       filter.rentalContractId = new ObjectId(rentalContractId);
+    }
+
+    // Filter by payment method
+    if (paymentMethod && paymentMethod !== 'all') {
+      filter.paymentMethod = paymentMethod;
+    }
+
+    // Filter by amount range
+    if (amountMin || amountMax) {
+      filter.amount = {};
+      if (amountMin) {
+        filter.amount.$gte = parseFloat(amountMin);
+      }
+      if (amountMax) {
+        filter.amount.$lte = parseFloat(amountMax);
+      }
+    }
+
+    // Search by incomeCode or payerName
+    if (search) {
+      filter.$or = [
+        { incomeCode: { $regex: search, $options: 'i' } },
+        { payerName: { $regex: search, $options: 'i' } },
+        { description: { $regex: search, $options: 'i' } },
+      ];
     }
 
     const incomes = await collection

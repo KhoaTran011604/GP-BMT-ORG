@@ -176,7 +176,7 @@ export default function TransactionsPage() {
 
   useEffect(() => {
     fetchData();
-  }, [activeTab]);
+  }, [activeTab, statusFilter, dateFrom, dateTo, parishFilter, fundFilter, paymentMethodFilter, amountMin, amountMax, fiscalYearFilter, fiscalPeriodFilter, searchTerm]);
 
   useEffect(() => {
     fetchFundsAndParishes();
@@ -233,6 +233,30 @@ export default function TransactionsPage() {
         if (dateTo) {
           params.append('endDate', dateTo);
         }
+        if (parishFilter !== 'all') {
+          params.append('parishId', parishFilter);
+        }
+        if (fundFilter !== 'all') {
+          params.append('fundId', fundFilter);
+        }
+        if (fiscalYearFilter !== 'all') {
+          params.append('fiscalYear', fiscalYearFilter);
+        }
+        if (fiscalPeriodFilter !== 'all') {
+          params.append('fiscalPeriod', fiscalPeriodFilter);
+        }
+        if (amountMin) {
+          params.append('amountMin', amountMin);
+        }
+        if (amountMax) {
+          params.append('amountMax', amountMax);
+        }
+        if (searchTerm) {
+          params.append('search', searchTerm);
+        }
+        if (paymentMethodFilter !== 'all') {
+          params.append('paymentMethod', paymentMethodFilter);
+        }
 
         const response = await fetch(`/api/adjustments?${params}`);
         if (response.ok) {
@@ -253,6 +277,30 @@ export default function TransactionsPage() {
       }
       if (dateTo) {
         params.append('endDate', dateTo);
+      }
+      if (parishFilter !== 'all') {
+        params.append('parishId', parishFilter);
+      }
+      if (fundFilter !== 'all') {
+        params.append('fundId', fundFilter);
+      }
+      if (fiscalYearFilter !== 'all') {
+        params.append('fiscalYear', fiscalYearFilter);
+      }
+      if (fiscalPeriodFilter !== 'all') {
+        params.append('fiscalPeriod', fiscalPeriodFilter);
+      }
+      if (paymentMethodFilter !== 'all') {
+        params.append('paymentMethod', paymentMethodFilter);
+      }
+      if (amountMin) {
+        params.append('amountMin', amountMin);
+      }
+      if (amountMax) {
+        params.append('amountMax', amountMax);
+      }
+      if (searchTerm) {
+        params.append('search', searchTerm);
       }
 
       const response = await fetch(`${endpoint}?${params}`);
@@ -1167,6 +1215,7 @@ export default function TransactionsPage() {
                       setDateTo('');
                     }}
                     onApplyFilters={fetchData}
+                    activeTab={activeTab}
                   />
                 </div>
               </div>
