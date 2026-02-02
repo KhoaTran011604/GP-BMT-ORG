@@ -33,6 +33,12 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import {
+  FormSection,
+  FormField,
+  FormLabel,
+  FormGrid,
+} from '@/components/ui/form-section';
 import { ImageUpload } from '@/components/finance/ImageUpload';
 import { formatCompactCurrency } from '@/lib/utils';
 
@@ -1010,15 +1016,15 @@ export default function TransactionsPage() {
     <div className="container mx-auto p-6 space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold">Quản lý Giao dịch</h1>
-          <p className="text-gray-500">Tạo và quản lý các khoản thu chi{activeTab === 'adjustment' ? ' và điều chỉnh' : ''}</p>
+          <h1 className="page-title">Quản lý Giao dịch</h1>
+          <p className="page-description">Tạo và quản lý các khoản thu chi{activeTab === 'adjustment' ? ' và điều chỉnh' : ''}</p>
         </div>
         {activeTab === 'adjustment' ? (
           <Button onClick={() => {
             resetAdjustmentForm();
             setShowAdjustmentDialog(true);
-          }} className="gap-2">
-            <Plus size={18} />
+          }} className="h-12 px-6 text-base font-semibold">
+            <Plus size={20} className="mr-2" />
             Tạo điều chỉnh
           </Button>
         ) : (
@@ -1026,8 +1032,8 @@ export default function TransactionsPage() {
             resetForm();
             setCreateType(activeTab as 'income' | 'expense');
             setShowCreateDialog(true);
-          }} className="gap-2">
-            <Plus size={18} />
+          }} className="h-12 px-6 text-base font-semibold">
+            <Plus size={20} className="mr-2" />
             Tạo giao dịch
           </Button>
         )}
@@ -1047,46 +1053,62 @@ export default function TransactionsPage() {
           ) : (
             <div className="grid gap-4 md:grid-cols-4">
               <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Tổng phiếu</CardTitle>
-                  <RefreshCcw className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">{adjustmentStats.total}</div>
+                <CardContent className="stat-card">
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                      <RefreshCcw className="text-blue-600" size={24} />
+                    </div>
+                    <div>
+                      <div className="stat-value">{adjustmentStats.total}</div>
+                      <p className="stat-label">Tổng phiếu</p>
+                    </div>
+                  </div>
                 </CardContent>
               </Card>
               <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Phiếu tăng</CardTitle>
-                  <ArrowUpCircle className="h-4 w-4 text-green-500" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold text-green-600">{adjustmentStats.increase}</div>
-                  <p className="text-xs text-muted-foreground">
-                    {formatCompactCurrency(adjustmentStats.totalIncreaseAmount)}
-                  </p>
+                <CardContent className="stat-card">
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                      <ArrowUpCircle className="text-green-600" size={24} />
+                    </div>
+                    <div>
+                      <div className="stat-value text-green-600">{adjustmentStats.increase}</div>
+                      <p className="stat-label">Phiếu tăng</p>
+                      <p className="text-sm text-muted-foreground">
+                        {formatCompactCurrency(adjustmentStats.totalIncreaseAmount)}
+                      </p>
+                    </div>
+                  </div>
                 </CardContent>
               </Card>
               <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Phiếu giảm</CardTitle>
-                  <ArrowDownCircle className="h-4 w-4 text-red-500" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold text-red-600">{adjustmentStats.decrease}</div>
-                  <p className="text-xs text-muted-foreground">
-                    {formatCompactCurrency(adjustmentStats.totalDecreaseAmount)}
-                  </p>
+                <CardContent className="stat-card">
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
+                      <ArrowDownCircle className="text-red-600" size={24} />
+                    </div>
+                    <div>
+                      <div className="stat-value text-red-600">{adjustmentStats.decrease}</div>
+                      <p className="stat-label">Phiếu giảm</p>
+                      <p className="text-sm text-muted-foreground">
+                        {formatCompactCurrency(adjustmentStats.totalDecreaseAmount)}
+                      </p>
+                    </div>
+                  </div>
                 </CardContent>
               </Card>
               <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Chênh lệch</CardTitle>
-                  <RefreshCcw className="h-4 w-4 text-blue-500" />
-                </CardHeader>
-                <CardContent>
-                  <div className={`text-2xl font-bold ${adjustmentStats.totalIncreaseAmount - adjustmentStats.totalDecreaseAmount >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                    {formatCompactCurrency(adjustmentStats.totalIncreaseAmount - adjustmentStats.totalDecreaseAmount)}
+                <CardContent className="stat-card">
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                      <RefreshCcw className="text-blue-600" size={24} />
+                    </div>
+                    <div>
+                      <div className={`stat-value ${adjustmentStats.totalIncreaseAmount - adjustmentStats.totalDecreaseAmount >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                        {formatCompactCurrency(adjustmentStats.totalIncreaseAmount - adjustmentStats.totalDecreaseAmount)}
+                      </div>
+                      <p className="stat-label">Chênh lệch</p>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
@@ -1097,10 +1119,10 @@ export default function TransactionsPage() {
             <CardHeader className="space-y-4 pb-4">
               <div className="flex flex-row items-center justify-between">
                 <div>
-                  <CardTitle>
+                  <CardTitle className="text-xl sm:text-2xl">
                     {activeTab === 'income' ? 'Danh sách khoản thu' : activeTab === 'expense' ? 'Danh sách khoản chi' : 'Danh sách điều chỉnh'}
                   </CardTitle>
-                  <CardDescription>
+                  <CardDescription className="text-base mt-1">
                     {activeTab === 'adjustment' ? 'Quản lý các phiếu điều chỉnh số dư' : `Quản lý các giao dịch ${activeTab === 'income' ? 'thu' : 'chi'}`}
                   </CardDescription>
                 </div>
@@ -1154,22 +1176,27 @@ export default function TransactionsPage() {
                 // Adjustment Table
                 <div className="space-y-4">
                   {loading ? (
-                    <div className="text-center py-8 text-gray-500">Đang tải...</div>
+                    <div className="empty-state">
+                      <p className="empty-state-text">Đang tải dữ liệu...</p>
+                    </div>
                   ) : filteredAdjustments.length === 0 ? (
-                    <div className="text-center py-8 text-gray-500">
-                      {hasActiveFilters ? 'Không tìm thấy phiếu điều chỉnh phù hợp' : 'Chưa có phiếu điều chỉnh nào'}
+                    <div className="empty-state">
+                      <RefreshCcw size={64} className="mx-auto mb-4 opacity-50" />
+                      <p className="empty-state-text">
+                        {hasActiveFilters ? 'Không tìm thấy phiếu điều chỉnh phù hợp' : 'Chưa có phiếu điều chỉnh nào'}
+                      </p>
                     </div>
                   ) : (
                     <div className="overflow-x-auto">
-                      <table className="w-full">
+                      <table className="w-full table-lg">
                         <thead>
-                          <tr className="border-b text-left text-sm text-gray-500">
-                            <th className="pb-3 font-medium">Mã phiếu</th>
-                            <th className="pb-3 font-medium">Ngày</th>
-                            <th className="pb-3 font-medium">Loại</th>
-                            <th className="pb-3 font-medium">Quỹ/Tài khoản</th>
-                            <th className="pb-3 font-medium text-right">Số tiền</th>
-                            <th className="pb-3 font-medium text-right">Thao tác</th>
+                          <tr className="border-b text-left">
+                            <th>Mã phiếu</th>
+                            <th>Ngày</th>
+                            <th>Loại</th>
+                            <th>Quỹ/Tài khoản</th>
+                            <th className="text-right">Số tiền</th>
+                            <th className="text-right">Thao tác</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -1178,12 +1205,12 @@ export default function TransactionsPage() {
                             const bankAccount = bankAccounts.find(ba => ba._id?.toString() === item.bankAccountId);
                             return (
                               <tr key={item._id} className="border-b hover:bg-gray-50">
-                                <td className="py-3 font-mono text-sm">{item.adjustmentCode}</td>
-                                <td className="py-3 text-sm">
+                                <td className="font-mono">{item.adjustmentCode}</td>
+                                <td>
                                   {new Date(item.adjustmentDate).toLocaleDateString('vi-VN')}
                                 </td>
-                                <td className="py-3">
-                                  <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                                <td>
+                                  <span className={`inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium ${
                                     item.adjustmentType === 'increase'
                                       ? 'bg-green-100 text-green-800'
                                       : 'bg-red-100 text-red-800'
@@ -1191,21 +1218,21 @@ export default function TransactionsPage() {
                                     {item.adjustmentType === 'increase' ? 'Tăng' : 'Giảm'}
                                   </span>
                                 </td>
-                                <td className="py-3 text-sm">
+                                <td>
                                   {fund ? fund.fundName : bankAccount ? `${bankAccount.accountNumber} - ${bankAccount.bankName}` : '-'}
                                 </td>
-                                <td className={`py-3 text-right font-medium ${
+                                <td className={`text-right font-semibold ${
                                   item.adjustmentType === 'increase' ? 'text-green-600' : 'text-red-600'
                                 }`}>
                                   {item.adjustmentType === 'increase' ? '+' : '-'}
                                   {formatCompactCurrency(item.amount)}
                                 </td>
-                                <td className="py-3 text-right">
-                                  <div className="flex justify-end gap-1">
+                                <td className="text-right">
+                                  <div className="flex justify-end gap-2">
                                     {item.images && item.images.length > 0 ? (
                                       <Button
                                         variant="ghost"
-                                        size="sm"
+                                        className="action-btn"
                                         onClick={() => {
                                           setSelectedItem({
                                             _id: item._id,
@@ -1222,28 +1249,24 @@ export default function TransactionsPage() {
                                         }}
                                         title="Xem ảnh"
                                       >
-                                        <Eye size={16} className="mr-1" />
-                                        {item.images.length}
+                                        <Eye />
                                       </Button>
-                                    ) : (
-                                      <span className="text-gray-400 text-sm px-2">-</span>
-                                    )}
+                                    ) : null}
                                     <Button
                                       variant="ghost"
-                                      size="icon"
+                                      className="action-btn"
                                       onClick={() => openEditAdjustmentDialog(item)}
                                       title="Sửa"
                                     >
-                                      <Pencil size={16} />
+                                      <Pencil />
                                     </Button>
                                     <Button
                                       variant="ghost"
-                                      size="icon"
-                                      className="text-red-600 hover:text-red-700"
+                                      className="action-btn text-red-600 hover:text-red-700 hover:bg-red-50"
                                       onClick={() => handleDeleteAdjustment(item)}
                                       title="Xóa"
                                     >
-                                      <Trash2 size={16} />
+                                      <Trash2 />
                                     </Button>
                                   </div>
                                 </td>
@@ -1294,7 +1317,7 @@ export default function TransactionsPage() {
 
       {/* Create Dialog */}
       <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent size="xl" className="max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>
               Tạo {createType === 'income' ? 'khoản thu' : 'khoản chi'} mới
@@ -1304,111 +1327,105 @@ export default function TransactionsPage() {
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-4">
-            <div className="flex gap-4">
-              <Button
-                type="button"
-                variant={createType === 'income' ? 'default' : 'outline'}
-                onClick={() => setCreateType('income')}
-                className="flex-1 gap-2"
-              >
-                <ArrowDownCircle size={16} />
-                Khoản thu
-              </Button>
-              <Button
-                type="button"
-                variant={createType === 'expense' ? 'default' : 'outline'}
-                onClick={() => setCreateType('expense')}
-                className="flex-1 gap-2"
-              >
-                <ArrowUpCircle size={16} />
-                Khoản chi
-              </Button>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>{createType === 'income' ? 'Quỹ *' : 'Nguồn quỹ (tùy chọn)'}</Label>
-                <Select
-                  value={formData.fundId}
-                  onValueChange={(v) => setFormData({ ...formData, fundId: v })}
+          <div className="space-y-6">
+            {/* Loại giao dịch */}
+            <FormSection title="Loại giao dịch">
+              <div className="flex gap-4">
+                <Button
+                  type="button"
+                  variant={createType === 'income' ? 'default' : 'outline'}
+                  onClick={() => setCreateType('income')}
+                  className="flex-1 gap-2 h-12 text-base"
                 >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Chọn quỹ" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {funds.filter(f => f._id).map((f) => (
-                      <SelectItem key={f._id!.toString()} value={f._id!.toString()}>
-                        {f.fundName}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                  <ArrowDownCircle size={20} />
+                  Khoản thu
+                </Button>
+                <Button
+                  type="button"
+                  variant={createType === 'expense' ? 'default' : 'outline'}
+                  onClick={() => setCreateType('expense')}
+                  className="flex-1 gap-2 h-12 text-base"
+                >
+                  <ArrowUpCircle size={20} />
+                  Khoản chi
+                </Button>
               </div>
+            </FormSection>
 
-              {createType === 'income' && (
-                <div className="space-y-2 col-span-2">
-                  <Label>Danh mục thu</Label>
+            {/* Thông tin giao dịch */}
+            <FormSection title="Thông tin giao dịch">
+              <FormGrid columns={2}>
+                <FormField>
+                  <FormLabel required={createType === 'income'}>
+                    {createType === 'income' ? 'Quỹ' : 'Nguồn quỹ (tùy chọn)'}
+                  </FormLabel>
+                  <Select
+                    value={formData.fundId}
+                    onValueChange={(v) => setFormData({ ...formData, fundId: v })}
+                  >
+                    <SelectTrigger className="h-12 text-base">
+                      <SelectValue placeholder="Chọn quỹ" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {funds.filter(f => f._id).map((f) => (
+                        <SelectItem key={f._id!.toString()} value={f._id!.toString()} className="text-base py-3">
+                          {f.fundName}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </FormField>
+
+                <FormField>
+                  <FormLabel>
+                    {createType === 'income' ? 'Danh mục thu' : 'Danh mục chi'}
+                  </FormLabel>
                   <Select
                     value={formData.categoryId}
                     onValueChange={(v) => setFormData({ ...formData, categoryId: v })}
                   >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Chọn danh mục thu" />
+                    <SelectTrigger className="h-12 text-base">
+                      <SelectValue placeholder={createType === 'income' ? 'Chọn danh mục thu' : 'Chọn danh mục chi'} />
                     </SelectTrigger>
                     <SelectContent>
-                      {expenseCategories.filter(cat => cat._id && cat.categoryType === 'income').map((cat) => (
-                        <SelectItem key={cat._id!.toString()} value={cat._id!.toString()}>
+                      {expenseCategories.filter(cat => cat._id && cat.categoryType === createType).map((cat) => (
+                        <SelectItem key={cat._id!.toString()} value={cat._id!.toString()} className="text-base py-3">
                           {cat.categoryCode} - {cat.categoryName}
                         </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
-                </div>
-              )}
+                </FormField>
+              </FormGrid>
 
-              {createType === 'expense' && (
-                <div className="space-y-2 col-span-2">
-                  <Label>Danh mục chi</Label>
-                  <Select
-                    value={formData.categoryId}
-                    onValueChange={(v) => setFormData({ ...formData, categoryId: v })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Chọn danh mục chi" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {expenseCategories.filter(cat => cat._id && cat.categoryType === 'expense').map((cat) => (
-                        <SelectItem key={cat._id!.toString()} value={cat._id!.toString()}>
-                          {cat.categoryCode} - {cat.categoryName}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              )}
+              <FormGrid columns={2}>
+                <FormField>
+                  <FormLabel required>Số tiền</FormLabel>
+                  <Input
+                    type="number"
+                    placeholder="0"
+                    value={formData.amount}
+                    onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
+                    className="h-12 text-base"
+                  />
+                </FormField>
 
-              <div className="space-y-2">
-                <Label>Số tiền *</Label>
-                <Input
-                  type="number"
-                  placeholder="0"
-                  value={formData.amount}
-                  onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
-                />
-              </div>
+                <FormField>
+                  <FormLabel required>Ngày giao dịch</FormLabel>
+                  <Input
+                    type="date"
+                    value={formData.transactionDate}
+                    onChange={(e) => setFormData({ ...formData, transactionDate: e.target.value })}
+                    className="h-12 text-base"
+                  />
+                </FormField>
+              </FormGrid>
+            </FormSection>
 
-              <div className="space-y-2">
-                <Label>Ngày *</Label>
-                <Input
-                  type="date"
-                  value={formData.transactionDate}
-                  onChange={(e) => setFormData({ ...formData, transactionDate: e.target.value })}
-                />
-              </div>
-
-              <div className="space-y-2 col-span-2">
-                <Label>{createType === 'income' ? 'Người gửi (Đối tượng)' : 'Người nhận (Đối tượng)'}</Label>
+            {/* Đối tượng & Thanh toán */}
+            <FormSection title="Đối tượng & Thanh toán">
+              <FormField>
+                <FormLabel>{createType === 'income' ? 'Người gửi (Đối tượng)' : 'Người nhận (Đối tượng)'}</FormLabel>
                 <ContactCombobox
                   value={formData.contactId}
                   onChange={(v) => {
@@ -1419,7 +1436,6 @@ export default function TransactionsPage() {
                       contactId: v,
                       contactBankName: selectedContact?.bankName || '',
                       contactBankAccount: selectedContact?.bankAccountNumber || '',
-                      // Reset payment method to offline if contact has no bank info
                       paymentMethod: (formData.paymentMethod === 'online' && !hasBank) ? 'offline' : formData.paymentMethod
                     });
                   }}
@@ -1427,10 +1443,10 @@ export default function TransactionsPage() {
                   contacts={contacts}
                   placeholder={createType === 'income' ? 'Chọn người gửi...' : 'Chọn người nhận...'}
                 />
-              </div>
+              </FormField>
 
-              <div className="space-y-2">
-                <Label>Hình thức</Label>
+              <FormField>
+                <FormLabel>Hình thức thanh toán</FormLabel>
                 {(() => {
                   const selectedContact = formData.contactId ? contacts.find(c => c._id === formData.contactId) : null;
                   const contactHasBankInfo = selectedContact && selectedContact.bankAccountNumber;
@@ -1447,7 +1463,6 @@ export default function TransactionsPage() {
                               : 'Người nhận chưa cung cấp tài khoản ngân hàng');
                             return;
                           }
-                          // Reset bank info when changing to offline
                           if (v === 'offline') {
                             setFormData({
                               ...formData,
@@ -1461,113 +1476,129 @@ export default function TransactionsPage() {
                           }
                         }}
                       >
-                        <SelectTrigger>
+                        <SelectTrigger className="h-12 text-base">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="offline">Tiền mặt</SelectItem>
-                          <SelectItem value="online" disabled={!canSelectOnline}>
+                          <SelectItem value="offline" className="text-base py-3">Tiền mặt</SelectItem>
+                          <SelectItem value="online" disabled={!canSelectOnline} className="text-base py-3">
                             Chuyển khoản {!canSelectOnline && '(Thiếu TK ngân hàng)'}
                           </SelectItem>
                         </SelectContent>
                       </Select>
                       {formData.contactId && !contactHasBankInfo && (
-                        <p className="text-xs text-amber-600">
+                        <p className="text-sm text-amber-600 mt-1">
                           {createType === 'income' ? 'Người gửi' : 'Người nhận'} chưa cung cấp tài khoản ngân hàng
                         </p>
                       )}
                     </>
                   );
                 })()}
-              </div>
-
-              {formData.paymentMethod === 'online' && (
-                <div className="space-y-2 col-span-2">
-                  <Label>Tài khoản ngân hàng {createType === 'income' ? '(nhận tiền)' : '(chi tiền)'}</Label>
-                  {bankAccounts.length > 0 ? (
-                    <Select
-                      value={formData.bankAccountId}
-                      onValueChange={(v) => setFormData({ ...formData, bankAccountId: v })}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Chọn tài khoản ngân hàng" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {bankAccounts.map((ba) => (
-                          <SelectItem key={ba._id!.toString()} value={ba._id!.toString()}>
-                            <div className="flex items-center gap-2">
-                              <span className="font-mono">{ba.accountNumber}</span>
-                              <span className="text-gray-500">-</span>
-                              <span>{ba.bankName}</span>
-                              {ba.isDefault && <span className="text-yellow-500">★</span>}
-                            </div>
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  ) : (
-                    <div className="text-sm text-gray-500 p-2 border rounded-md bg-gray-50">
-                      Chưa có tài khoản ngân hàng. <a href="/finance/bank-accounts" className="text-blue-600 hover:underline">Thêm tài khoản</a>
-                    </div>
-                  )}
-                </div>
-              )}
+              </FormField>
 
               {formData.paymentMethod === 'online' && (
                 <>
-                  <div className="space-y-2">
-                    <Label>Ngân hàng {createType === 'income' ? 'người gửi' : 'người nhận'}</Label>
-                    <Input
-                      placeholder="VD: Vietcombank, BIDV..."
-                      value={formData.contactBankName}
-                      onChange={(e) => setFormData({ ...formData, contactBankName: e.target.value })}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>STK {createType === 'income' ? 'người gửi' : 'người nhận'}</Label>
-                    <Input
-                      placeholder="Số tài khoản"
-                      value={formData.contactBankAccount}
-                      onChange={(e) => setFormData({ ...formData, contactBankAccount: e.target.value })}
-                    />
-                  </div>
+                  <FormField>
+                    <FormLabel>Tài khoản ngân hàng {createType === 'income' ? '(nhận tiền)' : '(chi tiền)'}</FormLabel>
+                    {bankAccounts.length > 0 ? (
+                      <Select
+                        value={formData.bankAccountId}
+                        onValueChange={(v) => setFormData({ ...formData, bankAccountId: v })}
+                      >
+                        <SelectTrigger className="h-12 text-base">
+                          <SelectValue placeholder="Chọn tài khoản ngân hàng" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {bankAccounts.map((ba) => (
+                            <SelectItem key={ba._id!.toString()} value={ba._id!.toString()} className="text-base py-3">
+                              <div className="flex items-center gap-2">
+                                <span className="font-mono">{ba.accountNumber}</span>
+                                <span className="text-gray-500">-</span>
+                                <span>{ba.bankName}</span>
+                                {ba.isDefault && <span className="text-yellow-500">★</span>}
+                              </div>
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    ) : (
+                      <div className="text-base text-gray-500 p-3 border rounded-md bg-gray-50">
+                        Chưa có tài khoản ngân hàng. <a href="/finance/bank-accounts" className="text-blue-600 hover:underline">Thêm tài khoản</a>
+                      </div>
+                    )}
+                  </FormField>
+
+                  <FormGrid columns={2}>
+                    <FormField>
+                      <FormLabel>Ngân hàng {createType === 'income' ? 'người gửi' : 'người nhận'}</FormLabel>
+                      <Input
+                        placeholder="VD: Vietcombank, BIDV..."
+                        value={formData.contactBankName}
+                        onChange={(e) => setFormData({ ...formData, contactBankName: e.target.value })}
+                        className="h-12 text-base"
+                      />
+                    </FormField>
+                    <FormField>
+                      <FormLabel>STK {createType === 'income' ? 'người gửi' : 'người nhận'}</FormLabel>
+                      <Input
+                        placeholder="Số tài khoản"
+                        value={formData.contactBankAccount}
+                        onChange={(e) => setFormData({ ...formData, contactBankAccount: e.target.value })}
+                        className="h-12 text-base"
+                      />
+                    </FormField>
+                  </FormGrid>
                 </>
               )}
+            </FormSection>
 
-              <div className="space-y-2 col-span-2">
-                <Label>Diễn giải</Label>
+            {/* Nội dung & Chứng từ */}
+            <FormSection title="Nội dung & Chứng từ">
+              <FormField>
+                <FormLabel>Diễn giải</FormLabel>
                 <Textarea
                   placeholder="Nội dung giao dịch"
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  className="text-base min-h-[80px]"
                 />
-              </div>
+              </FormField>
 
-              <div className="space-y-2 col-span-2">
-                <Label>Hình ảnh chứng từ (tối đa 5 ảnh)</Label>
+              <FormField>
+                <FormLabel>Hình ảnh chứng từ (tối đa 5 ảnh)</FormLabel>
                 <ImageUpload
                   images={formData.images}
                   onChange={(imgs) => setFormData({ ...formData, images: imgs })}
                   maxImages={5}
                 />
-              </div>
+              </FormField>
 
-              <div className="space-y-2 col-span-2">
-                <Label>Ghi chú</Label>
+              <FormField>
+                <FormLabel>Ghi chú</FormLabel>
                 <Textarea
                   placeholder="Ghi chú thêm"
                   value={formData.notes}
                   onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                  className="text-base min-h-[80px]"
                 />
-              </div>
-            </div>
+              </FormField>
+            </FormSection>
           </div>
 
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowCreateDialog(false)}>
-              Hủy
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setShowCreateDialog(false)}
+              className="h-12 px-8 text-base sm:w-auto w-full"
+            >
+              Hủy bỏ
             </Button>
-            <Button onClick={handleCreate} disabled={submitting}>
+            <Button
+              onClick={handleCreate}
+              disabled={submitting}
+              className="h-12 px-8 text-base sm:w-auto w-full"
+            >
               {submitting ? 'Đang tạo...' : 'Tạo giao dịch'}
             </Button>
           </DialogFooter>
@@ -1576,7 +1607,7 @@ export default function TransactionsPage() {
 
       {/* Edit Dialog */}
       <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent size="xl" className="max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>
               Sửa {selectedItem?.type === 'income' ? 'khoản thu' : 'khoản chi'}
@@ -1586,90 +1617,81 @@ export default function TransactionsPage() {
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>{selectedItem?.type === 'income' ? 'Quỹ *' : 'Nguồn quỹ (tùy chọn)'}</Label>
-                <Select
-                  value={formData.fundId}
-                  onValueChange={(v) => setFormData({ ...formData, fundId: v })}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Chọn quỹ" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {funds.filter(f => f._id).map((f) => (
-                      <SelectItem key={f._id!.toString()} value={f._id!.toString()}>
-                        {f.fundName}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+          <div className="space-y-6">
+            {/* Thông tin giao dịch */}
+            <FormSection title="Thông tin giao dịch">
+              <FormGrid columns={2}>
+                <FormField>
+                  <FormLabel required={selectedItem?.type === 'income'}>
+                    {selectedItem?.type === 'income' ? 'Quỹ' : 'Nguồn quỹ (tùy chọn)'}
+                  </FormLabel>
+                  <Select
+                    value={formData.fundId}
+                    onValueChange={(v) => setFormData({ ...formData, fundId: v })}
+                  >
+                    <SelectTrigger className="h-12 text-base">
+                      <SelectValue placeholder="Chọn quỹ" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {funds.filter(f => f._id).map((f) => (
+                        <SelectItem key={f._id!.toString()} value={f._id!.toString()} className="text-base py-3">
+                          {f.fundName}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </FormField>
 
-              {selectedItem?.type === 'income' && (
-                <div className="space-y-2 col-span-2">
-                  <Label>Danh mục thu</Label>
+                <FormField>
+                  <FormLabel>
+                    {selectedItem?.type === 'income' ? 'Danh mục thu' : 'Danh mục chi'}
+                  </FormLabel>
                   <Select
                     value={formData.categoryId}
                     onValueChange={(v) => setFormData({ ...formData, categoryId: v })}
                   >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Chọn danh mục thu" />
+                    <SelectTrigger className="h-12 text-base">
+                      <SelectValue placeholder={selectedItem?.type === 'income' ? 'Chọn danh mục thu' : 'Chọn danh mục chi'} />
                     </SelectTrigger>
                     <SelectContent>
-                      {expenseCategories.filter(cat => cat._id && (cat.categoryType === 'income' || cat._id.toString() === formData.categoryId)).map((cat) => (
-                        <SelectItem key={cat._id!.toString()} value={cat._id!.toString()}>
+                      {expenseCategories.filter(cat => cat._id && (cat.categoryType === selectedItem?.type || cat._id.toString() === formData.categoryId)).map((cat) => (
+                        <SelectItem key={cat._id!.toString()} value={cat._id!.toString()} className="text-base py-3">
                           {cat.categoryCode} - {cat.categoryName}
                         </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
-                </div>
-              )}
+                </FormField>
+              </FormGrid>
 
-              {selectedItem?.type === 'expense' && (
-                <div className="space-y-2 col-span-2">
-                  <Label>Danh mục chi</Label>
-                  <Select
-                    value={formData.categoryId}
-                    onValueChange={(v) => setFormData({ ...formData, categoryId: v })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Chọn danh mục chi" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {expenseCategories.filter(cat => cat._id && (cat.categoryType === 'expense' || cat._id.toString() === formData.categoryId)).map((cat) => (
-                        <SelectItem key={cat._id!.toString()} value={cat._id!.toString()}>
-                          {cat.categoryCode} - {cat.categoryName}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              )}
+              <FormGrid columns={2}>
+                <FormField>
+                  <FormLabel required>Số tiền</FormLabel>
+                  <Input
+                    type="number"
+                    placeholder="0"
+                    value={formData.amount}
+                    onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
+                    className="h-12 text-base"
+                  />
+                </FormField>
 
-              <div className="space-y-2">
-                <Label>Số tiền *</Label>
-                <Input
-                  type="number"
-                  placeholder="0"
-                  value={formData.amount}
-                  onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
-                />
-              </div>
+                <FormField>
+                  <FormLabel required>Ngày giao dịch</FormLabel>
+                  <Input
+                    type="date"
+                    value={formData.transactionDate}
+                    onChange={(e) => setFormData({ ...formData, transactionDate: e.target.value })}
+                    className="h-12 text-base"
+                  />
+                </FormField>
+              </FormGrid>
+            </FormSection>
 
-              <div className="space-y-2">
-                <Label>Ngày *</Label>
-                <Input
-                  type="date"
-                  value={formData.transactionDate}
-                  onChange={(e) => setFormData({ ...formData, transactionDate: e.target.value })}
-                />
-              </div>
-
-              <div className="space-y-2 col-span-2">
-                <Label>{selectedItem?.type === 'income' ? 'Người gửi (Đối tượng)' : 'Người nhận (Đối tượng)'}</Label>
+            {/* Đối tượng & Thanh toán */}
+            <FormSection title="Đối tượng & Thanh toán">
+              <FormField>
+                <FormLabel>{selectedItem?.type === 'income' ? 'Người gửi (Đối tượng)' : 'Người nhận (Đối tượng)'}</FormLabel>
                 <ContactCombobox
                   value={formData.contactId}
                   onChange={(v) => {
@@ -1680,7 +1702,6 @@ export default function TransactionsPage() {
                       contactId: v,
                       contactBankName: selectedContact?.bankName || '',
                       contactBankAccount: selectedContact?.bankAccountNumber || '',
-                      // Reset payment method to offline if contact has no bank info
                       paymentMethod: (formData.paymentMethod === 'online' && !hasBank) ? 'offline' : formData.paymentMethod
                     });
                   }}
@@ -1688,10 +1709,10 @@ export default function TransactionsPage() {
                   contacts={contacts}
                   placeholder={selectedItem?.type === 'income' ? 'Chọn người gửi...' : 'Chọn người nhận...'}
                 />
-              </div>
+              </FormField>
 
-              <div className="space-y-2">
-                <Label>Hình thức</Label>
+              <FormField>
+                <FormLabel>Hình thức thanh toán</FormLabel>
                 {(() => {
                   const selectedContact = formData.contactId ? contacts.find(c => c._id === formData.contactId) : null;
                   const contactHasBankInfo = selectedContact && selectedContact.bankAccountNumber;
@@ -1708,7 +1729,6 @@ export default function TransactionsPage() {
                               : 'Người nhận chưa cung cấp tài khoản ngân hàng');
                             return;
                           }
-                          // Reset bank info when changing to offline
                           if (v === 'offline') {
                             setFormData({
                               ...formData,
@@ -1722,112 +1742,128 @@ export default function TransactionsPage() {
                           }
                         }}
                       >
-                        <SelectTrigger>
+                        <SelectTrigger className="h-12 text-base">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="offline">Tiền mặt</SelectItem>
-                          <SelectItem value="online" disabled={!canSelectOnline}>
+                          <SelectItem value="offline" className="text-base py-3">Tiền mặt</SelectItem>
+                          <SelectItem value="online" disabled={!canSelectOnline} className="text-base py-3">
                             Chuyển khoản {!canSelectOnline && '(Thiếu TK ngân hàng)'}
                           </SelectItem>
                         </SelectContent>
                       </Select>
                       {formData.contactId && !contactHasBankInfo && (
-                        <p className="text-xs text-amber-600">
+                        <p className="text-sm text-amber-600 mt-1">
                           {selectedItem?.type === 'income' ? 'Người gửi' : 'Người nhận'} chưa cung cấp tài khoản ngân hàng
                         </p>
                       )}
                     </>
                   );
                 })()}
-              </div>
-
-              {formData.paymentMethod === 'online' && (
-                <div className="space-y-2 col-span-2">
-                  <Label>Tài khoản ngân hàng {selectedItem?.type === 'income' ? '(nhận tiền)' : '(chi tiền)'}</Label>
-                  {bankAccounts.length > 0 ? (
-                    <Select
-                      value={formData.bankAccountId}
-                      onValueChange={(v) => setFormData({ ...formData, bankAccountId: v })}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Chọn tài khoản ngân hàng" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {bankAccounts.map((ba) => (
-                          <SelectItem key={ba._id!.toString()} value={ba._id!.toString()}>
-                            {ba.accountNumber} - {ba.bankName} ({ba.accountName})
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  ) : (
-                    <div className="text-sm text-muted-foreground p-2 border rounded">
-                      Chưa có tài khoản ngân hàng. <a href="/finance/bank-accounts" className="text-blue-600 hover:underline">Thêm tài khoản</a>
-                    </div>
-                  )}
-                </div>
-              )}
+              </FormField>
 
               {formData.paymentMethod === 'online' && (
                 <>
-                  <div className="space-y-2">
-                    <Label>Ngân hàng {selectedItem?.type === 'income' ? 'người gửi' : 'người nhận'}</Label>
-                    <Input
-                      placeholder="VD: Vietcombank, BIDV..."
-                      value={formData.contactBankName}
-                      onChange={(e) => setFormData({ ...formData, contactBankName: e.target.value })}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>STK {selectedItem?.type === 'income' ? 'người gửi' : 'người nhận'}</Label>
-                    <Input
-                      placeholder="Số tài khoản"
-                      value={formData.contactBankAccount}
-                      onChange={(e) => setFormData({ ...formData, contactBankAccount: e.target.value })}
-                    />
-                  </div>
+                  <FormField>
+                    <FormLabel>Tài khoản ngân hàng {selectedItem?.type === 'income' ? '(nhận tiền)' : '(chi tiền)'}</FormLabel>
+                    {bankAccounts.length > 0 ? (
+                      <Select
+                        value={formData.bankAccountId}
+                        onValueChange={(v) => setFormData({ ...formData, bankAccountId: v })}
+                      >
+                        <SelectTrigger className="h-12 text-base">
+                          <SelectValue placeholder="Chọn tài khoản ngân hàng" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {bankAccounts.map((ba) => (
+                            <SelectItem key={ba._id!.toString()} value={ba._id!.toString()} className="text-base py-3">
+                              {ba.accountNumber} - {ba.bankName} ({ba.accountName})
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    ) : (
+                      <div className="text-base text-muted-foreground p-3 border rounded">
+                        Chưa có tài khoản ngân hàng. <a href="/finance/bank-accounts" className="text-blue-600 hover:underline">Thêm tài khoản</a>
+                      </div>
+                    )}
+                  </FormField>
+
+                  <FormGrid columns={2}>
+                    <FormField>
+                      <FormLabel>Ngân hàng {selectedItem?.type === 'income' ? 'người gửi' : 'người nhận'}</FormLabel>
+                      <Input
+                        placeholder="VD: Vietcombank, BIDV..."
+                        value={formData.contactBankName}
+                        onChange={(e) => setFormData({ ...formData, contactBankName: e.target.value })}
+                        className="h-12 text-base"
+                      />
+                    </FormField>
+                    <FormField>
+                      <FormLabel>STK {selectedItem?.type === 'income' ? 'người gửi' : 'người nhận'}</FormLabel>
+                      <Input
+                        placeholder="Số tài khoản"
+                        value={formData.contactBankAccount}
+                        onChange={(e) => setFormData({ ...formData, contactBankAccount: e.target.value })}
+                        className="h-12 text-base"
+                      />
+                    </FormField>
+                  </FormGrid>
                 </>
               )}
+            </FormSection>
 
-              <div className="space-y-2 col-span-2">
-                <Label>Diễn giải</Label>
+            {/* Nội dung & Chứng từ */}
+            <FormSection title="Nội dung & Chứng từ">
+              <FormField>
+                <FormLabel>Diễn giải</FormLabel>
                 <Textarea
                   placeholder="Nội dung giao dịch"
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  className="text-base min-h-20"
                 />
-              </div>
+              </FormField>
 
-              <div className="space-y-2 col-span-2">
-                <Label>Hình ảnh chứng từ (tối đa 5 ảnh)</Label>
+              <FormField>
+                <FormLabel>Hình ảnh chứng từ (tối đa 5 ảnh)</FormLabel>
                 <ImageUpload
                   images={formData.images}
                   onChange={(imgs) => setFormData({ ...formData, images: imgs })}
                   maxImages={5}
                 />
-              </div>
+              </FormField>
 
-              <div className="space-y-2 col-span-2">
-                <Label>Ghi chú</Label>
+              <FormField>
+                <FormLabel>Ghi chú</FormLabel>
                 <Textarea
                   placeholder="Ghi chú thêm"
                   value={formData.notes}
                   onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                  className="text-base min-h-20"
                 />
-              </div>
-            </div>
+              </FormField>
+            </FormSection>
           </div>
 
           <DialogFooter>
-            <Button variant="outline" onClick={() => {
-              setShowEditDialog(false);
-              setSelectedItem(null);
-              resetForm();
-            }}>
-              Hủy
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => {
+                setShowEditDialog(false);
+                setSelectedItem(null);
+                resetForm();
+              }}
+              className="h-12 px-8 text-base sm:w-auto w-full"
+            >
+              Hủy bỏ
             </Button>
-            <Button onClick={handleUpdate} disabled={submitting}>
+            <Button
+              onClick={handleUpdate}
+              disabled={submitting}
+              className="h-12 px-8 text-base sm:w-auto w-full"
+            >
               {submitting ? 'Đang lưu...' : 'Lưu thay đổi'}
             </Button>
           </DialogFooter>
@@ -1925,7 +1961,7 @@ export default function TransactionsPage() {
 
       {/* Adjustment Create Dialog */}
       <Dialog open={showAdjustmentDialog} onOpenChange={setShowAdjustmentDialog}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent size="xl" className="max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Tạo phiếu điều chỉnh mới</DialogTitle>
             <DialogDescription>
@@ -1933,117 +1969,141 @@ export default function TransactionsPage() {
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>Loại điều chỉnh *</Label>
-                <Select
-                  value={adjustmentFormData.adjustmentType}
-                  onValueChange={(v) => setAdjustmentFormData({ ...adjustmentFormData, adjustmentType: v as 'increase' | 'decrease' })}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="increase">Tăng (+)</SelectItem>
-                    <SelectItem value="decrease">Giảm (-)</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+          <div className="space-y-6">
+            {/* Loại & Nguồn quỹ */}
+            <FormSection title="Loại & Nguồn quỹ">
+              <FormGrid columns={2}>
+                <FormField>
+                  <FormLabel required>Loại điều chỉnh</FormLabel>
+                  <Select
+                    value={adjustmentFormData.adjustmentType}
+                    onValueChange={(v) => setAdjustmentFormData({ ...adjustmentFormData, adjustmentType: v as 'increase' | 'decrease' })}
+                  >
+                    <SelectTrigger className="h-12 text-base">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="increase" className="text-base py-3">Tăng (+)</SelectItem>
+                      <SelectItem value="decrease" className="text-base py-3">Giảm (-)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </FormField>
 
-              <div className="space-y-2">
-                <Label>Quỹ *</Label>
-                <Select
-                  value={adjustmentFormData.fundId}
-                  onValueChange={(v) => setAdjustmentFormData({ ...adjustmentFormData, fundId: v })}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Chọn quỹ để điều chỉnh" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {funds.filter(f => f._id).map((f) => (
-                      <SelectItem key={f._id!.toString()} value={f._id!.toString()}>
-                        {f.fundName}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+                <FormField>
+                  <FormLabel required>Quỹ</FormLabel>
+                  <Select
+                    value={adjustmentFormData.fundId}
+                    onValueChange={(v) => setAdjustmentFormData({ ...adjustmentFormData, fundId: v })}
+                  >
+                    <SelectTrigger className="h-12 text-base">
+                      <SelectValue placeholder="Chọn quỹ để điều chỉnh" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {funds.filter(f => f._id).map((f) => (
+                        <SelectItem key={f._id!.toString()} value={f._id!.toString()} className="text-base py-3">
+                          {f.fundName}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </FormField>
+              </FormGrid>
 
-              <div className="space-y-2">
-                <Label>Tài khoản ngân hàng (tùy chọn)</Label>
+              <FormField>
+                <FormLabel>Tài khoản ngân hàng (tùy chọn)</FormLabel>
                 <Select
                   value={adjustmentFormData.bankAccountId || "__none__"}
                   onValueChange={(v) => setAdjustmentFormData({ ...adjustmentFormData, bankAccountId: v === "__none__" ? "" : v })}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="h-12 text-base">
                     <SelectValue placeholder="Chọn tài khoản để điều chỉnh" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="__none__">-- Không chọn --</SelectItem>
+                    <SelectItem value="__none__" className="text-base py-3">-- Không chọn --</SelectItem>
                     {bankAccounts.map((ba) => (
-                      <SelectItem key={ba._id!.toString()} value={ba._id!.toString()}>
+                      <SelectItem key={ba._id!.toString()} value={ba._id!.toString()} className="text-base py-3">
                         {ba.accountNumber} - {ba.bankName}
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
-                <p className="text-xs text-muted-foreground">Mặc định thanh toán tiền mặt. Chọn tài khoản để chuyển khoản.</p>
-              </div>
+                <p className="text-sm text-muted-foreground mt-1">Mặc định thanh toán tiền mặt. Chọn tài khoản để chuyển khoản.</p>
+              </FormField>
+            </FormSection>
 
-              <div className="space-y-2">
-                <Label>Số tiền *</Label>
-                <Input
-                  type="number"
-                  placeholder="0"
-                  value={adjustmentFormData.amount}
-                  onChange={(e) => setAdjustmentFormData({ ...adjustmentFormData, amount: e.target.value })}
-                />
-              </div>
+            {/* Số tiền & Ngày */}
+            <FormSection title="Số tiền & Ngày">
+              <FormGrid columns={2}>
+                <FormField>
+                  <FormLabel required>Số tiền</FormLabel>
+                  <Input
+                    type="number"
+                    placeholder="0"
+                    value={adjustmentFormData.amount}
+                    onChange={(e) => setAdjustmentFormData({ ...adjustmentFormData, amount: e.target.value })}
+                    className="h-12 text-base"
+                  />
+                </FormField>
 
-              <div className="space-y-2">
-                <Label>Ngày *</Label>
-                <Input
-                  type="date"
-                  value={adjustmentFormData.adjustmentDate}
-                  onChange={(e) => setAdjustmentFormData({ ...adjustmentFormData, adjustmentDate: e.target.value })}
-                />
-              </div>
+                <FormField>
+                  <FormLabel required>Ngày điều chỉnh</FormLabel>
+                  <Input
+                    type="date"
+                    value={adjustmentFormData.adjustmentDate}
+                    onChange={(e) => setAdjustmentFormData({ ...adjustmentFormData, adjustmentDate: e.target.value })}
+                    className="h-12 text-base"
+                  />
+                </FormField>
+              </FormGrid>
+            </FormSection>
 
-              <div className="space-y-2 col-span-2">
-                <Label>Lý do điều chỉnh *</Label>
+            {/* Nội dung & Chứng từ */}
+            <FormSection title="Nội dung & Chứng từ">
+              <FormField>
+                <FormLabel required>Lý do điều chỉnh</FormLabel>
                 <Textarea
                   placeholder="Nhập lý do điều chỉnh"
                   value={adjustmentFormData.description}
                   onChange={(e) => setAdjustmentFormData({ ...adjustmentFormData, description: e.target.value })}
+                  className="text-base min-h-20"
                 />
-              </div>
+              </FormField>
 
-              <div className="space-y-2 col-span-2">
-                <Label>Hình ảnh chứng từ (tối đa 5 ảnh)</Label>
+              <FormField>
+                <FormLabel>Hình ảnh chứng từ (tối đa 5 ảnh)</FormLabel>
                 <ImageUpload
                   images={adjustmentFormData.images}
                   onChange={(imgs) => setAdjustmentFormData({ ...adjustmentFormData, images: imgs })}
                   maxImages={5}
                 />
-              </div>
+              </FormField>
 
-              <div className="space-y-2 col-span-2">
-                <Label>Ghi chú</Label>
+              <FormField>
+                <FormLabel>Ghi chú</FormLabel>
                 <Textarea
                   placeholder="Ghi chú thêm"
                   value={adjustmentFormData.notes}
                   onChange={(e) => setAdjustmentFormData({ ...adjustmentFormData, notes: e.target.value })}
+                  className="text-base min-h-20"
                 />
-              </div>
-            </div>
+              </FormField>
+            </FormSection>
           </div>
 
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowAdjustmentDialog(false)}>
-              Hủy
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setShowAdjustmentDialog(false)}
+              className="h-12 px-8 text-base sm:w-auto w-full"
+            >
+              Hủy bỏ
             </Button>
-            <Button onClick={handleCreateAdjustment} disabled={submitting}>
+            <Button
+              onClick={handleCreateAdjustment}
+              disabled={submitting}
+              className="h-12 px-8 text-base sm:w-auto w-full"
+            >
               {submitting ? 'Đang tạo...' : 'Tạo phiếu'}
             </Button>
           </DialogFooter>
@@ -2052,7 +2112,7 @@ export default function TransactionsPage() {
 
       {/* Adjustment Edit Dialog */}
       <Dialog open={showEditAdjustmentDialog} onOpenChange={setShowEditAdjustmentDialog}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent size="xl" className="max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Sửa phiếu điều chỉnh</DialogTitle>
             <DialogDescription>
@@ -2060,140 +2120,164 @@ export default function TransactionsPage() {
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>Giáo xứ *</Label>
+          <div className="space-y-6">
+            {/* Loại & Nguồn quỹ */}
+            <FormSection title="Loại & Nguồn quỹ">
+              <FormField>
+                <FormLabel required>Giáo xứ</FormLabel>
                 <Select
                   value={adjustmentFormData.parishId}
                   onValueChange={(v) => setAdjustmentFormData({ ...adjustmentFormData, parishId: v })}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="h-12 text-base">
                     <SelectValue placeholder="Chọn giáo xứ" />
                   </SelectTrigger>
                   <SelectContent>
                     {parishes.filter(p => p._id).map((p) => (
-                      <SelectItem key={p._id!.toString()} value={p._id!.toString()}>
+                      <SelectItem key={p._id!.toString()} value={p._id!.toString()} className="text-base py-3">
                         {p.parishName}
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
-              </div>
+              </FormField>
 
-              <div className="space-y-2">
-                <Label>Loại điều chỉnh *</Label>
-                <Select
-                  value={adjustmentFormData.adjustmentType}
-                  onValueChange={(v) => setAdjustmentFormData({ ...adjustmentFormData, adjustmentType: v as 'increase' | 'decrease' })}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="increase">Tăng (+)</SelectItem>
-                    <SelectItem value="decrease">Giảm (-)</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+              <FormGrid columns={2}>
+                <FormField>
+                  <FormLabel required>Loại điều chỉnh</FormLabel>
+                  <Select
+                    value={adjustmentFormData.adjustmentType}
+                    onValueChange={(v) => setAdjustmentFormData({ ...adjustmentFormData, adjustmentType: v as 'increase' | 'decrease' })}
+                  >
+                    <SelectTrigger className="h-12 text-base">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="increase" className="text-base py-3">Tăng (+)</SelectItem>
+                      <SelectItem value="decrease" className="text-base py-3">Giảm (-)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </FormField>
 
-              <div className="space-y-2">
-                <Label>Quỹ *</Label>
-                <Select
-                  value={adjustmentFormData.fundId}
-                  onValueChange={(v) => setAdjustmentFormData({ ...adjustmentFormData, fundId: v })}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Chọn quỹ để điều chỉnh" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {funds.filter(f => f._id).map((f) => (
-                      <SelectItem key={f._id!.toString()} value={f._id!.toString()}>
-                        {f.fundName}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+                <FormField>
+                  <FormLabel required>Quỹ</FormLabel>
+                  <Select
+                    value={adjustmentFormData.fundId}
+                    onValueChange={(v) => setAdjustmentFormData({ ...adjustmentFormData, fundId: v })}
+                  >
+                    <SelectTrigger className="h-12 text-base">
+                      <SelectValue placeholder="Chọn quỹ để điều chỉnh" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {funds.filter(f => f._id).map((f) => (
+                        <SelectItem key={f._id!.toString()} value={f._id!.toString()} className="text-base py-3">
+                          {f.fundName}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </FormField>
+              </FormGrid>
 
-              <div className="space-y-2">
-                <Label>Tài khoản ngân hàng (tùy chọn)</Label>
+              <FormField>
+                <FormLabel>Tài khoản ngân hàng (tùy chọn)</FormLabel>
                 <Select
                   value={adjustmentFormData.bankAccountId || "__none__"}
                   onValueChange={(v) => setAdjustmentFormData({ ...adjustmentFormData, bankAccountId: v === "__none__" ? "" : v })}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="h-12 text-base">
                     <SelectValue placeholder="Chọn tài khoản để điều chỉnh" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="__none__">-- Không chọn --</SelectItem>
+                    <SelectItem value="__none__" className="text-base py-3">-- Không chọn --</SelectItem>
                     {bankAccounts.map((ba) => (
-                      <SelectItem key={ba._id!.toString()} value={ba._id!.toString()}>
+                      <SelectItem key={ba._id!.toString()} value={ba._id!.toString()} className="text-base py-3">
                         {ba.accountNumber} - {ba.bankName}
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
-                <p className="text-xs text-muted-foreground">Mặc định thanh toán tiền mặt. Chọn tài khoản để chuyển khoản.</p>
-              </div>
+                <p className="text-sm text-muted-foreground mt-1">Mặc định thanh toán tiền mặt. Chọn tài khoản để chuyển khoản.</p>
+              </FormField>
+            </FormSection>
 
-              <div className="space-y-2">
-                <Label>Số tiền *</Label>
-                <Input
-                  type="number"
-                  placeholder="0"
-                  value={adjustmentFormData.amount}
-                  onChange={(e) => setAdjustmentFormData({ ...adjustmentFormData, amount: e.target.value })}
-                />
-              </div>
+            {/* Số tiền & Ngày */}
+            <FormSection title="Số tiền & Ngày">
+              <FormGrid columns={2}>
+                <FormField>
+                  <FormLabel required>Số tiền</FormLabel>
+                  <Input
+                    type="number"
+                    placeholder="0"
+                    value={adjustmentFormData.amount}
+                    onChange={(e) => setAdjustmentFormData({ ...adjustmentFormData, amount: e.target.value })}
+                    className="h-12 text-base"
+                  />
+                </FormField>
 
-              <div className="space-y-2">
-                <Label>Ngày *</Label>
-                <Input
-                  type="date"
-                  value={adjustmentFormData.adjustmentDate}
-                  onChange={(e) => setAdjustmentFormData({ ...adjustmentFormData, adjustmentDate: e.target.value })}
-                />
-              </div>
+                <FormField>
+                  <FormLabel required>Ngày điều chỉnh</FormLabel>
+                  <Input
+                    type="date"
+                    value={adjustmentFormData.adjustmentDate}
+                    onChange={(e) => setAdjustmentFormData({ ...adjustmentFormData, adjustmentDate: e.target.value })}
+                    className="h-12 text-base"
+                  />
+                </FormField>
+              </FormGrid>
+            </FormSection>
 
-              <div className="space-y-2 col-span-2">
-                <Label>Lý do điều chỉnh *</Label>
+            {/* Nội dung & Chứng từ */}
+            <FormSection title="Nội dung & Chứng từ">
+              <FormField>
+                <FormLabel required>Lý do điều chỉnh</FormLabel>
                 <Textarea
                   placeholder="Nhập lý do điều chỉnh"
                   value={adjustmentFormData.description}
                   onChange={(e) => setAdjustmentFormData({ ...adjustmentFormData, description: e.target.value })}
+                  className="text-base min-h-20"
                 />
-              </div>
+              </FormField>
 
-              <div className="space-y-2 col-span-2">
-                <Label>Hình ảnh chứng từ (tối đa 5 ảnh)</Label>
+              <FormField>
+                <FormLabel>Hình ảnh chứng từ (tối đa 5 ảnh)</FormLabel>
                 <ImageUpload
                   images={adjustmentFormData.images}
                   onChange={(imgs) => setAdjustmentFormData({ ...adjustmentFormData, images: imgs })}
                   maxImages={5}
                 />
-              </div>
+              </FormField>
 
-              <div className="space-y-2 col-span-2">
-                <Label>Ghi chú</Label>
+              <FormField>
+                <FormLabel>Ghi chú</FormLabel>
                 <Textarea
                   placeholder="Ghi chú thêm"
                   value={adjustmentFormData.notes}
                   onChange={(e) => setAdjustmentFormData({ ...adjustmentFormData, notes: e.target.value })}
+                  className="text-base min-h-20"
                 />
-              </div>
-            </div>
+              </FormField>
+            </FormSection>
           </div>
 
           <DialogFooter>
-            <Button variant="outline" onClick={() => {
-              setShowEditAdjustmentDialog(false);
-              setSelectedAdjustment(null);
-              resetAdjustmentForm();
-            }}>
-              Hủy
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => {
+                setShowEditAdjustmentDialog(false);
+                setSelectedAdjustment(null);
+                resetAdjustmentForm();
+              }}
+              className="h-12 px-8 text-base sm:w-auto w-full"
+            >
+              Hủy bỏ
             </Button>
-            <Button onClick={handleUpdateAdjustment} disabled={submitting}>
+            <Button
+              onClick={handleUpdateAdjustment}
+              disabled={submitting}
+              className="h-12 px-8 text-base sm:w-auto w-full"
+            >
               {submitting ? 'Đang lưu...' : 'Lưu thay đổi'}
             </Button>
           </DialogFooter>

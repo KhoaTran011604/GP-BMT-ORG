@@ -4,8 +4,13 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import {
+  FormSection,
+  FormField,
+  FormLabel,
+  FormGrid,
+} from '@/components/ui/form-section';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
@@ -249,11 +254,11 @@ export default function ThuChiCategoriesPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Danh mục Thu Chi</h1>
-          <p className="text-gray-600">Quản lý các danh mục thu và chi</p>
+          <h1 className="page-title">Danh mục Thu Chi</h1>
+          <p className="page-description">Quản lý các danh mục thu và chi</p>
         </div>
-        <Button onClick={handleOpenCreate}>
-          <Plus size={16} className="mr-2" />
+        <Button onClick={handleOpenCreate} className="h-12 px-6 text-base font-semibold">
+          <Plus size={20} className="mr-2" />
           Thêm danh mục
         </Button>
       </div>
@@ -261,53 +266,53 @@ export default function ThuChiCategoriesPage() {
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                <FolderTree className="text-blue-600" size={20} />
+          <CardContent className="stat-card">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                <FolderTree className="text-blue-600" size={24} />
               </div>
               <div>
-                <p className="text-2xl font-bold">{categories.length}</p>
-                <p className="text-sm text-gray-600">Tổng danh mục</p>
+                <div className="stat-value">{categories.length}</div>
+                <p className="stat-label">Tổng danh mục</p>
               </div>
             </div>
           </CardContent>
         </Card>
         <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
-                <ArrowDownCircle className="text-green-600" size={20} />
+          <CardContent className="stat-card">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                <ArrowDownCircle className="text-green-600" size={24} />
               </div>
               <div>
-                <p className="text-2xl font-bold text-green-600">{incomeCount}</p>
-                <p className="text-sm text-gray-600">Danh mục Thu</p>
+                <div className="stat-value text-green-600">{incomeCount}</div>
+                <p className="stat-label">Danh mục Thu</p>
               </div>
             </div>
           </CardContent>
         </Card>
         <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
-                <ArrowUpCircle className="text-red-600" size={20} />
+          <CardContent className="stat-card">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
+                <ArrowUpCircle className="text-red-600" size={24} />
               </div>
               <div>
-                <p className="text-2xl font-bold text-red-600">{expenseCount}</p>
-                <p className="text-sm text-gray-600">Danh mục Chi</p>
+                <div className="stat-value text-red-600">{expenseCount}</div>
+                <p className="stat-label">Danh mục Chi</p>
               </div>
             </div>
           </CardContent>
         </Card>
         <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-amber-100 rounded-lg flex items-center justify-center">
-                <Lock className="text-amber-600" size={20} />
+          <CardContent className="stat-card">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 bg-amber-100 rounded-lg flex items-center justify-center">
+                <Lock className="text-amber-600" size={24} />
               </div>
               <div>
-                <p className="text-2xl font-bold text-amber-600">{sysCount}</p>
-                <p className="text-sm text-gray-600">Danh mục hệ thống</p>
+                <div className="stat-value text-amber-600">{sysCount}</div>
+                <p className="stat-label">Danh mục hệ thống</p>
               </div>
             </div>
           </CardContent>
@@ -320,33 +325,33 @@ export default function ThuChiCategoriesPage() {
           <div className="flex flex-wrap gap-4">
             <div className="flex-1 min-w-[200px]">
               <div className="relative">
-                <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                <Search size={20} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
                 <Input
                   placeholder="Tìm theo mã hoặc tên danh mục..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-9"
+                  className="pl-12 h-12 text-base"
                 />
               </div>
             </div>
             <Select value={filterCategoryType} onValueChange={(v: 'all' | 'income' | 'expense') => setFilterCategoryType(v)}>
-              <SelectTrigger className="w-[150px]">
+              <SelectTrigger className="w-[180px] h-12 text-base">
                 <SelectValue placeholder="Loại" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Tất cả loại</SelectItem>
-                <SelectItem value="income">Danh mục Thu</SelectItem>
-                <SelectItem value="expense">Danh mục Chi</SelectItem>
+                <SelectItem value="all" className="text-base py-3">Tất cả loại</SelectItem>
+                <SelectItem value="income" className="text-base py-3">Danh mục Thu</SelectItem>
+                <SelectItem value="expense" className="text-base py-3">Danh mục Chi</SelectItem>
               </SelectContent>
             </Select>
             <Select value={filterActive} onValueChange={(v: 'all' | 'active' | 'inactive') => setFilterActive(v)}>
-              <SelectTrigger className="w-[180px]">
+              <SelectTrigger className="w-[200px] h-12 text-base">
                 <SelectValue placeholder="Trạng thái" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Tất cả</SelectItem>
-                <SelectItem value="active">Đang hoạt động</SelectItem>
-                <SelectItem value="inactive">Ngừng hoạt động</SelectItem>
+                <SelectItem value="all" className="text-base py-3">Tất cả</SelectItem>
+                <SelectItem value="active" className="text-base py-3">Đang hoạt động</SelectItem>
+                <SelectItem value="inactive" className="text-base py-3">Ngừng hoạt động</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -356,23 +361,23 @@ export default function ThuChiCategoriesPage() {
       {/* Table */}
       <Card>
         <CardHeader>
-          <CardTitle>Danh sách danh mục thu chi</CardTitle>
-          <CardDescription>
+          <CardTitle className="text-xl sm:text-2xl">Danh sách danh mục thu chi</CardTitle>
+          <CardDescription className="text-base mt-1">
             Hiển thị {filteredCategories.length} / {categories.length} danh mục
           </CardDescription>
         </CardHeader>
         <CardContent>
           {filteredCategories.length === 0 ? (
-            <div className="text-center py-12 text-gray-500">
-              <FolderTree size={48} className="mx-auto mb-4 opacity-50" />
-              <p>Chưa có danh mục nào</p>
-              <Button variant="outline" className="mt-4" onClick={handleOpenCreate}>
-                <Plus size={16} className="mr-2" />
+            <div className="empty-state">
+              <FolderTree size={64} className="mx-auto mb-4 opacity-50" />
+              <p className="empty-state-text">Chưa có danh mục nào</p>
+              <Button className="h-12 px-6 text-base font-semibold mt-4" onClick={handleOpenCreate}>
+                <Plus size={20} className="mr-2" />
                 Tạo danh mục đầu tiên
               </Button>
             </div>
           ) : (
-            <Table>
+            <Table className="table-lg">
               <TableHeader>
                 <TableRow>
                   <TableHead className="w-32">Mã</TableHead>
@@ -433,25 +438,25 @@ export default function ThuChiCategoriesPage() {
                       </div>
                     </TableCell>
                     <TableCell className="text-right">
-                      <div className="flex justify-end gap-1">
+                      <div className="flex justify-end gap-2">
                         <Button
                           variant="ghost"
-                          size="sm"
+                          className="action-btn"
                           onClick={() => handleOpenEdit(category)}
+                          title="Chỉnh sửa"
                         >
-                          <Pencil size={16} />
+                          <Pencil />
                         </Button>
                         <Button
                           variant="ghost"
-                          size="sm"
                           className={category.type === 'sys'
-                            ? 'text-gray-400 cursor-not-allowed'
-                            : 'text-red-600 hover:text-red-700 hover:bg-red-50'}
+                            ? 'action-btn text-gray-400 cursor-not-allowed'
+                            : 'action-btn text-red-600 hover:text-red-700 hover:bg-red-50'}
                           onClick={() => handleOpenDelete(category)}
                           disabled={category.type === 'sys'}
                           title={category.type === 'sys' ? 'Không thể xóa danh mục hệ thống' : 'Xóa'}
                         >
-                          <Trash2 size={16} />
+                          <Trash2 />
                         </Button>
                       </div>
                     </TableCell>
@@ -465,7 +470,7 @@ export default function ThuChiCategoriesPage() {
 
       {/* Create/Edit Dialog */}
       <Dialog open={showDialog} onOpenChange={setShowDialog}>
-        <DialogContent>
+        <DialogContent size="lg">
           <DialogHeader>
             <DialogTitle>
               {editingCategory ? 'Chỉnh sửa danh mục' : 'Thêm danh mục mới'}
@@ -475,92 +480,109 @@ export default function ThuChiCategoriesPage() {
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="categoryCode">Mã danh mục *</Label>
+          <div className="space-y-6">
+            <FormSection title="Thông tin cơ bản">
+              <FormGrid columns={2}>
+                <FormField>
+                  <FormLabel required>Mã danh mục</FormLabel>
+                  <Input
+                    placeholder="VD: INC_001 hoặc EXP_001"
+                    value={formData.categoryCode}
+                    onChange={(e) => setFormData({ ...formData, categoryCode: e.target.value.toUpperCase() })}
+                    disabled={!!editingCategory}
+                    className="h-12 text-base"
+                  />
+                </FormField>
+                <FormField>
+                  <FormLabel required>Loại danh mục</FormLabel>
+                  <Select
+                    value={formData.categoryType}
+                    onValueChange={(v: 'income' | 'expense') => setFormData({ ...formData, categoryType: v, parentId: '' })}
+                    disabled={!!editingCategory}
+                  >
+                    <SelectTrigger className="h-12 text-base">
+                      <SelectValue placeholder="Chọn loại" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="income" className="text-base py-3">Danh mục Thu</SelectItem>
+                      <SelectItem value="expense" className="text-base py-3">Danh mục Chi</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </FormField>
+              </FormGrid>
+
+              <FormField>
+                <FormLabel required>Tên danh mục</FormLabel>
                 <Input
-                  id="categoryCode"
-                  placeholder="VD: INC_001 hoặc EXP_001"
-                  value={formData.categoryCode}
-                  onChange={(e) => setFormData({ ...formData, categoryCode: e.target.value.toUpperCase() })}
-                  disabled={!!editingCategory}
+                  placeholder="VD: Tiền lương nhân viên"
+                  value={formData.categoryName}
+                  onChange={(e) => setFormData({ ...formData, categoryName: e.target.value })}
+                  className="h-12 text-base"
                 />
-              </div>
-              <div>
-                <Label htmlFor="categoryType">Loại danh mục *</Label>
+              </FormField>
+            </FormSection>
+
+            <FormSection title="Phân cấp">
+              <FormField>
+                <FormLabel>Danh mục cha</FormLabel>
                 <Select
-                  value={formData.categoryType}
-                  onValueChange={(v: 'income' | 'expense') => setFormData({ ...formData, categoryType: v, parentId: '' })}
-                  disabled={!!editingCategory}
+                  value={formData.parentId || 'none'}
+                  onValueChange={(v) => setFormData({ ...formData, parentId: v === 'none' ? '' : v })}
                 >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Chọn loại" />
+                  <SelectTrigger className="h-12 text-base">
+                    <SelectValue placeholder="Không có (danh mục gốc)" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="income">Danh mục Thu</SelectItem>
-                    <SelectItem value="expense">Danh mục Chi</SelectItem>
+                    <SelectItem value="none" className="text-base py-3">Không có (danh mục gốc)</SelectItem>
+                    {parentCategories.filter(cat => cat._id).map((cat) => (
+                      <SelectItem key={cat._id} value={cat._id} className="text-base py-3">
+                        {cat.categoryCode} - {cat.categoryName}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
-              </div>
-            </div>
+              </FormField>
+            </FormSection>
 
-            <div>
-              <Label htmlFor="categoryName">Tên danh mục *</Label>
-              <Input
-                id="categoryName"
-                placeholder="VD: Tiền lương nhân viên"
-                value={formData.categoryName}
-                onChange={(e) => setFormData({ ...formData, categoryName: e.target.value })}
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="parentId">Danh mục cha</Label>
-              <Select
-                value={formData.parentId || 'none'}
-                onValueChange={(v) => setFormData({ ...formData, parentId: v === 'none' ? '' : v })}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Không có (danh mục gốc)" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">Không có (danh mục gốc)</SelectItem>
-                  {parentCategories.filter(cat => cat._id).map((cat) => (
-                    <SelectItem key={cat._id} value={cat._id}>
-                      {cat.categoryCode} - {cat.categoryName}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div>
-              <Label htmlFor="description">Mô tả</Label>
-              <Textarea
-                id="description"
-                placeholder="Mô tả chi tiết về danh mục này..."
-                value={formData.description}
-                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              />
-            </div>
-
-            {editingCategory && (
-              <div className="flex items-center gap-2">
-                <Switch
-                  checked={formData.isActive}
-                  onCheckedChange={(checked) => setFormData({ ...formData, isActive: checked })}
+            <FormSection title="Thông tin bổ sung">
+              <FormField>
+                <FormLabel>Mô tả</FormLabel>
+                <Textarea
+                  placeholder="Mô tả chi tiết về danh mục này..."
+                  value={formData.description}
+                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  className="min-h-25 text-base"
                 />
-                <Label>Đang hoạt động</Label>
-              </div>
-            )}
+              </FormField>
+
+              {editingCategory && (
+                <FormField>
+                  <div className="flex items-center gap-3">
+                    <Switch
+                      checked={formData.isActive}
+                      onCheckedChange={(checked) => setFormData({ ...formData, isActive: checked })}
+                    />
+                    <FormLabel className="mb-0">Đang hoạt động</FormLabel>
+                  </div>
+                </FormField>
+              )}
+            </FormSection>
           </div>
 
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowDialog(false)}>
-              Hủy
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setShowDialog(false)}
+              className="h-12 px-8 text-base sm:w-auto w-full"
+            >
+              Hủy bỏ
             </Button>
-            <Button onClick={handleSave} disabled={saving}>
+            <Button
+              onClick={handleSave}
+              disabled={saving}
+              className="h-12 px-8 text-base sm:w-auto w-full"
+            >
               {saving ? 'Đang lưu...' : (editingCategory ? 'Cập nhật' : 'Tạo mới')}
             </Button>
           </DialogFooter>
@@ -571,20 +593,20 @@ export default function ThuChiCategoriesPage() {
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Xác nhận xóa</AlertDialogTitle>
-            <AlertDialogDescription>
+            <AlertDialogTitle className="text-xl">Xác nhận xóa</AlertDialogTitle>
+            <AlertDialogDescription className="text-base">
               Bạn có chắc muốn xóa danh mục <strong>{deletingCategory?.categoryName}</strong>?
               <br />
               Hành động này không thể hoàn tác.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Hủy</AlertDialogCancel>
+            <AlertDialogCancel className="h-12 px-6 text-base">Hủy bỏ</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDelete}
-              className="bg-red-600 hover:bg-red-700"
+              className="h-12 px-6 text-base bg-red-600 hover:bg-red-700"
             >
-              Xóa
+              Xóa danh mục
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

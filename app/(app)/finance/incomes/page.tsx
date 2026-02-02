@@ -137,44 +137,65 @@ export default function IncomesPage() {
     <div className="container mx-auto p-6 space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold">Phiếu Thu</h1>
-          <p className="text-gray-500">Danh sách các khoản thu đã được duyệt</p>
+          <h1 className="page-title">Phiếu Thu</h1>
+          <p className="page-description">Danh sách các khoản thu đã được duyệt</p>
         </div>
-        <Button onClick={handleExport} className="gap-2">
-          <FileSpreadsheet size={18} />
+        <Button onClick={handleExport} className="h-12 px-6 text-base font-semibold">
+          <FileSpreadsheet size={20} className="mr-2" />
           Xuất Excel
         </Button>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card>
-          <CardHeader className="pb-2">
-            <CardDescription>Tổng số khoản thu</CardDescription>
-            <CardTitle className="text-2xl">{incomes.length}</CardTitle>
-          </CardHeader>
+          <CardContent className="stat-card">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                <Download className="text-green-600" size={24} />
+              </div>
+              <div>
+                <div className="stat-value text-green-600">{incomes.length}</div>
+                <p className="stat-label">Tổng số khoản thu</p>
+              </div>
+            </div>
+          </CardContent>
         </Card>
         <Card>
-          <CardHeader className="pb-2">
-            <CardDescription>Tổng số tiền</CardDescription>
-            <CardTitle className="text-2xl">{formatCompactCurrency(totalAmount)}</CardTitle>
-          </CardHeader>
+          <CardContent className="stat-card">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                <FileSpreadsheet className="text-blue-600" size={24} />
+              </div>
+              <div>
+                <div className="stat-value">{formatCompactCurrency(totalAmount)}</div>
+                <p className="stat-label">Tổng số tiền</p>
+              </div>
+            </div>
+          </CardContent>
         </Card>
         <Card>
-          <CardHeader className="pb-2">
-            <CardDescription>Bộ lọc</CardDescription>
-            <Select value={filter} onValueChange={setFilter}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="this-month">Tháng này</SelectItem>
-                <SelectItem value="last-month">Tháng trước</SelectItem>
-                <SelectItem value="last-quarter">Quý trước</SelectItem>
-                <SelectItem value="date-range">Tùy chọn khoảng ngày</SelectItem>
-                <SelectItem value="all">Tất cả</SelectItem>
-              </SelectContent>
-            </Select>
-          </CardHeader>
+          <CardContent className="stat-card">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center">
+                <CalendarIcon className="text-gray-600" size={24} />
+              </div>
+              <div className="flex-1">
+                <p className="stat-label mb-2">Bộ lọc</p>
+                <Select value={filter} onValueChange={setFilter}>
+                  <SelectTrigger className="h-12 text-base">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="this-month" className="text-base py-3">Tháng này</SelectItem>
+                    <SelectItem value="last-month" className="text-base py-3">Tháng trước</SelectItem>
+                    <SelectItem value="last-quarter" className="text-base py-3">Quý trước</SelectItem>
+                    <SelectItem value="date-range" className="text-base py-3">Tùy chọn khoảng ngày</SelectItem>
+                    <SelectItem value="all" className="text-base py-3">Tất cả</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          </CardContent>
         </Card>
       </div>
 
@@ -231,18 +252,23 @@ export default function IncomesPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Danh sách khoản thu</CardTitle>
-          <CardDescription>
+          <CardTitle className="text-xl sm:text-2xl">Danh sách khoản thu</CardTitle>
+          <CardDescription className="text-base mt-1">
             Chỉ hiển thị các khoản thu đã được duyệt (Read-only)
           </CardDescription>
         </CardHeader>
         <CardContent>
           {loading ? (
-            <div className="text-center py-8 text-gray-500">Đang tải...</div>
+            <div className="empty-state">
+              <p className="empty-state-text">Đang tải dữ liệu...</p>
+            </div>
           ) : incomes.length === 0 ? (
-            <div className="text-center py-8 text-gray-500">Không có dữ liệu</div>
+            <div className="empty-state">
+              <Download size={64} className="mx-auto mb-4 opacity-50" />
+              <p className="empty-state-text">Không có dữ liệu</p>
+            </div>
           ) : (
-            <Table>
+            <Table className="table-lg">
               <TableHeader>
                 <TableRow>
                   <TableHead>Mã phiếu</TableHead>
@@ -262,7 +288,7 @@ export default function IncomesPage() {
                     <TableCell>{formatDate(income.incomeDate)}</TableCell>
                     <TableCell>{income.payerName || 'N/A'}</TableCell>
                     <TableCell>
-                      <span className="text-sm text-gray-600">Fund ID</span>
+                      <span className="text-gray-600">Fund ID</span>
                     </TableCell>
                     <TableCell className="text-right font-semibold">
                       {formatCurrency(income.amount)}
@@ -271,17 +297,17 @@ export default function IncomesPage() {
                       {income.images && income.images.length > 0 ? (
                         <Button
                           variant="ghost"
-                          size="sm"
+                          className="action-btn"
                           onClick={() => {
                             setSelectedIncome(income);
                             setShowGallery(true);
                           }}
+                          title="Xem ảnh"
                         >
-                          <Eye size={16} className="mr-1" />
-                          {income.images.length} ảnh
+                          <Eye />
                         </Button>
                       ) : (
-                        <span className="text-sm text-gray-400">Không có</span>
+                        <span className="text-gray-400">-</span>
                       )}
                     </TableCell>
                     <TableCell>
@@ -290,7 +316,7 @@ export default function IncomesPage() {
                     <TableCell>
                       <Button
                         variant="outline"
-                        size="sm"
+                        className="h-10 px-4 text-base"
                         onClick={() => {
                           setSelectedIncome(income);
                           setShowDetail(true);

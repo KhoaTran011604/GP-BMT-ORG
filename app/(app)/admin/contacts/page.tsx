@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import {
   Table,
   TableBody,
@@ -31,8 +30,14 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import {
+  FormSection,
+  FormField,
+  FormLabel,
+  FormGrid,
+} from '@/components/ui/form-section';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Pencil, Trash2, Users, Search } from 'lucide-react';
+import { Plus, Pencil, Trash2, Users, Search, Phone, Building2 } from 'lucide-react';
 
 interface ContactItem {
   _id: string;
@@ -235,69 +240,91 @@ export default function ContactsPage() {
     <div className="container mx-auto p-6 space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold">Quản lý Đối tượng Nhận gửi</h1>
-          <p className="text-gray-500">Danh sách đối tượng nhận/gửi tiền trong giao dịch</p>
+          <h1 className="page-title">Quản lý Đối tượng Nhận gửi</h1>
+          <p className="page-description">Danh sách đối tượng nhận/gửi tiền trong giao dịch</p>
         </div>
         <Button
           onClick={() => {
             resetForm();
             setShowCreateDialog(true);
           }}
-          className="gap-2"
+          className="h-12 px-6 text-base font-semibold"
         >
-          <Plus size={18} />
+          <Plus size={20} className="mr-2" />
           Thêm đối tượng
         </Button>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card>
-          <CardHeader className="pb-2">
-            <CardDescription>Tổng số</CardDescription>
-            <CardTitle className="text-2xl">{stats.total}</CardTitle>
-          </CardHeader>
+          <CardContent className="stat-card">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                <Users className="text-blue-600" size={24} />
+              </div>
+              <div>
+                <div className="stat-value">{stats.total}</div>
+                <p className="stat-label">Tổng số</p>
+              </div>
+            </div>
+          </CardContent>
         </Card>
         <Card>
-          <CardHeader className="pb-2">
-            <CardDescription>Đang hoạt động</CardDescription>
-            <CardTitle className="text-2xl text-green-600">{stats.active}</CardTitle>
-          </CardHeader>
+          <CardContent className="stat-card">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                <Users className="text-green-600" size={24} />
+              </div>
+              <div>
+                <div className="stat-value text-green-600">{stats.active}</div>
+                <p className="stat-label">Đang hoạt động</p>
+              </div>
+            </div>
+          </CardContent>
         </Card>
         <Card>
-          <CardHeader className="pb-2">
-            <CardDescription>Đã vô hiệu</CardDescription>
-            <CardTitle className="text-2xl text-gray-500">{stats.inactive}</CardTitle>
-          </CardHeader>
+          <CardContent className="stat-card">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center">
+                <Users className="text-gray-500" size={24} />
+              </div>
+              <div>
+                <div className="stat-value text-gray-500">{stats.inactive}</div>
+                <p className="stat-label">Đã vô hiệu</p>
+              </div>
+            </div>
+          </CardContent>
         </Card>
       </div>
 
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <div>
-            <CardTitle>Danh sách Đối tượng</CardTitle>
-            <CardDescription>Quản lý đối tượng nhận/gửi tiền</CardDescription>
+            <CardTitle className="text-xl sm:text-2xl">Danh sách Đối tượng</CardTitle>
+            <CardDescription className="text-base mt-1">Quản lý đối tượng nhận/gửi tiền</CardDescription>
           </div>
-          <div className="relative w-64">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+          <div className="relative w-80">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
             <Input
               placeholder="Tìm theo tên hoặc SĐT..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9"
+              className="pl-12 h-12 text-base"
             />
           </div>
         </CardHeader>
         <CardContent>
           {loading ? (
-            <div className="text-center py-8 text-gray-500">Đang tải...</div>
+            <div className="empty-state">
+              <p className="empty-state-text">Đang tải dữ liệu...</p>
+            </div>
           ) : filteredContacts.length === 0 ? (
-            <div className="text-center py-8 text-gray-500">
-              <Users className="mx-auto h-12 w-12 text-gray-300 mb-4" />
-              <p>{searchQuery ? 'Không tìm thấy đối tượng phù hợp' : 'Chưa có đối tượng nào'}</p>
+            <div className="empty-state">
+              <Users size={64} className="mx-auto mb-4 opacity-50" />
+              <p className="empty-state-text">{searchQuery ? 'Không tìm thấy đối tượng phù hợp' : 'Chưa có đối tượng nào'}</p>
               {!searchQuery && (
                 <Button
-                  variant="outline"
-                  className="mt-4"
+                  className="h-12 px-6 text-base font-semibold mt-4"
                   onClick={() => {
                     resetForm();
                     setShowCreateDialog(true);
@@ -308,7 +335,7 @@ export default function ContactsPage() {
               )}
             </div>
           ) : (
-            <Table>
+            <Table className="table-lg">
               <TableHeader>
                 <TableRow>
                   <TableHead>Tên</TableHead>
@@ -316,7 +343,7 @@ export default function ContactsPage() {
                   <TableHead>Ngân hàng</TableHead>
                   <TableHead>Số tài khoản</TableHead>
                   <TableHead>Trạng thái</TableHead>
-                  <TableHead>Thao tác</TableHead>
+                  <TableHead className="text-right">Thao tác</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -334,7 +361,7 @@ export default function ContactsPage() {
                         </>
                       ) : '-'}
                     </TableCell>
-                    <TableCell>{contact.bankAccountNumber || '-'}</TableCell>
+                    <TableCell className="font-mono">{contact.bankAccountNumber || '-'}</TableCell>
                     <TableCell>
                       <Badge
                         className={
@@ -346,25 +373,24 @@ export default function ContactsPage() {
                         {contact.status === 'active' ? 'Hoạt động' : 'Vô hiệu'}
                       </Badge>
                     </TableCell>
-                    <TableCell>
-                      <div className="flex gap-1">
+                    <TableCell className="text-right">
+                      <div className="flex justify-end gap-2">
                         <Button
                           variant="ghost"
-                          size="icon"
+                          className="action-btn"
                           onClick={() => openEditDialog(contact)}
                           title="Sửa"
                         >
-                          <Pencil size={16} />
+                          <Pencil />
                         </Button>
                         {contact.status === 'active' && (
                           <Button
                             variant="ghost"
-                            size="icon"
-                            className="text-red-600 hover:text-red-700"
+                            className="action-btn text-red-600 hover:text-red-700 hover:bg-red-50"
                             onClick={() => openDeleteDialog(contact)}
                             title="Vô hiệu hóa"
                           >
-                            <Trash2 size={16} />
+                            <Trash2 />
                           </Button>
                         )}
                       </div>
@@ -379,68 +405,84 @@ export default function ContactsPage() {
 
       {/* Create Dialog */}
       <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
-        <DialogContent className="max-w-md">
+        <DialogContent size="lg">
           <DialogHeader>
             <DialogTitle>Thêm Đối tượng mới</DialogTitle>
             <DialogDescription>Thêm đối tượng nhận/gửi tiền mới</DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label>
-                Tên <span className="text-red-500">*</span>
-              </Label>
-              <Input
-                placeholder="Nhập tên đối tượng"
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                autoFocus
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label>Số điện thoại</Label>
-              <Input
-                placeholder="Nhập số điện thoại (tùy chọn)"
-                value={formData.phone}
-                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>Tên ngân hàng</Label>
+          <div className="space-y-6">
+            <FormSection title="Thông tin cơ bản">
+              <FormField>
+                <FormLabel required>Tên đối tượng</FormLabel>
                 <Input
-                  placeholder="VD: Vietcombank..."
-                  value={formData.bankName}
-                  onChange={(e) => setFormData({ ...formData, bankName: e.target.value })}
+                  placeholder="Nhập tên đối tượng"
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  autoFocus
+                  className="h-12 text-base"
                 />
-              </div>
-              <div className="space-y-2">
-                <Label>Chi nhánh</Label>
-                <Input
-                  placeholder="VD: BMT"
-                  value={formData.bankBranch}
-                  onChange={(e) => setFormData({ ...formData, bankBranch: e.target.value })}
-                />
-              </div>
-            </div>
+              </FormField>
 
-            <div className="space-y-2">
-              <Label>Số tài khoản</Label>
-              <Input
-                placeholder="Nhập số tài khoản ngân hàng"
-                value={formData.bankAccountNumber}
-                onChange={(e) => setFormData({ ...formData, bankAccountNumber: e.target.value })}
-              />
-            </div>
+              <FormField>
+                <FormLabel>Số điện thoại</FormLabel>
+                <Input
+                  placeholder="Nhập số điện thoại (tùy chọn)"
+                  value={formData.phone}
+                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                  className="h-12 text-base"
+                />
+              </FormField>
+            </FormSection>
+
+            <FormSection title="Thông tin ngân hàng">
+              <FormGrid columns={2}>
+                <FormField>
+                  <FormLabel>Tên ngân hàng</FormLabel>
+                  <Input
+                    placeholder="VD: Vietcombank..."
+                    value={formData.bankName}
+                    onChange={(e) => setFormData({ ...formData, bankName: e.target.value })}
+                    className="h-12 text-base"
+                  />
+                </FormField>
+                <FormField>
+                  <FormLabel>Chi nhánh</FormLabel>
+                  <Input
+                    placeholder="VD: BMT"
+                    value={formData.bankBranch}
+                    onChange={(e) => setFormData({ ...formData, bankBranch: e.target.value })}
+                    className="h-12 text-base"
+                  />
+                </FormField>
+              </FormGrid>
+
+              <FormField>
+                <FormLabel>Số tài khoản</FormLabel>
+                <Input
+                  placeholder="Nhập số tài khoản ngân hàng"
+                  value={formData.bankAccountNumber}
+                  onChange={(e) => setFormData({ ...formData, bankAccountNumber: e.target.value })}
+                  className="h-12 text-base"
+                />
+              </FormField>
+            </FormSection>
           </div>
 
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowCreateDialog(false)}>
-              Hủy
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setShowCreateDialog(false)}
+              className="h-12 px-8 text-base sm:w-auto w-full"
+            >
+              Hủy bỏ
             </Button>
-            <Button onClick={handleCreate} disabled={submitting}>
+            <Button
+              onClick={handleCreate}
+              disabled={submitting}
+              className="h-12 px-8 text-base sm:w-auto w-full"
+            >
               {submitting ? 'Đang tạo...' : 'Tạo đối tượng'}
             </Button>
           </DialogFooter>
@@ -449,72 +491,85 @@ export default function ContactsPage() {
 
       {/* Edit Dialog */}
       <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
-        <DialogContent className="max-w-md">
+        <DialogContent size="lg">
           <DialogHeader>
             <DialogTitle>Sửa Đối tượng</DialogTitle>
             <DialogDescription>Cập nhật thông tin đối tượng: {selectedContact?.name}</DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label>
-                Tên <span className="text-red-500">*</span>
-              </Label>
-              <Input
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label>Số điện thoại</Label>
-              <Input
-                value={formData.phone}
-                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>Tên ngân hàng</Label>
+          <div className="space-y-6">
+            <FormSection title="Thông tin cơ bản">
+              <FormField>
+                <FormLabel required>Tên đối tượng</FormLabel>
                 <Input
-                  placeholder="VD: Vietcombank..."
-                  value={formData.bankName}
-                  onChange={(e) => setFormData({ ...formData, bankName: e.target.value })}
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  className="h-12 text-base"
                 />
-              </div>
-              <div className="space-y-2">
-                <Label>Chi nhánh</Label>
-                <Input
-                  placeholder="VD: BMT"
-                  value={formData.bankBranch}
-                  onChange={(e) => setFormData({ ...formData, bankBranch: e.target.value })}
-                />
-              </div>
-            </div>
+              </FormField>
 
-            <div className="space-y-2">
-              <Label>Số tài khoản</Label>
-              <Input
-                placeholder="Nhập số tài khoản ngân hàng"
-                value={formData.bankAccountNumber}
-                onChange={(e) => setFormData({ ...formData, bankAccountNumber: e.target.value })}
-              />
-            </div>
+              <FormField>
+                <FormLabel>Số điện thoại</FormLabel>
+                <Input
+                  value={formData.phone}
+                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                  className="h-12 text-base"
+                />
+              </FormField>
+            </FormSection>
+
+            <FormSection title="Thông tin ngân hàng">
+              <FormGrid columns={2}>
+                <FormField>
+                  <FormLabel>Tên ngân hàng</FormLabel>
+                  <Input
+                    placeholder="VD: Vietcombank..."
+                    value={formData.bankName}
+                    onChange={(e) => setFormData({ ...formData, bankName: e.target.value })}
+                    className="h-12 text-base"
+                  />
+                </FormField>
+                <FormField>
+                  <FormLabel>Chi nhánh</FormLabel>
+                  <Input
+                    placeholder="VD: BMT"
+                    value={formData.bankBranch}
+                    onChange={(e) => setFormData({ ...formData, bankBranch: e.target.value })}
+                    className="h-12 text-base"
+                  />
+                </FormField>
+              </FormGrid>
+
+              <FormField>
+                <FormLabel>Số tài khoản</FormLabel>
+                <Input
+                  placeholder="Nhập số tài khoản ngân hàng"
+                  value={formData.bankAccountNumber}
+                  onChange={(e) => setFormData({ ...formData, bankAccountNumber: e.target.value })}
+                  className="h-12 text-base"
+                />
+              </FormField>
+            </FormSection>
           </div>
 
           <DialogFooter>
             <Button
+              type="button"
               variant="outline"
               onClick={() => {
                 setShowEditDialog(false);
                 setSelectedContact(null);
                 resetForm();
               }}
+              className="h-12 px-8 text-base sm:w-auto w-full"
             >
-              Hủy
+              Hủy bỏ
             </Button>
-            <Button onClick={handleUpdate} disabled={submitting}>
+            <Button
+              onClick={handleUpdate}
+              disabled={submitting}
+              className="h-12 px-8 text-base sm:w-auto w-full"
+            >
               {submitting ? 'Đang lưu...' : 'Lưu thay đổi'}
             </Button>
           </DialogFooter>
@@ -525,10 +580,11 @@ export default function ContactsPage() {
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Xác nhận vô hiệu hóa</AlertDialogTitle>
-            <AlertDialogDescription>
-              Bạn có chắc muốn vô hiệu hóa đối tượng &quot;{selectedContact?.name}&quot;? Đối tượng sẽ
-              không còn xuất hiện trong danh sách chọn khi tạo giao dịch mới.
+            <AlertDialogTitle className="text-xl">Xác nhận vô hiệu hóa</AlertDialogTitle>
+            <AlertDialogDescription className="text-base">
+              Bạn có chắc muốn vô hiệu hóa đối tượng <strong>&quot;{selectedContact?.name}&quot;</strong>?
+              <br />
+              Đối tượng sẽ không còn xuất hiện trong danh sách chọn khi tạo giao dịch mới.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -537,13 +593,14 @@ export default function ContactsPage() {
                 setShowDeleteDialog(false);
                 setSelectedContact(null);
               }}
+              className="h-12 px-6 text-base"
             >
-              Hủy
+              Hủy bỏ
             </AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDelete}
               disabled={submitting}
-              className="bg-red-600 hover:bg-red-700"
+              className="h-12 px-6 text-base bg-red-600 hover:bg-red-700"
             >
               {submitting ? 'Đang xử lý...' : 'Vô hiệu hóa'}
             </AlertDialogAction>

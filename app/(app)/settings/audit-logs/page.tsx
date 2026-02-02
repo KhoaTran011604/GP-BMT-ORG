@@ -17,7 +17,6 @@ import {
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import {
   History,
-  Search,
   Filter,
   ChevronLeft,
   ChevronRight,
@@ -26,11 +25,13 @@ import {
   Trash2,
   CheckCircle,
   Eye,
-  ArrowRight,
   Monitor,
   Globe,
+  Clock,
+  User,
 } from 'lucide-react';
 import { useAuth } from '@/lib/auth-context';
+import { FormSection, FormField, FormLabel, FormGrid, FormInfoBox } from '@/components/ui/form-section';
 
 interface AuditLog {
   _id: string;
@@ -243,28 +244,29 @@ export default function AuditLogsPage() {
 
   return (
     <div className="space-y-6">
+      {/* Page Header - Elderly friendly */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold flex items-center gap-2">
-            <History className="text-blue-600" />
+          <h1 className="text-2xl md:text-3xl font-bold flex items-center gap-3">
+            <History className="text-blue-600" size={32} />
             Nhật ký hệ thống
           </h1>
-          <p className="text-gray-600">Theo dõi tất cả hoạt động trong hệ thống</p>
+          <p className="text-base text-gray-600 mt-1">Theo dõi tất cả hoạt động trong hệ thống</p>
         </div>
       </div>
 
-      {/* Stats */}
+      {/* Stats - Larger cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {Object.entries(actionConfig).map(([key, config]) => (
-          <Card key={key}>
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <div className={`p-2 rounded-lg ${config.color}`}>
+          <Card key={key} className="border-2 hover:shadow-lg transition-shadow">
+            <CardContent className="p-5">
+              <div className="flex items-center gap-4">
+                <div className={`p-3 rounded-xl ${config.color}`}>
                   {config.icon}
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500">{config.label}</p>
-                  <p className="text-xl font-bold">
+                  <p className="text-base text-gray-600">{config.label}</p>
+                  <p className="text-2xl font-bold text-gray-900">
                     {logs.filter(l => l.action === key).length}
                   </p>
                 </div>
@@ -274,18 +276,18 @@ export default function AuditLogsPage() {
         ))}
       </div>
 
-      {/* Filters */}
-      <Card>
+      {/* Filters - Larger inputs */}
+      <Card className="border-2">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Filter size={20} />
+          <CardTitle className="flex items-center gap-2 text-xl">
+            <Filter size={24} />
             Bộ lọc
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
             <div className="space-y-2">
-              <Label>Module</Label>
+              <Label className="text-base font-semibold">Module</Label>
               <Select
                 value={filters.module}
                 onValueChange={(value) => {
@@ -293,20 +295,20 @@ export default function AuditLogsPage() {
                   setPagination(prev => ({ ...prev, page: 1 }));
                 }}
               >
-                <SelectTrigger>
+                <SelectTrigger className="h-12 text-base">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Tất cả</SelectItem>
+                  <SelectItem value="all" className="py-3 text-base">Tất cả</SelectItem>
                   {Object.entries(moduleLabels).map(([key, label]) => (
-                    <SelectItem key={key} value={key}>{label}</SelectItem>
+                    <SelectItem key={key} value={key} className="py-3 text-base">{label}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
 
             <div className="space-y-2">
-              <Label>Hành động</Label>
+              <Label className="text-base font-semibold">Hành động</Label>
               <Select
                 value={filters.action}
                 onValueChange={(value) => {
@@ -314,20 +316,20 @@ export default function AuditLogsPage() {
                   setPagination(prev => ({ ...prev, page: 1 }));
                 }}
               >
-                <SelectTrigger>
+                <SelectTrigger className="h-12 text-base">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Tất cả</SelectItem>
+                  <SelectItem value="all" className="py-3 text-base">Tất cả</SelectItem>
                   {Object.entries(actionConfig).map(([key, config]) => (
-                    <SelectItem key={key} value={key}>{config.label}</SelectItem>
+                    <SelectItem key={key} value={key} className="py-3 text-base">{config.label}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
 
             <div className="space-y-2">
-              <Label>Từ ngày</Label>
+              <Label className="text-base font-semibold">Từ ngày</Label>
               <Input
                 type="date"
                 value={filters.startDate}
@@ -335,11 +337,12 @@ export default function AuditLogsPage() {
                   setFilters({ ...filters, startDate: e.target.value });
                   setPagination(prev => ({ ...prev, page: 1 }));
                 }}
+                className="h-12 text-base"
               />
             </div>
 
             <div className="space-y-2">
-              <Label>Đến ngày</Label>
+              <Label className="text-base font-semibold">Đến ngày</Label>
               <Input
                 type="date"
                 value={filters.endDate}
@@ -347,14 +350,15 @@ export default function AuditLogsPage() {
                   setFilters({ ...filters, endDate: e.target.value });
                   setPagination(prev => ({ ...prev, page: 1 }));
                 }}
+                className="h-12 text-base"
               />
             </div>
 
             <div className="space-y-2">
-              <Label>&nbsp;</Label>
+              <Label className="text-base font-semibold">&nbsp;</Label>
               <Button
                 variant="outline"
-                className="w-full"
+                className="w-full h-12 text-base"
                 onClick={() => {
                   setFilters({ module: 'all', action: 'all', startDate: '', endDate: '', search: '' });
                   setPagination(prev => ({ ...prev, page: 1 }));
@@ -367,77 +371,78 @@ export default function AuditLogsPage() {
         </CardContent>
       </Card>
 
-      {/* Logs Table */}
-      <Card>
+      {/* Logs Table - Larger fonts */}
+      <Card className="border-2">
         <CardHeader>
           <div className="flex items-center justify-between">
-            <CardTitle>Danh sách nhật ký ({pagination.total})</CardTitle>
+            <CardTitle className="text-xl">Danh sách nhật ký ({pagination.total})</CardTitle>
           </div>
         </CardHeader>
         <CardContent>
           {loading ? (
-            <div className="flex items-center justify-center py-12">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+            <div className="flex items-center justify-center py-16">
+              <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600"></div>
             </div>
           ) : logs.length === 0 ? (
-            <div className="text-center py-12 text-gray-500">
-              <History className="mx-auto mb-4 text-gray-300" size={48} />
-              <p>Chưa có nhật ký nào</p>
+            <div className="text-center py-16 text-gray-500">
+              <History className="mx-auto mb-4 text-gray-300" size={64} />
+              <p className="text-lg">Chưa có nhật ký nào</p>
             </div>
           ) : (
             <>
               <Table>
                 <TableHeader>
-                  <TableRow>
-                    <TableHead>Thời gian</TableHead>
-                    <TableHead>Người thực hiện</TableHead>
-                    <TableHead>Hành động</TableHead>
-                    <TableHead>Module</TableHead>
-                    <TableHead>IP</TableHead>
-                    <TableHead className="text-right">Chi tiết</TableHead>
+                  <TableRow className="bg-gray-50">
+                    <TableHead className="text-base font-semibold py-4">Thời gian</TableHead>
+                    <TableHead className="text-base font-semibold py-4">Người thực hiện</TableHead>
+                    <TableHead className="text-base font-semibold py-4">Hành động</TableHead>
+                    <TableHead className="text-base font-semibold py-4">Module</TableHead>
+                    <TableHead className="text-base font-semibold py-4">IP</TableHead>
+                    <TableHead className="text-base font-semibold py-4 text-right">Chi tiết</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {logs.map((log) => (
-                    <TableRow key={log._id}>
-                      <TableCell className="text-sm">
+                    <TableRow key={log._id} className="hover:bg-gray-50">
+                      <TableCell className="py-4 text-base text-gray-600">
                         {formatDate(log.createdAt)}
                       </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-2">
-                          <Avatar className="h-8 w-8">
-                            <AvatarFallback className="bg-blue-100 text-blue-800 text-xs">
+                      <TableCell className="py-4">
+                        <div className="flex items-center gap-3">
+                          <Avatar className="h-10 w-10">
+                            <AvatarFallback className="bg-blue-100 text-blue-800 text-sm font-semibold">
                               {log.user ? getInitials(log.user.fullName) : '??'}
                             </AvatarFallback>
                           </Avatar>
                           <div>
-                            <p className="font-medium text-sm">{log.user?.fullName || 'N/A'}</p>
-                            <p className="text-xs text-gray-500">{log.user?.email}</p>
+                            <p className="font-semibold text-base text-gray-900">{log.user?.fullName || 'N/A'}</p>
+                            <p className="text-sm text-gray-500">{log.user?.email}</p>
                           </div>
                         </div>
                       </TableCell>
-                      <TableCell>
-                        <Badge className={`${actionConfig[log.action]?.color || 'bg-gray-100'} flex items-center gap-1 w-fit`}>
+                      <TableCell className="py-4">
+                        <Badge className={`${actionConfig[log.action]?.color || 'bg-gray-100'} flex items-center gap-1 w-fit text-sm px-3 py-1`}>
                           {actionConfig[log.action]?.icon}
                           {actionConfig[log.action]?.label || log.action}
                         </Badge>
                       </TableCell>
-                      <TableCell>
-                        <Badge variant="outline">
+                      <TableCell className="py-4">
+                        <Badge variant="outline" className="text-sm px-3 py-1">
                           {moduleLabels[log.module] || log.module}
                         </Badge>
                       </TableCell>
-                      <TableCell className="text-sm text-gray-500">
+                      <TableCell className="py-4 text-base text-gray-500">
                         {log.ipAddress || '-'}
                       </TableCell>
-                      <TableCell className="text-right">
+                      <TableCell className="py-4 text-right">
                         <Button
-                          variant="ghost"
+                          variant="outline"
                           size="sm"
                           onClick={() => openDetailDialog(log)}
+                          className="h-10 px-4 text-sm"
                         >
-                          <Eye size={16} className="mr-1" />
-                          Xem
+                          <Eye size={18} className="mr-2" />
+                          Xem chi tiết
                         </Button>
                       </TableCell>
                     </TableRow>
@@ -445,33 +450,33 @@ export default function AuditLogsPage() {
                 </TableBody>
               </Table>
 
-              {/* Pagination */}
-              <div className="flex items-center justify-between mt-4 pt-4 border-t">
-                <p className="text-sm text-gray-500">
+              {/* Pagination - Larger buttons */}
+              <div className="flex flex-col md:flex-row items-center justify-between mt-6 pt-6 border-t gap-4">
+                <p className="text-base text-gray-600">
                   Hiển thị {(pagination.page - 1) * pagination.limit + 1} -{' '}
                   {Math.min(pagination.page * pagination.limit, pagination.total)} / {pagination.total}
                 </p>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-3">
                   <Button
                     variant="outline"
-                    size="sm"
                     onClick={() => setPagination(prev => ({ ...prev, page: prev.page - 1 }))}
                     disabled={pagination.page <= 1}
+                    className="h-12 px-4 text-base"
                   >
-                    <ChevronLeft size={16} />
+                    <ChevronLeft size={20} className="mr-1" />
                     Trước
                   </Button>
-                  <span className="text-sm">
+                  <span className="text-base font-medium px-4">
                     Trang {pagination.page} / {pagination.totalPages}
                   </span>
                   <Button
                     variant="outline"
-                    size="sm"
                     onClick={() => setPagination(prev => ({ ...prev, page: prev.page + 1 }))}
                     disabled={pagination.page >= pagination.totalPages}
+                    className="h-12 px-4 text-base"
                   >
                     Sau
-                    <ChevronRight size={16} />
+                    <ChevronRight size={20} className="ml-1" />
                   </Button>
                 </div>
               </div>
@@ -482,101 +487,119 @@ export default function AuditLogsPage() {
 
       {/* Detail Dialog */}
       <Dialog open={showDetailDialog} onOpenChange={setShowDetailDialog}>
-        <DialogContent className="max-w-[90vw]! w-[90vw]! max-h-[90vh] overflow-y-auto">
+        <DialogContent className="sm:max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 text-lg">
-              <History size={24} />
+            <DialogTitle className="text-xl flex items-center gap-2">
+              <History className="text-blue-600" size={24} />
               Chi tiết nhật ký
             </DialogTitle>
           </DialogHeader>
 
           {selectedLog && (
-            <div className="space-y-6">
-              {/* Info */}
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-1">
-                  <Label className="text-gray-500">Thời gian</Label>
-                  <p className="font-medium">{formatDate(selectedLog.createdAt)}</p>
-                </div>
-                <div className="space-y-1">
-                  <Label className="text-gray-500">Người thực hiện</Label>
-                  <p className="font-medium">{selectedLog.user?.fullName || 'N/A'}</p>
-                </div>
-                <div className="space-y-1">
-                  <Label className="text-gray-500">Hành động</Label>
-                  <Badge className={actionConfig[selectedLog.action]?.color || 'bg-gray-100'}>
-                    {actionConfig[selectedLog.action]?.label || selectedLog.action}
-                  </Badge>
-                </div>
-                <div className="space-y-1">
-                  <Label className="text-gray-500">Module</Label>
-                  <Badge variant="outline">
-                    {moduleLabels[selectedLog.module] || selectedLog.module}
-                  </Badge>
-                </div>
-              </div>
-
-              {/* Client Info */}
-              <div className="p-4 bg-gray-50 rounded-lg space-y-2">
-                <div className="flex items-center gap-2 text-sm">
-                  <Globe size={14} className="text-gray-400" />
-                  <span className="text-gray-500">IP:</span>
-                  <span>{selectedLog.ipAddress || 'N/A'}</span>
-                </div>
-                <div className="flex items-center gap-2 text-sm">
-                  <Monitor size={14} className="text-gray-400" />
-                  <span className="text-gray-500">User Agent:</span>
-                  <span className="truncate">{selectedLog.userAgent || 'N/A'}</span>
-                </div>
-              </div>
-
-              {/* Diff View - Git Style */}
-              {selectedLog.action === 'update' && (
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <h4 className="font-semibold flex items-center gap-2">
-                      <Pencil size={16} />
-                      Thay đổi ({calculateDiff(selectedLog.oldValue, selectedLog.newValue).length} trường )
-                    </h4>
-                    <div className="flex items-center gap-4 text-xs">
-                      <span className="flex items-center gap-1">
-                        <span className="w-3 h-3 bg-red-500 rounded"></span>
-                        Đã xóa
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <span className="w-3 h-3 bg-green-500 rounded"></span>
-                        Đã thêm
-                      </span>
+            <div className="space-y-6 mt-4">
+              {/* Section 1: Thông tin chung */}
+              <FormSection
+                title="Thông tin chung"
+                description="Thông tin cơ bản về hoạt động"
+                icon={<Clock size={20} />}
+              >
+                <FormGrid columns={2}>
+                  <FormField>
+                    <FormLabel>Thời gian</FormLabel>
+                    <div className="h-12 px-4 flex items-center bg-gray-100 rounded-lg text-base font-medium">
+                      {formatDate(selectedLog.createdAt)}
                     </div>
+                  </FormField>
+                  <FormField>
+                    <FormLabel>Hành động</FormLabel>
+                    <div className="h-12 px-4 flex items-center bg-gray-100 rounded-lg">
+                      <Badge className={`${actionConfig[selectedLog.action]?.color || 'bg-gray-100'} text-base px-3 py-1`}>
+                        {actionConfig[selectedLog.action]?.icon}
+                        <span className="ml-2">{actionConfig[selectedLog.action]?.label || selectedLog.action}</span>
+                      </Badge>
+                    </div>
+                  </FormField>
+                </FormGrid>
+              </FormSection>
+
+              {/* Section 2: Người thực hiện */}
+              <FormSection
+                title="Người thực hiện"
+                description="Thông tin người dùng thực hiện thao tác"
+                icon={<User size={20} />}
+              >
+                <FormGrid columns={2}>
+                  <FormField>
+                    <FormLabel>Họ tên</FormLabel>
+                    <div className="h-12 px-4 flex items-center bg-gray-100 rounded-lg text-base font-medium">
+                      {selectedLog.user?.fullName || 'N/A'}
+                    </div>
+                  </FormField>
+                  <FormField>
+                    <FormLabel>Module</FormLabel>
+                    <div className="h-12 px-4 flex items-center bg-gray-100 rounded-lg">
+                      <Badge variant="outline" className="text-base px-3 py-1">
+                        {moduleLabels[selectedLog.module] || selectedLog.module}
+                      </Badge>
+                    </div>
+                  </FormField>
+                </FormGrid>
+
+                {/* Client Info */}
+                <div className="p-4 bg-gray-50 rounded-lg space-y-3 mt-4">
+                  <div className="flex items-center gap-3 text-base">
+                    <Globe size={18} className="text-gray-500" />
+                    <span className="text-gray-600 font-medium">Địa chỉ IP:</span>
+                    <span className="font-mono">{selectedLog.ipAddress || 'N/A'}</span>
+                  </div>
+                  <div className="flex items-start gap-3 text-base">
+                    <Monitor size={18} className="text-gray-500 mt-0.5" />
+                    <span className="text-gray-600 font-medium shrink-0">Thiết bị:</span>
+                    <span className="text-sm text-gray-700 break-all">{selectedLog.userAgent || 'N/A'}</span>
+                  </div>
+                </div>
+              </FormSection>
+
+              {/* Section 3: Chi tiết thay đổi */}
+              {selectedLog.action === 'update' && (
+                <FormSection
+                  title="Chi tiết thay đổi"
+                  description={`${calculateDiff(selectedLog.oldValue, selectedLog.newValue).length} trường đã được thay đổi`}
+                  icon={<Pencil size={20} />}
+                >
+                  {/* Legend */}
+                  <div className="flex items-center gap-6 text-base mb-4">
+                    <span className="flex items-center gap-2">
+                      <span className="w-4 h-4 bg-red-500 rounded"></span>
+                      Giá trị cũ
+                    </span>
+                    <span className="flex items-center gap-2">
+                      <span className="w-4 h-4 bg-green-500 rounded"></span>
+                      Giá trị mới
+                    </span>
                   </div>
 
-                  
-
-                  {/* Summary table */}
                   {calculateDiff(selectedLog.oldValue, selectedLog.newValue).length > 0 && (
                     <div className="border rounded-lg overflow-hidden">
-                      <div className="bg-gray-100 px-4 py-2 font-medium text-sm border-b">
-                        Chi tiết thay đổi
-                      </div>
                       <Table>
                         <TableHeader>
-                          <TableRow className="bg-gray-50">
-                            <TableHead className="w-1/5">Trường</TableHead>
-                            <TableHead className="w-2/5">Giá trị cũ</TableHead>
-                            <TableHead className="w-2/5">Giá trị mới</TableHead>
+                          <TableRow className="bg-gray-100">
+                            <TableHead className="w-1/5 text-base font-semibold py-3">Trường</TableHead>
+                            <TableHead className="w-2/5 text-base font-semibold py-3">Giá trị cũ</TableHead>
+                            <TableHead className="w-2/5 text-base font-semibold py-3">Giá trị mới</TableHead>
                           </TableRow>
                         </TableHeader>
                         <TableBody>
                           {calculateDiff(selectedLog.oldValue, selectedLog.newValue).map((item, idx) => (
                             <TableRow key={idx}>
-                              <TableCell className="font-medium text-sm">{item.field}</TableCell>
+                              <TableCell className="font-semibold text-base py-4">{item.field}</TableCell>
                               <TableCell className="bg-red-50 border-l-4 border-red-400">
-                                <div className="text-sm text-red-700 whitespace-pre-wrap break-all font-sans">
+                                <div className="text-base text-red-700 whitespace-pre-wrap break-all font-mono p-2">
                                   {formatValue(item.oldVal)}
                                 </div>
                               </TableCell>
                               <TableCell className="bg-green-50 border-l-4 border-green-400">
-                                <div className="text-sm text-green-700 whitespace-pre-wrap break-all font-sans">
+                                <div className="text-base text-green-700 whitespace-pre-wrap break-all font-mono p-2">
                                   {formatValue(item.newVal)}
                                 </div>
                               </TableCell>
@@ -586,37 +609,40 @@ export default function AuditLogsPage() {
                       </Table>
                     </div>
                   )}
-                </div>
+                </FormSection>
               )}
 
               {/* Create View */}
               {selectedLog.action === 'create' && selectedLog.newValue && (
-                <div className="space-y-4">
-                  <h4 className="font-semibold flex items-center gap-2">
-                    <Plus size={16} />
-                    Dữ liệu tạo mới
-                  </h4>
+                <FormSection
+                  title="Dữ liệu tạo mới"
+                  description="Thông tin của bản ghi được tạo"
+                  icon={<Plus size={20} />}
+                >
                   <div className="p-4 bg-green-50 border border-green-200 rounded-lg overflow-x-auto">
-                    <div className="text-sm text-green-800 whitespace-pre-wrap font-sans">
+                    <pre className="text-base text-green-800 whitespace-pre-wrap font-mono">
                       {JSON.stringify(selectedLog.newValue, null, 2)}
-                    </div>
+                    </pre>
                   </div>
-                </div>
+                </FormSection>
               )}
 
               {/* Delete View */}
               {selectedLog.action === 'delete' && selectedLog.oldValue && (
-                <div className="space-y-4">
-                  <h4 className="font-semibold flex items-center gap-2">
-                    <Trash2 size={16} />
-                    Dữ liệu đã xóa
-                  </h4>
-                  <div className="p-4 bg-red-50 border border-red-200 rounded-lg overflow-x-auto">
-                    <div className="text-sm text-red-800 whitespace-pre-wrap font-sans">
+                <FormSection
+                  title="Dữ liệu đã xóa"
+                  description="Thông tin của bản ghi đã bị xóa"
+                  icon={<Trash2 size={20} />}
+                >
+                  <FormInfoBox variant="warning">
+                    Bản ghi này đã bị xóa vĩnh viễn khỏi hệ thống
+                  </FormInfoBox>
+                  <div className="p-4 bg-red-50 border border-red-200 rounded-lg overflow-x-auto mt-4">
+                    <pre className="text-base text-red-800 whitespace-pre-wrap font-mono">
                       {JSON.stringify(selectedLog.oldValue, null, 2)}
-                    </div>
+                    </pre>
                   </div>
-                </div>
+                </FormSection>
               )}
             </div>
           )}

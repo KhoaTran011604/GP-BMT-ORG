@@ -1,15 +1,15 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import { FormSection, FormField, FormLabel, FormGrid } from '@/components/ui/form-section';
 import { ImageUpload } from '@/components/finance/ImageUpload';
 import { toast } from 'sonner';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Package, MapPin, Wallet, FileText, ImageIcon } from 'lucide-react';
 
 interface Asset {
     _id?: string;
@@ -143,186 +143,201 @@ export function AssetFormDialog({ open, onOpenChange, asset, onSuccess }: AssetF
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
-                    <DialogTitle>{asset?._id ? 'Chỉnh sửa Tài sản' : 'Thêm Tài sản mới'}</DialogTitle>
+                    <DialogTitle className="text-xl">{asset?._id ? 'Chỉnh sửa Tài sản' : 'Thêm Tài sản mới'}</DialogTitle>
+                    <DialogDescription className="text-base">
+                        {asset?._id ? 'Cập nhật thông tin tài sản' : 'Điền đầy đủ thông tin tài sản mới'}
+                    </DialogDescription>
                 </DialogHeader>
 
-                <form onSubmit={handleSubmit} className="space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                            <Label htmlFor="assetCode">Mã tài sản <span className="text-red-500">*</span></Label>
-                            <Input
-                                id="assetCode"
-                                value={formData.assetCode}
-                                onChange={(e) => setFormData({ ...formData, assetCode: e.target.value })}
-                                placeholder="VD: TS-001"
-                                required
-                            />
-                        </div>
+                <form onSubmit={handleSubmit} className="space-y-6">
+                    {/* Thông tin cơ bản */}
+                    <FormSection title="Thông tin cơ bản" icon={<Package size={18} />}>
+                        <FormGrid>
+                            <FormField>
+                                <FormLabel required>Mã tài sản</FormLabel>
+                                <Input
+                                    value={formData.assetCode}
+                                    onChange={(e) => setFormData({ ...formData, assetCode: e.target.value })}
+                                    placeholder="VD: TS-001"
+                                    required
+                                    className="h-12 text-base"
+                                />
+                            </FormField>
 
-                        <div className="space-y-2">
-                            <Label htmlFor="assetName">Tên tài sản <span className="text-red-500">*</span></Label>
-                            <Input
-                                id="assetName"
-                                value={formData.assetName}
-                                onChange={(e) => setFormData({ ...formData, assetName: e.target.value })}
-                                placeholder="VD: Nhà thờ chính"
-                                required
-                            />
-                        </div>
-                    </div>
+                            <FormField>
+                                <FormLabel required>Tên tài sản</FormLabel>
+                                <Input
+                                    value={formData.assetName}
+                                    onChange={(e) => setFormData({ ...formData, assetName: e.target.value })}
+                                    placeholder="VD: Nhà thờ chính"
+                                    required
+                                    className="h-12 text-base"
+                                />
+                            </FormField>
 
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                            <Label htmlFor="assetType">Loại tài sản <span className="text-red-500">*</span></Label>
-                            <Select value={formData.assetType} onValueChange={(value: any) => setFormData({ ...formData, assetType: value })}>
-                                <SelectTrigger>
-                                    <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="land">Đất đai</SelectItem>
-                                    <SelectItem value="building">Nhà cửa</SelectItem>
-                                    <SelectItem value="vehicle">Phương tiện</SelectItem>
-                                    <SelectItem value="equipment">Thiết bị</SelectItem>
-                                </SelectContent>
-                            </Select>
-                        </div>
+                            <FormField>
+                                <FormLabel required>Loại tài sản</FormLabel>
+                                <Select value={formData.assetType} onValueChange={(value: any) => setFormData({ ...formData, assetType: value })}>
+                                    <SelectTrigger className="h-12 text-base">
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="land" className="text-base py-3">🏞️ Đất đai</SelectItem>
+                                        <SelectItem value="building" className="text-base py-3">🏛️ Nhà cửa</SelectItem>
+                                        <SelectItem value="vehicle" className="text-base py-3">🚗 Phương tiện</SelectItem>
+                                        <SelectItem value="equipment" className="text-base py-3">⚙️ Thiết bị</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </FormField>
 
-                        <div className="space-y-2">
-                            <Label htmlFor="parishId">Đơn vị <span className="text-red-500">*</span></Label>
-                            <Select value={formData.parishId} onValueChange={(value) => setFormData({ ...formData, parishId: value })}>
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Chọn Giáo xứ" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {parishes.length === 0 ? (
-                                        <SelectItem value="loading" disabled>Đang tải...</SelectItem>
-                                    ) : (
-                                        parishes.map((p) => (
-                                            <SelectItem key={p._id} value={p._id}>
-                                                {p.parishName}
-                                            </SelectItem>
-                                        ))
-                                    )}
-                                </SelectContent>
-                            </Select>
-                            {parishes.length > 0 && (
-                                <p className="text-xs text-gray-500">Có {parishes.length} Giáo xứ</p>
+                            <FormField>
+                                <FormLabel required>Đơn vị (Giáo xứ)</FormLabel>
+                                <Select value={formData.parishId} onValueChange={(value) => setFormData({ ...formData, parishId: value })}>
+                                    <SelectTrigger className="h-12 text-base">
+                                        <SelectValue placeholder="Chọn Giáo xứ" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {parishes.length === 0 ? (
+                                            <SelectItem value="loading" disabled className="text-base py-3">Đang tải...</SelectItem>
+                                        ) : (
+                                            parishes.map((p) => (
+                                                <SelectItem key={p._id} value={p._id} className="text-base py-3">
+                                                    {p.parishName}
+                                                </SelectItem>
+                                            ))
+                                        )}
+                                    </SelectContent>
+                                </Select>
+                                {parishes.length > 0 && (
+                                    <p className="text-sm text-gray-500 mt-1">Có {parishes.length} Giáo xứ</p>
+                                )}
+                            </FormField>
+                        </FormGrid>
+                    </FormSection>
+
+                    {/* Thông tin vị trí */}
+                    <FormSection title="Thông tin vị trí" icon={<MapPin size={18} />}>
+                        <FormGrid>
+                            <FormField className="col-span-2">
+                                <FormLabel required>Vị trí / Địa chỉ</FormLabel>
+                                <Input
+                                    value={formData.location}
+                                    onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                                    placeholder="Địa chỉ chi tiết của tài sản"
+                                    required
+                                    className="h-12 text-base"
+                                />
+                            </FormField>
+
+                            <FormField>
+                                <FormLabel>Diện tích (m²)</FormLabel>
+                                <Input
+                                    type="number"
+                                    value={formData.area || ''}
+                                    onChange={(e) => setFormData({ ...formData, area: Number(e.target.value) })}
+                                    placeholder="0"
+                                    className="h-12 text-base"
+                                />
+                            </FormField>
+                        </FormGrid>
+                    </FormSection>
+
+                    {/* Thông tin giá trị */}
+                    <FormSection title="Thông tin giá trị" icon={<Wallet size={18} />}>
+                        <FormGrid>
+                            <FormField>
+                                <FormLabel>Ngày mua/nhận</FormLabel>
+                                <Input
+                                    type="date"
+                                    value={formData.acquisitionDate || ''}
+                                    onChange={(e) => setFormData({ ...formData, acquisitionDate: e.target.value })}
+                                    className="h-12 text-base"
+                                />
+                            </FormField>
+
+                            {!asset?._id ? (
+                                <FormField>
+                                    <FormLabel>Giá trị mua (VNĐ)</FormLabel>
+                                    <Input
+                                        type="number"
+                                        value={formData.acquisitionValue || ''}
+                                        onChange={(e) => {
+                                            const value = Number(e.target.value);
+                                            setFormData({
+                                                ...formData,
+                                                acquisitionValue: value,
+                                                // Auto-sync currentValue when creating new asset
+                                                currentValue: value
+                                            });
+                                        }}
+                                        placeholder="0"
+                                        className="h-12 text-base"
+                                    />
+                                </FormField>
+                            ) : (
+                                <FormField>
+                                    <FormLabel>Giá trị hiện tại (VNĐ)</FormLabel>
+                                    <Input
+                                        type="number"
+                                        value={formData.currentValue || ''}
+                                        onChange={(e) => setFormData({ ...formData, currentValue: Number(e.target.value) })}
+                                        placeholder="0"
+                                        className="h-12 text-base"
+                                    />
+                                </FormField>
                             )}
-                        </div>
-                    </div>
 
-                    <div className="space-y-2">
-                        <Label htmlFor="location">Vị trí <span className="text-red-500">*</span></Label>
-                        <Input
-                            id="location"
-                            value={formData.location}
-                            onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                            placeholder="Địa chỉ chi tiết"
-                            required
-                        />
-                    </div>
+                            <FormField>
+                                <FormLabel required>Trạng thái</FormLabel>
+                                <Select value={formData.status} onValueChange={(value: any) => setFormData({ ...formData, status: value })}>
+                                    <SelectTrigger className="h-12 text-base">
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="active" className="text-base py-3">✅ Đang sử dụng</SelectItem>
+                                        <SelectItem value="sold" className="text-base py-3">💰 Đã bán</SelectItem>
+                                        <SelectItem value="disposed" className="text-base py-3">🗑️ Đã thanh lý</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </FormField>
+                        </FormGrid>
+                    </FormSection>
 
-
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                            <Label htmlFor="area">Diện tích (m²)</Label>
-                            <Input
-                                id="area"
-                                type="number"
-                                value={formData.area || ''}
-                                onChange={(e) => setFormData({ ...formData, area: Number(e.target.value) })}
-                                placeholder="0"
+                    {/* Thông tin bổ sung */}
+                    <FormSection title="Thông tin bổ sung" icon={<FileText size={18} />}>
+                        <FormField>
+                            <FormLabel>Ghi chú</FormLabel>
+                            <Textarea
+                                value={formData.notes || ''}
+                                onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                                placeholder="Thông tin bổ sung về tài sản..."
+                                rows={3}
+                                className="text-base"
                             />
-                        </div>
+                        </FormField>
+                    </FormSection>
 
-                        {!asset?._id ? (
-                            <div className="space-y-2">
-                                <Label htmlFor="acquisitionValue">Giá trị mua (VNĐ)</Label>
-                                <Input
-                                    id="acquisitionValue"
-                                    type="number"
-                                    value={formData.acquisitionValue || ''}
-                                    onChange={(e) => {
-                                        const value = Number(e.target.value);
-                                        setFormData({
-                                            ...formData,
-                                            acquisitionValue: value,
-                                            // Auto-sync currentValue when creating new asset
-                                            currentValue: value
-                                        });
-                                    }}
-                                    placeholder="0"
-                                />
-                            </div>
-                        ) : (
-                            <div className="space-y-2">
-                                <Label htmlFor="currentValue">Giá trị hiện tại (VNĐ)</Label>
-                                <Input
-                                    id="currentValue"
-                                    type="number"
-                                    value={formData.currentValue || ''}
-                                    onChange={(e) => setFormData({ ...formData, currentValue: Number(e.target.value) })}
-                                    placeholder="0"
-                                />
-                            </div>
-                        )}
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                            <Label htmlFor="acquisitionDate">Ngày mua/nhận</Label>
-                            <Input
-                                id="acquisitionDate"
-                                type="date"
-                                value={formData.acquisitionDate || ''}
-                                onChange={(e) => setFormData({ ...formData, acquisitionDate: e.target.value })}
+                    {/* Hình ảnh */}
+                    <FormSection title="Hình ảnh tài sản" icon={<ImageIcon size={18} />}>
+                        <FormField>
+                            <FormLabel>Tải lên hình ảnh (tối đa 5 ảnh)</FormLabel>
+                            <ImageUpload
+                                images={formData.images || []}
+                                onChange={(urls) => setFormData({ ...formData, images: urls })}
+                                maxImages={5}
+                                disabled={loading}
                             />
-                        </div>
+                        </FormField>
+                    </FormSection>
 
-                        <div className="space-y-2">
-                            <Label htmlFor="status">Trạng thái <span className="text-red-500">*</span></Label>
-                            <Select value={formData.status} onValueChange={(value: any) => setFormData({ ...formData, status: value })}>
-                                <SelectTrigger>
-                                    <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="active">Đang sử dụng</SelectItem>
-                                    <SelectItem value="sold">Đã bán</SelectItem>
-                                    <SelectItem value="disposed">Đã thanh lý</SelectItem>
-                                </SelectContent>
-                            </Select>
-                        </div>
-                    </div>
-
-                    <div className="space-y-2">
-                        <Label htmlFor="notes">Ghi chú</Label>
-                        <Textarea
-                            id="notes"
-                            value={formData.notes || ''}
-                            onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                            placeholder="Thông tin bổ sung..."
-                            rows={3}
-                        />
-                    </div>
-
-                    <div className="space-y-2">
-                        <Label>Hình ảnh</Label>
-                        <ImageUpload
-                            images={formData.images || []}
-                            onChange={(urls) => setFormData({ ...formData, images: urls })}
-                            maxImages={5}
-                            disabled={loading}
-                        />
-                    </div>
-
-                    <DialogFooter>
-                        <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={loading}>
-                            Hủy
+                    <DialogFooter className="gap-2 sm:gap-0">
+                        <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={loading} className="h-12 px-8 text-base sm:w-auto w-full">
+                            Hủy bỏ
                         </Button>
-                        <Button type="submit" disabled={loading}>
+                        <Button type="submit" disabled={loading} className="h-12 px-8 text-base sm:w-auto w-full">
                             {loading ? (
                                 <>
-                                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                    <Loader2 className="w-5 h-5 mr-2 animate-spin" />
                                     Đang lưu...
                                 </>
                             ) : (

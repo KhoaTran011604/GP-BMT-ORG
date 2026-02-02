@@ -11,7 +11,8 @@ import { AssetFormDialog } from '@/components/admin/AssetFormDialog';
 import { AssetDetailModal } from '@/components/admin/AssetDetailModal';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { toast } from 'sonner';
-import { Edit, Trash2 } from 'lucide-react';
+import { Edit, Plus, Trash2 } from 'lucide-react';
+import { formatCompactCurrency } from '@/lib/utils';
 
 interface Asset {
   _id: string;
@@ -114,13 +115,6 @@ export default function AssetsPage() {
     }
   };
 
-  const formatCurrency = (amount?: number) => {
-    if (!amount) return '-';
-    return new Intl.NumberFormat('vi-VN', {
-      style: 'currency',
-      currency: 'VND',
-    }).format(amount);
-  };
 
   const filteredAssets = assets.filter(a => {
     const matchesType = typeFilter === 'all' || a.assetType === typeFilter;
@@ -145,56 +139,80 @@ export default function AssetsPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Quản lý Tài sản</h1>
-          <p className="text-gray-600">Quản lý tài sản của Giáo phận và các Giáo xứ</p>
+          <h1 className="page-title">Quản lý Tài sản</h1>
+          <p className="page-description">Quản lý tài sản của Giáo phận và các Giáo xứ</p>
         </div>
-        <Button onClick={handleCreate}>+ Thêm tài sản</Button>
+        <Button onClick={handleCreate} className="h-12 px-6 text-base font-semibold">
+          <Plus size={20} className="mr-2" />
+          Thêm tài sản
+        </Button>
       </div>
 
       {/* Summary */}
-      <Card className="bg-gradient-to-r from-blue-50 to-indigo-50">
-        <CardContent className="p-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div>
-              <p className="text-sm text-gray-600">Tổng số tài sản</p>
-              <p className="text-3xl font-bold text-blue-600">{assets.length}</p>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <Card>
+          <CardContent className="stat-card">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                <span className="text-2xl">📦</span>
+              </div>
+              <div>
+                <div className="stat-value text-blue-600">{assets.length}</div>
+                <p className="stat-label">Tổng số tài sản</p>
+              </div>
             </div>
-            <div>
-              <p className="text-sm text-gray-600">Tổng giá trị hiện tại</p>
-              <p className="text-3xl font-bold text-green-600">{formatCurrency(totalValue)}</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="stat-card">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                <span className="text-2xl">💰</span>
+              </div>
+              <div>
+                <div className="stat-value text-green-600">{formatCompactCurrency(totalValue)}</div>
+                <p className="stat-label">Tổng giá trị hiện tại</p>
+              </div>
             </div>
-            <div>
-              <p className="text-sm text-gray-600">Số Giáo xứ có tài sản</p>
-              <p className="text-3xl font-bold text-purple-600">
-                {new Set(assets.map(a => a.parishId)).size}
-              </p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="stat-card">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                <span className="text-2xl">⛪</span>
+              </div>
+              <div>
+                <div className="stat-value text-purple-600">{new Set(assets.map(a => a.parishId)).size}</div>
+                <p className="stat-label">Số Giáo xứ có tài sản</p>
+              </div>
             </div>
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      </div>
 
       {/* Assets Table */}
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle>Danh sách Tài sản ({filteredAssets.length})</CardTitle>
-            <div className="flex gap-2">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <CardTitle className="text-xl sm:text-2xl">Danh sách Tài sản ({filteredAssets.length})</CardTitle>
+            <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
               <Input
                 placeholder="Tìm kiếm..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-64"
+                className="h-12 text-base w-full sm:w-64"
               />
               <Select value={typeFilter} onValueChange={setTypeFilter}>
-                <SelectTrigger className="w-40">
+                <SelectTrigger className="h-12 text-base w-full sm:w-48">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Tất cả</SelectItem>
-                  <SelectItem value="land">Đất đai</SelectItem>
-                  <SelectItem value="building">Nhà cửa</SelectItem>
-                  <SelectItem value="vehicle">Phương tiện</SelectItem>
-                  <SelectItem value="equipment">Thiết bị</SelectItem>
+                  <SelectItem value="all" className="text-base py-3">Tất cả</SelectItem>
+                  <SelectItem value="land" className="text-base py-3">Đất đai</SelectItem>
+                  <SelectItem value="building" className="text-base py-3">Nhà cửa</SelectItem>
+                  <SelectItem value="vehicle" className="text-base py-3">Phương tiện</SelectItem>
+                  <SelectItem value="equipment" className="text-base py-3">Thiết bị</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -202,12 +220,12 @@ export default function AssetsPage() {
         </CardHeader>
         <CardContent>
           {filteredAssets.length === 0 ? (
-            <div className="text-center py-12 text-gray-500">
-              <p className="text-4xl mb-4">📦</p>
-              <p>Chưa có tài sản nào</p>
+            <div className="empty-state">
+              <p className="text-5xl mb-4">📦</p>
+              <p className="empty-state-text">Chưa có tài sản nào</p>
             </div>
           ) : (
-            <Table>
+            <Table className="table-lg">
               <TableHeader>
                 <TableRow>
                   <TableHead>Mã TS</TableHead>
@@ -227,7 +245,7 @@ export default function AssetsPage() {
                     <TableCell className="font-mono">{a.assetCode}</TableCell>
                     <TableCell className="font-medium">{a.assetName}</TableCell>
                     <TableCell>
-                      <Badge className={assetTypeConfig[a.assetType].color}>
+                      <Badge className={`text-sm px-3 py-1 ${assetTypeConfig[a.assetType].color}`}>
                         {assetTypeConfig[a.assetType].icon} {assetTypeConfig[a.assetType].label}
                       </Badge>
                     </TableCell>
@@ -235,25 +253,25 @@ export default function AssetsPage() {
                     <TableCell className="max-w-xs truncate">{a.location}</TableCell>
                     <TableCell>{a.area ? `${a.area} m²` : '-'}</TableCell>
                     <TableCell className="text-right font-medium">
-                      {formatCurrency(a.currentValue)}
+                      {a.currentValue ? formatCompactCurrency(a.currentValue):0}
                     </TableCell>
                     <TableCell>
-                      <Badge className={
+                      <Badge className={`text-sm px-3 py-1 ${
                         a.status === 'active' ? 'bg-green-100 text-green-800' :
                           a.status === 'sold' ? 'bg-blue-100 text-blue-800' :
                             'bg-gray-100 text-gray-800'
-                      }>
+                      }`}>
                         {a.status === 'active' ? 'Đang sử dụng' :
                           a.status === 'sold' ? 'Đã bán' : 'Đã thanh lý'}
                       </Badge>
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-1">
-                        <Button variant="ghost" size="sm" onClick={() => handleEdit(a)}>
-                          <Edit className="w-4 h-4" />
+                        <Button variant="ghost" className="action-btn" onClick={() => handleEdit(a)} title="Sửa">
+                          <Edit className="w-5 h-5" />
                         </Button>
-                        <Button variant="ghost" size="sm" onClick={() => handleDeleteClick(a)}>
-                          <Trash2 className="w-4 h-4 text-red-600" />
+                        <Button variant="ghost" className="action-btn text-red-600 hover:text-red-700" onClick={() => handleDeleteClick(a)} title="Xóa">
+                          <Trash2 className="w-5 h-5" />
                         </Button>
                       </div>
                     </TableCell>
@@ -284,15 +302,15 @@ export default function AssetsPage() {
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Xác nhận xóa</AlertDialogTitle>
-            <AlertDialogDescription>
+            <AlertDialogTitle className="text-xl">Xác nhận xóa</AlertDialogTitle>
+            <AlertDialogDescription className="text-base">
               Bạn có chắc chắn muốn xóa tài sản <strong>{assetToDelete?.assetName}</strong>?
               Hành động này không thể hoàn tác.
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Hủy</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDeleteConfirm} className="bg-red-600 hover:bg-red-700">
+          <AlertDialogFooter className="gap-2 sm:gap-0">
+            <AlertDialogCancel className="h-12 px-6 text-base">Hủy</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteConfirm} className="h-12 px-6 text-base bg-red-600 hover:bg-red-700">
               Xóa
             </AlertDialogAction>
           </AlertDialogFooter>

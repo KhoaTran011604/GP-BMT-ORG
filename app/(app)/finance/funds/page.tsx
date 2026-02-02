@@ -267,14 +267,14 @@ export default function FundsPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Danh mục Quỹ</h1>
-          <p className="text-gray-600">Quản lý các loại quỹ trong Giáo phận</p>
+          <h1 className="page-title">Danh mục Quỹ</h1>
+          <p className="page-description">Quản lý các loại quỹ trong Giáo phận</p>
         </div>
         <Button onClick={() => {
           resetForm();
           setShowCreateDialog(true);
-        }} className="gap-2">
-          <Plus size={18} />
+        }} className="h-12 px-6 text-base font-semibold">
+          <Plus size={20} className="mr-2" />
           Tạo quỹ mới
         </Button>
       </div>
@@ -363,11 +363,11 @@ export default function FundsPage() {
           </CardHeader>
           <CardContent>
             {filteredFunds.length === 0 ? (
-              <div className="text-center py-8 text-gray-500">
-                Chưa có quỹ nào trong nhóm này
+              <div className="empty-state">
+                <p className="empty-state-text">Chưa có quỹ nào trong nhóm này</p>
               </div>
             ) : (
-              <Table>
+              <Table className="table-lg">
                 <TableHeader>
                   <TableRow>
                     <TableHead className="w-28">Mã quỹ</TableHead>
@@ -396,23 +396,22 @@ export default function FundsPage() {
                           </Badge>
                         </TableCell>
                         <TableCell className="text-right">
-                          <div className="flex justify-end gap-1">
+                          <div className="flex justify-end gap-2">
                             <Button
                               variant="ghost"
-                              size="icon"
                               onClick={() => openEditDialog(fund)}
-                              title="Sửa"
+                              title="Chỉnh sửa"
+                              className="action-btn"
                             >
-                              <Pencil size={16} />
+                              <Pencil />
                             </Button>
                             <Button
                               variant="ghost"
-                              size="icon"
-                              className="text-red-600 hover:text-red-700"
+                              className="action-btn text-red-600 hover:text-red-700 hover:bg-red-50"
                               onClick={() => handleDelete(fund)}
                               title="Xóa"
                             >
-                              <Trash2 size={16} />
+                              <Trash2 />
                             </Button>
                           </div>
                         </TableCell>
@@ -443,7 +442,7 @@ export default function FundsPage() {
 
       {/* Create Dialog */}
       <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
-        <DialogContent>
+        <DialogContent size="lg">
           <DialogHeader>
             <DialogTitle>Tạo quỹ mới</DialogTitle>
             <DialogDescription>
@@ -454,29 +453,30 @@ export default function FundsPage() {
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label>Mã quỹ *</Label>
+                <Label className="text-base font-medium">Mã quỹ *</Label>
                 <Input
                   placeholder="VD: FUND_12"
                   value={formData.fundCode}
                   onChange={(e) => setFormData({ ...formData, fundCode: e.target.value })}
+                  className="h-12 text-base"
                 />
               </div>
               <div className="space-y-2">
-                <Label>Nhóm quỹ *</Label>
+                <Label className="text-base font-medium">Nhóm quỹ *</Label>
                 <Select
                   value={formData.category}
                   onValueChange={(v) => setFormData({ ...formData, category: v as 'A' | 'B' | 'C' })}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="h-12 text-base">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="A">Nhóm A</SelectItem>
-                    <SelectItem value="B">Nhóm B</SelectItem>
-                    <SelectItem value="C">Nhóm C</SelectItem>
+                    <SelectItem value="A" className="text-base py-3">Nhóm A</SelectItem>
+                    <SelectItem value="B" className="text-base py-3">Nhóm B</SelectItem>
+                    <SelectItem value="C" className="text-base py-3">Nhóm C</SelectItem>
                   </SelectContent>
                 </Select>
-                <p className="text-xs text-muted-foreground">
+                <p className="text-sm text-muted-foreground">
                   {formData.category === 'A' && 'Quỹ chuyển HĐGMVN'}
                   {formData.category === 'B' && 'Quỹ chuyển TGM BMT'}
                   {formData.category === 'C' && 'Quỹ nội bộ & Nguồn thu'}
@@ -485,21 +485,22 @@ export default function FundsPage() {
             </div>
 
             <div className="space-y-2">
-              <Label>Tên quỹ *</Label>
+              <Label className="text-base font-medium">Tên quỹ *</Label>
               <Input
                 placeholder="VD: Quỹ xây dựng nhà thờ"
                 value={formData.fundName}
                 onChange={(e) => setFormData({ ...formData, fundName: e.target.value })}
+                className="h-12 text-base"
               />
             </div>
 
           </div>
 
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowCreateDialog(false)}>
-              Hủy
+            <Button variant="outline" onClick={() => setShowCreateDialog(false)} className="h-12 px-6 text-base">
+              Hủy bỏ
             </Button>
-            <Button onClick={handleCreate} disabled={submitting}>
+            <Button onClick={handleCreate} disabled={submitting} className="h-12 px-6 text-base">
               {submitting ? 'Đang tạo...' : 'Tạo quỹ'}
             </Button>
           </DialogFooter>
@@ -508,7 +509,7 @@ export default function FundsPage() {
 
       {/* Edit Dialog */}
       <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
-        <DialogContent>
+        <DialogContent size="lg">
           <DialogHeader>
             <DialogTitle>Sửa thông tin quỹ</DialogTitle>
             <DialogDescription>
@@ -519,29 +520,30 @@ export default function FundsPage() {
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label>Mã quỹ *</Label>
+                <Label className="text-base font-medium">Mã quỹ *</Label>
                 <Input
                   placeholder="VD: FUND_12"
                   value={formData.fundCode}
                   onChange={(e) => setFormData({ ...formData, fundCode: e.target.value })}
+                  className="h-12 text-base"
                 />
               </div>
               <div className="space-y-2">
-                <Label>Nhóm quỹ *</Label>
+                <Label className="text-base font-medium">Nhóm quỹ *</Label>
                 <Select
                   value={formData.category}
                   onValueChange={(v) => setFormData({ ...formData, category: v as 'A' | 'B' | 'C' })}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="h-12 text-base">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="A">Nhóm A</SelectItem>
-                    <SelectItem value="B">Nhóm B</SelectItem>
-                    <SelectItem value="C">Nhóm C</SelectItem>
+                    <SelectItem value="A" className="text-base py-3">Nhóm A</SelectItem>
+                    <SelectItem value="B" className="text-base py-3">Nhóm B</SelectItem>
+                    <SelectItem value="C" className="text-base py-3">Nhóm C</SelectItem>
                   </SelectContent>
                 </Select>
-                <p className="text-xs text-muted-foreground">
+                <p className="text-sm text-muted-foreground">
                   {formData.category === 'A' && 'Quỹ chuyển HĐGMVN'}
                   {formData.category === 'B' && 'Quỹ chuyển TGM BMT'}
                   {formData.category === 'C' && 'Quỹ nội bộ & Nguồn thu'}
@@ -550,11 +552,12 @@ export default function FundsPage() {
             </div>
 
             <div className="space-y-2">
-              <Label>Tên quỹ *</Label>
+              <Label className="text-base font-medium">Tên quỹ *</Label>
               <Input
                 placeholder="VD: Quỹ xây dựng nhà thờ"
                 value={formData.fundName}
                 onChange={(e) => setFormData({ ...formData, fundName: e.target.value })}
+                className="h-12 text-base"
               />
             </div>
 
@@ -564,10 +567,10 @@ export default function FundsPage() {
             <Button variant="outline" onClick={() => {
               setShowEditDialog(false);
               setSelectedFund(null);
-            }}>
-              Hủy
+            }} className="h-12 px-6 text-base">
+              Hủy bỏ
             </Button>
-            <Button onClick={handleUpdate} disabled={submitting}>
+            <Button onClick={handleUpdate} disabled={submitting} className="h-12 px-6 text-base">
               {submitting ? 'Đang lưu...' : 'Lưu thay đổi'}
             </Button>
           </DialogFooter>

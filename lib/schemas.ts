@@ -46,13 +46,14 @@ export interface Parish {
 // Person (Giáo dân) Schema
 export interface Person {
   _id?: ObjectId;
-  familyId: ObjectId;
+  parishId: ObjectId; // Giáo xứ
+  familyId?: ObjectId; // Gia đình (optional)
   saintName: string;
   fullName: string;
   gender: 'male' | 'female';
   dob: Date;
   birthplace?: string;
-  relationship: string;
+  relationship: string; // Vai trò: giao_dan, giao_ly_vien, ca_vien, hoi_dong, tu_si, khac
   phone?: string;
   email?: string;
   occupation?: string;

@@ -283,64 +283,66 @@ export default function BankAccountsPage() {
     <div className="container mx-auto p-6 space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold">Quản lý Tài khoản Ngân hàng</h1>
-          <p className="text-gray-500">Danh sách tài khoản ngân hàng để nhận/chi tiền</p>
+          <h1 className="page-title">Quản lý Tài khoản Ngân hàng</h1>
+          <p className="page-description">Danh sách tài khoản ngân hàng để nhận/chi tiền</p>
         </div>
         <Button onClick={() => {
           resetForm();
           setShowCreateDialog(true);
-        }} className="gap-2">
-          <Plus size={18} />
+        }} className="h-12 px-6 text-base font-semibold">
+          <Plus size={20} className="mr-2" />
           Thêm tài khoản
         </Button>
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
         <Card>
-          <CardHeader className="pb-2">
-            <CardDescription>Tổng tài khoản</CardDescription>
-            <CardTitle className="text-2xl">{stats.total}</CardTitle>
-          </CardHeader>
+          <CardContent className="stat-card">
+            <p className="stat-label">Tổng tài khoản</p>
+            <div className="stat-value">{stats.total}</div>
+          </CardContent>
         </Card>
         <Card>
-          <CardHeader className="pb-2">
-            <CardDescription>Đang hoạt động</CardDescription>
-            <CardTitle className="text-2xl text-green-600">{stats.active}</CardTitle>
-          </CardHeader>
+          <CardContent className="stat-card">
+            <p className="stat-label">Đang hoạt động</p>
+            <div className="stat-value text-green-600">{stats.active}</div>
+          </CardContent>
         </Card>
         <Card>
-          <CardHeader className="pb-2">
-            <CardDescription>Tổng số dư</CardDescription>
-            <CardTitle className="text-xl text-blue-600">{formatCompactCurrency(stats.totalBalance)}</CardTitle>
-          </CardHeader>
+          <CardContent className="stat-card">
+            <p className="stat-label">Tổng số dư</p>
+            <div className="stat-value text-blue-600">{formatCompactCurrency(stats.totalBalance)}</div>
+          </CardContent>
         </Card>
       </div>
 
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <div>
-            <CardTitle>Danh sách Tài khoản</CardTitle>
-            <CardDescription>Quản lý các tài khoản ngân hàng của Giáo phận</CardDescription>
+            <CardTitle className="text-xl sm:text-2xl">Danh sách Tài khoản</CardTitle>
+            <CardDescription className="text-base mt-1">Quản lý các tài khoản ngân hàng của Giáo phận</CardDescription>
           </div>
           <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="w-36">
+            <SelectTrigger className="w-44 h-12 text-base">
               <SelectValue placeholder="Trạng thái" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Tất cả</SelectItem>
-              <SelectItem value="active">Đang hoạt động</SelectItem>
-              <SelectItem value="inactive">Đã vô hiệu</SelectItem>
+              <SelectItem value="all" className="text-base py-3">Tất cả</SelectItem>
+              <SelectItem value="active" className="text-base py-3">Đang hoạt động</SelectItem>
+              <SelectItem value="inactive" className="text-base py-3">Đã vô hiệu</SelectItem>
             </SelectContent>
           </Select>
         </CardHeader>
         <CardContent>
           {loading ? (
-            <div className="text-center py-8 text-gray-500">Đang tải...</div>
+            <div className="empty-state">
+              <p className="empty-state-text">Đang tải...</p>
+            </div>
           ) : accounts.length === 0 ? (
-            <div className="text-center py-8 text-gray-500">
-              <Building2 className="mx-auto h-12 w-12 text-gray-300 mb-4" />
-              <p>Chưa có tài khoản ngân hàng nào</p>
-              <Button variant="outline" className="mt-4" onClick={() => {
+            <div className="empty-state">
+              <Building2 className="mx-auto h-16 w-16 text-gray-300 mb-4" />
+              <p className="empty-state-text">Chưa có tài khoản ngân hàng nào</p>
+              <Button className="h-12 px-6 text-base font-semibold mt-4" onClick={() => {
                 resetForm();
                 setShowCreateDialog(true);
               }}>
@@ -348,7 +350,7 @@ export default function BankAccountsPage() {
               </Button>
             </div>
           ) : (
-            <Table>
+            <Table className="table-lg">
               <TableHeader>
                 <TableRow>
                   <TableHead>Mã TK</TableHead>
@@ -396,24 +398,23 @@ export default function BankAccountsPage() {
                         </Badge>
                       </TableCell>
                       <TableCell>
-                        <div className="flex gap-1">
+                        <div className="flex gap-2">
                           <Button
                             variant="ghost"
-                            size="icon"
                             onClick={() => openEditDialog(account)}
-                            title="Sửa"
+                            title="Chỉnh sửa"
+                            className="action-btn"
                           >
-                            <Pencil size={16} />
+                            <Pencil />
                           </Button>
                           {account.status === 'active' && (
                             <Button
                               variant="ghost"
-                              size="icon"
-                              className="text-red-600 hover:text-red-700"
+                              className="action-btn text-red-600 hover:text-red-700 hover:bg-red-50"
                               onClick={() => handleDelete(account)}
                               title="Vô hiệu hóa"
                             >
-                              <Trash2 size={16} />
+                              <Trash2 />
                             </Button>
                           )}
                         </div>
@@ -429,7 +430,7 @@ export default function BankAccountsPage() {
 
       {/* Create Dialog */}
       <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
-        <DialogContent className="max-w-lg">
+        <DialogContent size="lg">
           <DialogHeader>
             <DialogTitle>Thêm Tài khoản Ngân hàng</DialogTitle>
             <DialogDescription>
@@ -439,89 +440,94 @@ export default function BankAccountsPage() {
 
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label>Mã tài khoản *</Label>
+              <Label className="text-base font-medium">Mã tài khoản *</Label>
               <Input
                 placeholder="VD: TK-001"
                 value={formData.accountCode}
                 onChange={(e) => setFormData({ ...formData, accountCode: e.target.value })}
+                className="h-12 text-base"
               />
             </div>
 
             <div className="space-y-2">
-              <Label>Tên tài khoản *</Label>
+              <Label className="text-base font-medium">Tên tài khoản *</Label>
               <Input
                 placeholder="VD: Tài khoản thu Giáo phận"
                 value={formData.accountName}
                 onChange={(e) => setFormData({ ...formData, accountName: e.target.value })}
+                className="h-12 text-base"
               />
             </div>
 
             <div className="space-y-2">
-              <Label>Số tài khoản *</Label>
+              <Label className="text-base font-medium">Số tài khoản *</Label>
               <Input
                 placeholder="VD: 1234567890"
                 value={formData.accountNumber}
                 onChange={(e) => setFormData({ ...formData, accountNumber: e.target.value })}
+                className="h-12 text-base"
               />
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label>Ngân hàng *</Label>
+                <Label className="text-base font-medium">Ngân hàng *</Label>
                 <Select
                   value={formData.bankName}
                   onValueChange={(v) => setFormData({ ...formData, bankName: v })}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="h-12 text-base">
                     <SelectValue placeholder="Chọn ngân hàng" />
                   </SelectTrigger>
                   <SelectContent>
                     {bankList.map((bank) => (
-                      <SelectItem key={bank} value={bank}>{bank}</SelectItem>
+                      <SelectItem key={bank} value={bank} className="text-base py-3">{bank}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
 
               <div className="space-y-2">
-                <Label>Chi nhánh</Label>
+                <Label className="text-base font-medium">Chi nhánh</Label>
                 <Input
                   placeholder="VD: BMT"
                   value={formData.bankBranch}
                   onChange={(e) => setFormData({ ...formData, bankBranch: e.target.value })}
+                  className="h-12 text-base"
                 />
               </div>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-3">
               <input
                 type="checkbox"
                 id="isDefault"
                 checked={formData.isDefault}
                 onChange={(e) => setFormData({ ...formData, isDefault: e.target.checked })}
-                className="h-4 w-4"
+                className="h-5 w-5"
               />
-              <Label htmlFor="isDefault" className="cursor-pointer">
+              <Label htmlFor="isDefault" className="cursor-pointer text-base">
                 Đặt làm tài khoản mặc định
               </Label>
             </div>
 
             <div className="space-y-2">
-              <Label>Ghi chú</Label>
+              <Label className="text-base font-medium">Ghi chú</Label>
               <Textarea
                 placeholder="Ghi chú về tài khoản..."
                 rows={2}
                 value={formData.notes}
                 onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                className="text-base"
               />
             </div>
           </div>
 
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowCreateDialog(false)}>
-              Hủy
+            <Button variant="outline" onClick={() => setShowCreateDialog(false)} className="h-12 px-6 text-base">
+              Hủy bỏ
             </Button>
-            <Button onClick={handleCreate} disabled={submitting}>
+            <Button onClick={handleCreate} disabled={submitting} className="h-12 px-6 text-base">
               {submitting ? 'Đang tạo...' : 'Tạo tài khoản'}
             </Button>
           </DialogFooter>
@@ -530,7 +536,7 @@ export default function BankAccountsPage() {
 
       {/* Edit Dialog */}
       <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
-        <DialogContent className="max-w-lg">
+        <DialogContent size="lg">
           <DialogHeader>
             <DialogTitle>Sửa Tài khoản Ngân hàng</DialogTitle>
             <DialogDescription>
@@ -540,76 +546,80 @@ export default function BankAccountsPage() {
 
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label>Mã tài khoản</Label>
+              <Label className="text-base font-medium">Mã tài khoản</Label>
               <Input
                 value={formData.accountCode}
                 disabled
-                className="bg-gray-100"
+                className="bg-gray-100 h-12 text-base"
               />
             </div>
 
             <div className="space-y-2">
-              <Label>Tên tài khoản *</Label>
+              <Label className="text-base font-medium">Tên tài khoản *</Label>
               <Input
                 value={formData.accountName}
                 onChange={(e) => setFormData({ ...formData, accountName: e.target.value })}
+                className="h-12 text-base"
               />
             </div>
 
             <div className="space-y-2">
-              <Label>Số tài khoản *</Label>
+              <Label className="text-base font-medium">Số tài khoản *</Label>
               <Input
                 value={formData.accountNumber}
                 onChange={(e) => setFormData({ ...formData, accountNumber: e.target.value })}
+                className="h-12 text-base"
               />
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label>Ngân hàng *</Label>
+                <Label className="text-base font-medium">Ngân hàng *</Label>
                 <Select
                   value={formData.bankName}
                   onValueChange={(v) => setFormData({ ...formData, bankName: v })}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="h-12 text-base">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
                     {bankList.map((bank) => (
-                      <SelectItem key={bank} value={bank}>{bank}</SelectItem>
+                      <SelectItem key={bank} value={bank} className="text-base py-3">{bank}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
 
               <div className="space-y-2">
-                <Label>Chi nhánh</Label>
+                <Label className="text-base font-medium">Chi nhánh</Label>
                 <Input
                   value={formData.bankBranch}
                   onChange={(e) => setFormData({ ...formData, bankBranch: e.target.value })}
+                  className="h-12 text-base"
                 />
               </div>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-3">
               <input
                 type="checkbox"
                 id="isDefaultEdit"
                 checked={formData.isDefault}
                 onChange={(e) => setFormData({ ...formData, isDefault: e.target.checked })}
-                className="h-4 w-4"
+                className="h-5 w-5"
               />
-              <Label htmlFor="isDefaultEdit" className="cursor-pointer">
+              <Label htmlFor="isDefaultEdit" className="cursor-pointer text-base">
                 Đặt làm tài khoản mặc định
               </Label>
             </div>
 
             <div className="space-y-2">
-              <Label>Ghi chú</Label>
+              <Label className="text-base font-medium">Ghi chú</Label>
               <Textarea
                 rows={2}
                 value={formData.notes}
                 onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                className="text-base"
               />
             </div>
           </div>
@@ -619,10 +629,10 @@ export default function BankAccountsPage() {
               setShowEditDialog(false);
               setSelectedAccount(null);
               resetForm();
-            }}>
-              Hủy
+            }} className="h-12 px-6 text-base">
+              Hủy bỏ
             </Button>
-            <Button onClick={handleUpdate} disabled={submitting}>
+            <Button onClick={handleUpdate} disabled={submitting} className="h-12 px-6 text-base">
               {submitting ? 'Đang lưu...' : 'Lưu thay đổi'}
             </Button>
           </DialogFooter>

@@ -4,12 +4,17 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { formatCurrency } from '@/lib/utils';
+import {
+  FormSection,
+  FormField,
+  FormLabel,
+  FormGrid,
+} from '@/components/ui/form-section';
+import { formatCompactCurrency, formatCurrency } from '@/lib/utils';
 import {
   Plus, Search, FileSignature, Users, Receipt,
   CheckCircle, XCircle, Eye, MoreHorizontal, Pencil
@@ -357,11 +362,11 @@ export default function StaffPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Danh sách Nhân sự</h1>
-          <p className="text-gray-600">Quản lý nhân sự và hợp đồng lao động</p>
+          <h1 className="page-title">Danh sách Nhân sự</h1>
+          <p className="page-description">Quản lý nhân sự và hợp đồng lao động</p>
         </div>
-        <Button onClick={() => { resetStaffForm(); setIsStaffDialogOpen(true); }}>
-          <Plus size={16} className="mr-2" />
+        <Button onClick={() => { resetStaffForm(); setIsStaffDialogOpen(true); }} className="h-12 px-6 text-base font-semibold">
+          <Plus size={20} className="mr-2" />
           Thêm Nhân sự
         </Button>
       </div>
@@ -369,53 +374,53 @@ export default function StaffPage() {
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                <Users className="text-blue-600" size={20} />
+          <CardContent className="stat-card">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                <Users className="text-blue-600" size={24} />
               </div>
               <div>
-                <p className="text-2xl font-bold text-blue-600">{staff.length}</p>
-                <p className="text-sm text-gray-600">Tổng nhân sự</p>
+                <div className="stat-value text-blue-600">{staff.length}</div>
+                <p className="stat-label">Tổng nhân sự</p>
               </div>
             </div>
           </CardContent>
         </Card>
         <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
-                <CheckCircle className="text-green-600" size={20} />
+          <CardContent className="stat-card">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                <CheckCircle className="text-green-600" size={24} />
               </div>
               <div>
-                <p className="text-2xl font-bold text-green-600">{staffWithContract}</p>
-                <p className="text-sm text-gray-600">Có HDLD</p>
+                <div className="stat-value text-green-600">{staffWithContract}</div>
+                <p className="stat-label">Có HDLD</p>
               </div>
             </div>
           </CardContent>
         </Card>
         <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-amber-100 rounded-lg flex items-center justify-center">
-                <XCircle className="text-amber-600" size={20} />
+          <CardContent className="stat-card">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 bg-amber-100 rounded-lg flex items-center justify-center">
+                <XCircle className="text-amber-600" size={24} />
               </div>
               <div>
-                <p className="text-2xl font-bold text-amber-600">{staffWithoutContract}</p>
-                <p className="text-sm text-gray-600">Chưa có HDLD</p>
+                <div className="stat-value text-amber-600">{staffWithoutContract}</div>
+                <p className="stat-label">Chưa có HDLD</p>
               </div>
             </div>
           </CardContent>
         </Card>
         <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
-                <Receipt className="text-purple-600" size={20} />
+          <CardContent className="stat-card">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                <Receipt className="text-purple-600" size={24} />
               </div>
               <div>
-                <p className="text-2xl font-bold text-purple-600">{formatCurrency(totalSalary)}</p>
-                <p className="text-sm text-gray-600">Tổng lương/tháng</p>
+                <div className="stat-value text-purple-600">{formatCompactCurrency(totalSalary)}</div>
+                <p className="stat-label">Tổng lương/tháng</p>
               </div>
             </div>
           </CardContent>
@@ -425,14 +430,14 @@ export default function StaffPage() {
       {/* Warning for staff without contracts */}
       {staffWithoutContract > 0 && (
         <Card className="bg-amber-50 border-amber-200">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <XCircle className="text-amber-600" size={24} />
+          <CardContent className="p-5">
+            <div className="flex items-center gap-4">
+              <XCircle className="text-amber-600" size={28} />
               <div>
-                <h3 className="font-semibold text-amber-800">
+                <h3 className="font-semibold text-lg text-amber-800">
                   Có {staffWithoutContract} nhân sự chưa có hợp đồng lao động
                 </h3>
-                <p className="text-sm text-amber-700">
+                <p className="text-base text-amber-700">
                   Vui lòng tạo HDLD để có thể phát hành phiếu chi lương
                 </p>
               </div>
@@ -443,27 +448,27 @@ export default function StaffPage() {
 
       {/* Filters */}
       <Card>
-        <CardContent className="p-4">
+        <CardContent className="p-5">
           <div className="flex flex-wrap gap-4">
-            <div className="flex-1 min-w-[200px]">
+            <div className="flex-1 min-w-[250px]">
               <div className="relative">
-                <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                <Search size={20} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
                 <Input
                   placeholder="Tìm theo tên hoặc mã nhân sự..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-9"
+                  className="pl-12 h-12 text-base"
                 />
               </div>
             </div>
             <Select value={filterStatus} onValueChange={(v: 'all' | 'has_contract' | 'no_contract') => setFilterStatus(v)}>
-              <SelectTrigger className="w-[180px]">
+              <SelectTrigger className="w-[200px] h-12 text-base">
                 <SelectValue placeholder="Lọc theo HDLD" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Tất cả</SelectItem>
-                <SelectItem value="has_contract">Có HDLD</SelectItem>
-                <SelectItem value="no_contract">Chưa có HDLD</SelectItem>
+                <SelectItem value="all" className="text-base py-3">Tất cả</SelectItem>
+                <SelectItem value="has_contract" className="text-base py-3">Có HDLD</SelectItem>
+                <SelectItem value="no_contract" className="text-base py-3">Chưa có HDLD</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -473,23 +478,23 @@ export default function StaffPage() {
       {/* Staff List */}
       <Card>
         <CardHeader>
-          <CardTitle>Danh sách Nhân sự ({filteredStaff.length})</CardTitle>
-          <CardDescription>
+          <CardTitle className="text-xl sm:text-2xl">Danh sách Nhân sự ({filteredStaff.length})</CardTitle>
+          <CardDescription className="text-base mt-1">
             Nhân sự có HDLD mới có thể tạo phiếu chi lương
           </CardDescription>
         </CardHeader>
         <CardContent>
           {filteredStaff.length === 0 ? (
-            <div className="text-center py-12 text-gray-500">
-              <Users size={48} className="mx-auto mb-4 opacity-50" />
-              <p>Chưa có nhân sự nào</p>
-              <Button variant="outline" className="mt-4" onClick={() => setIsStaffDialogOpen(true)}>
-                <Plus size={16} className="mr-2" />
+            <div className="empty-state">
+              <Users size={64} className="mx-auto mb-4 opacity-50" />
+              <p className="empty-state-text">Chưa có nhân sự nào</p>
+              <Button className="h-12 px-6 text-base font-semibold mt-4" onClick={() => setIsStaffDialogOpen(true)}>
+                <Plus size={20} className="mr-2" />
                 Thêm nhân sự đầu tiên
               </Button>
             </div>
           ) : (
-            <Table>
+            <Table className="table-lg">
               <TableHeader>
                 <TableRow>
                   <TableHead>Mã NV</TableHead>
@@ -511,55 +516,55 @@ export default function StaffPage() {
                     <TableCell>{s.department}</TableCell>
                     <TableCell>
                       {s.hasActiveContract ? (
-                        <Badge className="bg-green-100 text-green-800">
-                          <CheckCircle size={12} className="mr-1" />
+                        <Badge className="bg-green-100 text-green-800 text-sm px-3 py-1">
+                          <CheckCircle size={14} className="mr-1" />
                           Có HDLD
                         </Badge>
                       ) : (
-                        <Badge className="bg-amber-100 text-amber-800">
-                          <XCircle size={12} className="mr-1" />
+                        <Badge className="bg-amber-100 text-amber-800 text-sm px-3 py-1">
+                          <XCircle size={14} className="mr-1" />
                           Chưa có
                         </Badge>
                       )}
                     </TableCell>
-                    <TableCell className="text-right font-medium">
-                      {s.basicSalary ? formatCurrency(s.basicSalary) : '-'}
+                    <TableCell className="text-right font-semibold">
+                      {s.basicSalary ? formatCompactCurrency(s.basicSalary) : '-'}
                     </TableCell>
                     <TableCell>
-                      <Badge className={
+                      <Badge className={`text-sm px-3 py-1 ${
                         s.status === 'active'
                           ? 'bg-green-100 text-green-800'
                           : 'bg-gray-100 text-gray-800'
-                      }>
+                      }`}>
                         {s.status === 'active' ? 'Hoạt động' : 'Nghỉ việc'}
                       </Badge>
                     </TableCell>
                     <TableCell className="text-right">
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="sm">
-                            <MoreHorizontal size={16} />
+                          <Button variant="ghost" className="action-btn">
+                            <MoreHorizontal size={20} />
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={() => handleViewDetail(s)}>
-                            <Eye size={14} className="mr-2" />
+                          <DropdownMenuItem onClick={() => handleViewDetail(s)} className="text-base py-2">
+                            <Eye size={16} className="mr-2" />
                             Xem chi tiết
                           </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => handleEditStaff(s)}>
-                            <Pencil size={14} className="mr-2" />
+                          <DropdownMenuItem onClick={() => handleEditStaff(s)} className="text-base py-2">
+                            <Pencil size={16} className="mr-2" />
                             Sửa thông tin
                           </DropdownMenuItem>
                           <DropdownMenuSeparator />
                           {!s.hasActiveContract && s.status === 'active' && (
-                            <DropdownMenuItem onClick={() => handleOpenContractDialog(s)}>
-                              <FileSignature size={14} className="mr-2" />
+                            <DropdownMenuItem onClick={() => handleOpenContractDialog(s)} className="text-base py-2">
+                              <FileSignature size={16} className="mr-2" />
                               Tạo HDLD
                             </DropdownMenuItem>
                           )}
                           {s.hasActiveContract && (
-                            <DropdownMenuItem onClick={() => handleOpenContractDialog(s)}>
-                              <FileSignature size={14} className="mr-2" />
+                            <DropdownMenuItem onClick={() => handleOpenContractDialog(s)} className="text-base py-2">
+                              <FileSignature size={16} className="mr-2" />
                               Xem/Cập nhật HDLD
                             </DropdownMenuItem>
                           )}
@@ -576,7 +581,7 @@ export default function StaffPage() {
 
       {/* Add/Edit Staff Dialog */}
       <Dialog open={isStaffDialogOpen} onOpenChange={(open) => { if (!open) resetStaffForm(); setIsStaffDialogOpen(open); }}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent size="xl" className="max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{editingStaffId ? 'Cập nhật thông tin Nhân sự' : 'Thêm Nhân sự mới'}</DialogTitle>
             <DialogDescription>
@@ -585,182 +590,205 @@ export default function StaffPage() {
                 : 'Nhập thông tin nhân sự. Sau khi thêm, bạn có thể tạo HDLD cho nhân sự này.'}
             </DialogDescription>
           </DialogHeader>
-          <form onSubmit={handleSubmitStaff} className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label>Mã Nhân sự *</Label>
+          <form onSubmit={handleSubmitStaff} className="space-y-6">
+            <FormSection title="Thông tin cơ bản">
+              <FormGrid columns={2}>
+                <FormField>
+                  <FormLabel required>Mã Nhân sự</FormLabel>
+                  <Input
+                    value={staffFormData.staffCode}
+                    onChange={(e) => setStaffFormData({ ...staffFormData, staffCode: e.target.value.toUpperCase() })}
+                    placeholder="VD: NV001"
+                    required
+                    className="h-12 text-base"
+                  />
+                </FormField>
+                <FormField>
+                  <FormLabel required>Họ và Tên</FormLabel>
+                  <Input
+                    value={staffFormData.fullName}
+                    onChange={(e) => setStaffFormData({ ...staffFormData, fullName: e.target.value })}
+                    placeholder="Nhập họ và tên"
+                    required
+                    className="h-12 text-base"
+                  />
+                </FormField>
+              </FormGrid>
+              <FormGrid columns={3}>
+                <FormField>
+                  <FormLabel required>Giới tính</FormLabel>
+                  <Select
+                    value={staffFormData.gender}
+                    onValueChange={(value) => setStaffFormData({ ...staffFormData, gender: value })}
+                  >
+                    <SelectTrigger className="h-12 text-base">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="male" className="text-base py-3">Nam</SelectItem>
+                      <SelectItem value="female" className="text-base py-3">Nữ</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </FormField>
+                <FormField>
+                  <FormLabel required>Ngày sinh</FormLabel>
+                  <Input
+                    type="date"
+                    value={staffFormData.dob}
+                    onChange={(e) => setStaffFormData({ ...staffFormData, dob: e.target.value })}
+                    required
+                    className="h-12 text-base"
+                  />
+                </FormField>
+                <FormField>
+                  <FormLabel required>CCCD/CMND</FormLabel>
+                  <Input
+                    value={staffFormData.idNumber}
+                    onChange={(e) => setStaffFormData({ ...staffFormData, idNumber: e.target.value })}
+                    placeholder="Số CCCD"
+                    required
+                    className="h-12 text-base"
+                  />
+                </FormField>
+              </FormGrid>
+            </FormSection>
+
+            <FormSection title="Thông tin liên hệ">
+              <FormGrid columns={2}>
+                <FormField>
+                  <FormLabel required>Điện thoại</FormLabel>
+                  <Input
+                    value={staffFormData.phone}
+                    onChange={(e) => setStaffFormData({ ...staffFormData, phone: e.target.value })}
+                    placeholder="Số điện thoại"
+                    required
+                    className="h-12 text-base"
+                  />
+                </FormField>
+                <FormField>
+                  <FormLabel>Email</FormLabel>
+                  <Input
+                    type="email"
+                    value={staffFormData.email}
+                    onChange={(e) => setStaffFormData({ ...staffFormData, email: e.target.value })}
+                    placeholder="Email"
+                    className="h-12 text-base"
+                  />
+                </FormField>
+              </FormGrid>
+              <FormField>
+                <FormLabel required>Địa chỉ</FormLabel>
                 <Input
-                  value={staffFormData.staffCode}
-                  onChange={(e) => setStaffFormData({ ...staffFormData, staffCode: e.target.value.toUpperCase() })}
-                  placeholder="VD: NV001"
+                  value={staffFormData.address}
+                  onChange={(e) => setStaffFormData({ ...staffFormData, address: e.target.value })}
+                  placeholder="Địa chỉ thường trú"
                   required
+                  className="h-12 text-base"
                 />
-              </div>
-              <div>
-                <Label>Họ và Tên *</Label>
-                <Input
-                  value={staffFormData.fullName}
-                  onChange={(e) => setStaffFormData({ ...staffFormData, fullName: e.target.value })}
-                  placeholder="Nhập họ và tên"
-                  required
-                />
-              </div>
-            </div>
-            <div className="grid grid-cols-3 gap-4">
-              <div>
-                <Label>Giới tính *</Label>
-                <Select
-                  value={staffFormData.gender}
-                  onValueChange={(value) => setStaffFormData({ ...staffFormData, gender: value })}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="male">Nam</SelectItem>
-                    <SelectItem value="female">Nữ</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <Label>Ngày sinh *</Label>
-                <Input
-                  type="date"
-                  value={staffFormData.dob}
-                  onChange={(e) => setStaffFormData({ ...staffFormData, dob: e.target.value })}
-                  required
-                />
-              </div>
-              <div>
-                <Label>CCCD/CMND *</Label>
-                <Input
-                  value={staffFormData.idNumber}
-                  onChange={(e) => setStaffFormData({ ...staffFormData, idNumber: e.target.value })}
-                  placeholder="Số CCCD"
-                  required
-                />
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label>Điện thoại *</Label>
-                <Input
-                  value={staffFormData.phone}
-                  onChange={(e) => setStaffFormData({ ...staffFormData, phone: e.target.value })}
-                  placeholder="Số điện thoại"
-                  required
-                />
-              </div>
-              <div>
-                <Label>Email</Label>
-                <Input
-                  type="email"
-                  value={staffFormData.email}
-                  onChange={(e) => setStaffFormData({ ...staffFormData, email: e.target.value })}
-                  placeholder="Email"
-                />
-              </div>
-            </div>
-            <div className="grid grid-cols-3 gap-4">
-              <div>
-                <Label>Tên ngân hàng</Label>
-                <Input
-                  value={staffFormData.bankName}
-                  onChange={(e) => setStaffFormData({ ...staffFormData, bankName: e.target.value })}
-                  placeholder="VD: Vietcombank..."
-                />
-              </div>
-              <div>
-                <Label>Chi nhánh</Label>
-                <Input
-                  value={staffFormData.bankBranch}
-                  onChange={(e) => setStaffFormData({ ...staffFormData, bankBranch: e.target.value })}
-                  placeholder="VD: BMT"
-                />
-              </div>
-              <div>
-                <Label>Số tài khoản</Label>
-                <Input
-                  value={staffFormData.bankAccountNumber}
-                  onChange={(e) => setStaffFormData({ ...staffFormData, bankAccountNumber: e.target.value })}
-                  placeholder="Số tài khoản"
-                />
-              </div>
-            </div>
-            <div>
-              <Label>Địa chỉ *</Label>
-              <Input
-                value={staffFormData.address}
-                onChange={(e) => setStaffFormData({ ...staffFormData, address: e.target.value })}
-                placeholder="Địa chỉ thường trú"
-                required
-              />
-            </div>
-            <div className="grid grid-cols-3 gap-4">
-              <div>
-                <Label>Chức vụ *</Label>
-                <Select
-                  value={staffFormData.position}
-                  onValueChange={(value) => setStaffFormData({ ...staffFormData, position: value })}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Chọn chức vụ" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {positions.map((pos) => (
-                      <SelectItem key={pos} value={pos}>{pos}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <Label>Bộ phận *</Label>
-                <Select
-                  value={staffFormData.department}
-                  onValueChange={(value) => setStaffFormData({ ...staffFormData, department: value })}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Chọn bộ phận" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {departments.map((dept) => (
-                      <SelectItem key={dept} value={dept}>{dept}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <Label>Ngày vào làm *</Label>
-                <Input
-                  type="date"
-                  value={staffFormData.hireDate}
-                  onChange={(e) => setStaffFormData({ ...staffFormData, hireDate: e.target.value })}
-                  required
-                />
-              </div>
+              </FormField>
+            </FormSection>
+
+            <FormSection title="Thông tin ngân hàng">
+              <FormGrid columns={3}>
+                <FormField>
+                  <FormLabel>Tên ngân hàng</FormLabel>
+                  <Input
+                    value={staffFormData.bankName}
+                    onChange={(e) => setStaffFormData({ ...staffFormData, bankName: e.target.value })}
+                    placeholder="VD: Vietcombank..."
+                    className="h-12 text-base"
+                  />
+                </FormField>
+                <FormField>
+                  <FormLabel>Chi nhánh</FormLabel>
+                  <Input
+                    value={staffFormData.bankBranch}
+                    onChange={(e) => setStaffFormData({ ...staffFormData, bankBranch: e.target.value })}
+                    placeholder="VD: BMT"
+                    className="h-12 text-base"
+                  />
+                </FormField>
+                <FormField>
+                  <FormLabel>Số tài khoản</FormLabel>
+                  <Input
+                    value={staffFormData.bankAccountNumber}
+                    onChange={(e) => setStaffFormData({ ...staffFormData, bankAccountNumber: e.target.value })}
+                    placeholder="Số tài khoản"
+                    className="h-12 text-base"
+                  />
+                </FormField>
+              </FormGrid>
+            </FormSection>
+
+            <FormSection title="Thông tin công việc">
+              <FormGrid columns={3}>
+                <FormField>
+                  <FormLabel required>Chức vụ</FormLabel>
+                  <Select
+                    value={staffFormData.position}
+                    onValueChange={(value) => setStaffFormData({ ...staffFormData, position: value })}
+                  >
+                    <SelectTrigger className="h-12 text-base">
+                      <SelectValue placeholder="Chọn chức vụ" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {positions.map((pos) => (
+                        <SelectItem key={pos} value={pos} className="text-base py-3">{pos}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </FormField>
+                <FormField>
+                  <FormLabel required>Bộ phận</FormLabel>
+                  <Select
+                    value={staffFormData.department}
+                    onValueChange={(value) => setStaffFormData({ ...staffFormData, department: value })}
+                  >
+                    <SelectTrigger className="h-12 text-base">
+                      <SelectValue placeholder="Chọn bộ phận" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {departments.map((dept) => (
+                        <SelectItem key={dept} value={dept} className="text-base py-3">{dept}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </FormField>
+                <FormField>
+                  <FormLabel required>Ngày vào làm</FormLabel>
+                  <Input
+                    type="date"
+                    value={staffFormData.hireDate}
+                    onChange={(e) => setStaffFormData({ ...staffFormData, hireDate: e.target.value })}
+                    required
+                    className="h-12 text-base"
+                  />
+                </FormField>
+              </FormGrid>
               {editingStaffId && (
-                <div>
-                  <Label>Trạng thái</Label>
+                <FormField>
+                  <FormLabel>Trạng thái</FormLabel>
                   <Select
                     value={staffFormData.status}
                     onValueChange={(value: 'active' | 'resigned') => setStaffFormData({ ...staffFormData, status: value })}
                   >
-                    <SelectTrigger>
+                    <SelectTrigger className="h-12 text-base w-48">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="active">Hoạt động</SelectItem>
-                      <SelectItem value="resigned">Nghỉ việc</SelectItem>
+                      <SelectItem value="active" className="text-base py-3">Hoạt động</SelectItem>
+                      <SelectItem value="resigned" className="text-base py-3">Nghỉ việc</SelectItem>
                     </SelectContent>
                   </Select>
-                </div>
+                </FormField>
               )}
-            </div>
+            </FormSection>
+
             <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => setIsStaffDialogOpen(false)}>
-                Hủy
+              <Button type="button" variant="outline" onClick={() => setIsStaffDialogOpen(false)} className="h-12 px-8 text-base sm:w-auto w-full">
+                Hủy bỏ
               </Button>
-              <Button type="submit">{editingStaffId ? 'Cập nhật' : 'Thêm Nhân sự'}</Button>
+              <Button type="submit" className="h-12 px-8 text-base sm:w-auto w-full">{editingStaffId ? 'Cập nhật' : 'Thêm Nhân sự'}</Button>
             </DialogFooter>
           </form>
         </DialogContent>
@@ -768,7 +796,7 @@ export default function StaffPage() {
 
       {/* Create/Edit Contract Dialog */}
       <Dialog open={isContractDialogOpen} onOpenChange={(open) => { if (!open) setEditingContractId(null); setIsContractDialogOpen(open); }}>
-        <DialogContent className="max-w-lg">
+        <DialogContent size="lg">
           <DialogHeader>
             <DialogTitle>{editingContractId ? 'Cập nhật Hợp đồng Lao động' : 'Tạo Hợp đồng Lao động'}</DialogTitle>
             <DialogDescription>
@@ -778,75 +806,85 @@ export default function StaffPage() {
               <strong>{selectedStaff?.fullName}</strong>
             </DialogDescription>
           </DialogHeader>
-          <form onSubmit={handleSubmitContract} className="space-y-4">
-            <div>
-              <Label>Số Hợp đồng *</Label>
-              <Input
-                value={contractFormData.contractNo}
-                onChange={(e) => setContractFormData({ ...contractFormData, contractNo: e.target.value })}
-                required
-              />
-            </div>
-            <div>
-              <Label>Loại Hợp đồng *</Label>
-              <Select
-                value={contractFormData.contractType}
-                onValueChange={(value: 'full_time' | 'part_time' | 'fixed_term' | 'seasonal') =>
-                  setContractFormData({ ...contractFormData, contractType: value })
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {Object.entries(contractTypes).map(([key, { label }]) => (
-                    <SelectItem key={key} value={key}>{label}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label>Ngày bắt đầu *</Label>
+          <form onSubmit={handleSubmitContract} className="space-y-6">
+            <FormSection title="Thông tin hợp đồng">
+              <FormField>
+                <FormLabel required>Số Hợp đồng</FormLabel>
                 <Input
-                  type="date"
-                  value={contractFormData.startDate}
-                  onChange={(e) => setContractFormData({ ...contractFormData, startDate: e.target.value })}
+                  value={contractFormData.contractNo}
+                  onChange={(e) => setContractFormData({ ...contractFormData, contractNo: e.target.value })}
                   required
+                  className="h-12 text-base"
                 />
-              </div>
-              <div>
-                <Label>Ngày kết thúc</Label>
+              </FormField>
+              <FormField>
+                <FormLabel required>Loại Hợp đồng</FormLabel>
+                <Select
+                  value={contractFormData.contractType}
+                  onValueChange={(value: 'full_time' | 'part_time' | 'fixed_term' | 'seasonal') =>
+                    setContractFormData({ ...contractFormData, contractType: value })
+                  }
+                >
+                  <SelectTrigger className="h-12 text-base">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Object.entries(contractTypes).map(([key, { label }]) => (
+                      <SelectItem key={key} value={key} className="text-base py-3">{label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </FormField>
+            </FormSection>
+
+            <FormSection title="Thời hạn & Lương">
+              <FormGrid columns={2}>
+                <FormField>
+                  <FormLabel required>Ngày bắt đầu</FormLabel>
+                  <Input
+                    type="date"
+                    value={contractFormData.startDate}
+                    onChange={(e) => setContractFormData({ ...contractFormData, startDate: e.target.value })}
+                    required
+                    className="h-12 text-base"
+                  />
+                </FormField>
+                <FormField>
+                  <FormLabel>Ngày kết thúc</FormLabel>
+                  <Input
+                    type="date"
+                    value={contractFormData.endDate}
+                    onChange={(e) => setContractFormData({ ...contractFormData, endDate: e.target.value })}
+                    placeholder="Bỏ trống nếu không xác định"
+                    className="h-12 text-base"
+                  />
+                  <p className="text-sm text-gray-500 mt-1">Bỏ trống nếu không xác định thời hạn</p>
+                </FormField>
+              </FormGrid>
+              <FormField>
+                <FormLabel required>Lương cơ bản (VND)</FormLabel>
                 <Input
-                  type="date"
-                  value={contractFormData.endDate}
-                  onChange={(e) => setContractFormData({ ...contractFormData, endDate: e.target.value })}
-                  placeholder="Bỏ trống nếu không xác định"
+                  type="number"
+                  value={contractFormData.basicSalary}
+                  onChange={(e) => setContractFormData({ ...contractFormData, basicSalary: parseInt(e.target.value) || 0 })}
+                  placeholder="VD: 5000000"
+                  required
+                  className="h-12 text-base"
                 />
-                <p className="text-xs text-gray-500 mt-1">Bỏ trống nếu không xác định thời hạn</p>
-              </div>
-            </div>
-            <div>
-              <Label>Lương cơ bản (VND) *</Label>
-              <Input
-                type="number"
-                value={contractFormData.basicSalary}
-                onChange={(e) => setContractFormData({ ...contractFormData, basicSalary: parseInt(e.target.value) || 0 })}
-                placeholder="VD: 5000000"
-                required
-              />
-              {contractFormData.basicSalary > 0 && (
-                <p className="text-sm text-green-600 mt-1">
-                  = {formatCurrency(contractFormData.basicSalary)}
-                </p>
-              )}
-            </div>
+                {contractFormData.basicSalary > 0 && (
+                  <p className="text-base text-green-600 mt-2 font-semibold">
+                    = {formatCurrency(contractFormData.basicSalary)}
+                  </p>
+                )}
+              </FormField>
+            </FormSection>
+
             <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => setIsContractDialogOpen(false)}>
-                Hủy
+              <Button type="button" variant="outline" onClick={() => setIsContractDialogOpen(false)} className="h-12 px-8 text-base sm:w-auto w-full">
+                Hủy bỏ
               </Button>
-              <Button type="submit">
-                <FileSignature size={16} className="mr-2" />
+              <Button type="submit" className="h-12 px-8 text-base sm:w-auto w-full gap-2">
+                <FileSignature size={18} />
                 {editingContractId ? 'Cập nhật Hợp đồng' : 'Tạo Hợp đồng'}
               </Button>
             </DialogFooter>
@@ -856,7 +894,7 @@ export default function StaffPage() {
 
       {/* Staff Detail Dialog */}
       <Dialog open={isDetailDialogOpen} onOpenChange={setIsDetailDialogOpen}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent size="lg" className="max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Chi tiết Nhân sự</DialogTitle>
             <DialogDescription>
@@ -866,154 +904,152 @@ export default function StaffPage() {
           {detailStaff && (
             <div className="space-y-6">
               {/* Basic Info */}
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-1">
-                  <p className="text-sm text-gray-500">Mã nhân sự</p>
-                  <p className="font-mono font-medium">{detailStaff.staffCode}</p>
-                </div>
-                <div className="space-y-1">
-                  <p className="text-sm text-gray-500">Họ và tên</p>
-                  <p className="font-medium">{detailStaff.fullName}</p>
-                </div>
-                <div className="space-y-1">
-                  <p className="text-sm text-gray-500">Giới tính</p>
-                  <p>{detailStaff.gender === 'male' ? 'Nam' : 'Nữ'}</p>
-                </div>
-                <div className="space-y-1">
-                  <p className="text-sm text-gray-500">Ngày sinh</p>
-                  <p>{formatDate(detailStaff.dob)}</p>
-                </div>
-                <div className="space-y-1">
-                  <p className="text-sm text-gray-500">CCCD/CMND</p>
-                  <p className="font-mono">{detailStaff.idNumber}</p>
-                </div>
-                <div className="space-y-1">
-                  <p className="text-sm text-gray-500">Điện thoại</p>
-                  <p>{detailStaff.phone}</p>
-                </div>
-                {detailStaff.email && (
-                  <div className="space-y-1">
-                    <p className="text-sm text-gray-500">Email</p>
-                    <p>{detailStaff.email}</p>
-                  </div>
-                )}
-                <div className="space-y-1 col-span-2">
-                  <p className="text-sm text-gray-500">Địa chỉ</p>
-                  <p>{detailStaff.address}</p>
-                </div>
-              </div>
-
-              {/* Work Info */}
-              <div className="border-t pt-4">
-                <h4 className="font-medium mb-3">Thông tin công việc</h4>
+              <FormSection title="Thông tin cá nhân">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-1">
-                    <p className="text-sm text-gray-500">Chức vụ</p>
-                    <p>{detailStaff.position}</p>
+                    <p className="text-base text-gray-500">Mã nhân sự</p>
+                    <p className="font-mono font-semibold text-lg">{detailStaff.staffCode}</p>
                   </div>
                   <div className="space-y-1">
-                    <p className="text-sm text-gray-500">Bộ phận</p>
-                    <p>{detailStaff.department}</p>
+                    <p className="text-base text-gray-500">Họ và tên</p>
+                    <p className="font-semibold text-lg">{detailStaff.fullName}</p>
                   </div>
                   <div className="space-y-1">
-                    <p className="text-sm text-gray-500">Ngày vào làm</p>
-                    <p>{formatDate(detailStaff.hireDate)}</p>
+                    <p className="text-base text-gray-500">Giới tính</p>
+                    <p className="text-base">{detailStaff.gender === 'male' ? 'Nam' : 'Nữ'}</p>
                   </div>
                   <div className="space-y-1">
-                    <p className="text-sm text-gray-500">Trạng thái</p>
-                    <Badge className={
+                    <p className="text-base text-gray-500">Ngày sinh</p>
+                    <p className="text-base">{formatDate(detailStaff.dob)}</p>
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-base text-gray-500">CCCD/CMND</p>
+                    <p className="font-mono text-base">{detailStaff.idNumber}</p>
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-base text-gray-500">Điện thoại</p>
+                    <p className="text-base">{detailStaff.phone}</p>
+                  </div>
+                  {detailStaff.email && (
+                    <div className="space-y-1">
+                      <p className="text-base text-gray-500">Email</p>
+                      <p className="text-base">{detailStaff.email}</p>
+                    </div>
+                  )}
+                  <div className="space-y-1 col-span-2">
+                    <p className="text-base text-gray-500">Địa chỉ</p>
+                    <p className="text-base">{detailStaff.address}</p>
+                  </div>
+                </div>
+              </FormSection>
+
+              {/* Work Info */}
+              <FormSection title="Thông tin công việc">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1">
+                    <p className="text-base text-gray-500">Chức vụ</p>
+                    <p className="text-base">{detailStaff.position}</p>
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-base text-gray-500">Bộ phận</p>
+                    <p className="text-base">{detailStaff.department}</p>
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-base text-gray-500">Ngày vào làm</p>
+                    <p className="text-base">{formatDate(detailStaff.hireDate)}</p>
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-base text-gray-500">Trạng thái</p>
+                    <Badge className={`text-sm px-3 py-1 ${
                       detailStaff.status === 'active'
                         ? 'bg-green-100 text-green-800'
                         : 'bg-gray-100 text-gray-800'
-                    }>
+                    }`}>
                       {detailStaff.status === 'active' ? 'Hoạt động' : 'Nghỉ việc'}
                     </Badge>
                   </div>
                 </div>
-              </div>
+              </FormSection>
 
               {/* Bank Info */}
-              <div className="border-t pt-4">
-                <h4 className="font-medium mb-3">Thông tin Ngân hàng</h4>
+              <FormSection title="Thông tin Ngân hàng">
                 {(detailStaff.bankName || detailStaff.bankAccountNumber) ? (
-                  <div className="grid grid-cols-3 gap-4 bg-blue-50 p-4 rounded-lg">
+                  <div className="grid grid-cols-3 gap-4 bg-blue-50 p-5 rounded-lg">
                     <div className="space-y-1">
-                      <p className="text-sm text-gray-500">Tên ngân hàng</p>
-                      <p className="font-medium">{detailStaff.bankName || '-'}</p>
+                      <p className="text-base text-gray-500">Tên ngân hàng</p>
+                      <p className="font-semibold text-base">{detailStaff.bankName || '-'}</p>
                     </div>
                     <div className="space-y-1">
-                      <p className="text-sm text-gray-500">Chi nhánh</p>
-                      <p className="font-medium">{detailStaff.bankBranch || '-'}</p>
+                      <p className="text-base text-gray-500">Chi nhánh</p>
+                      <p className="font-semibold text-base">{detailStaff.bankBranch || '-'}</p>
                     </div>
                     <div className="space-y-1">
-                      <p className="text-sm text-gray-500">Số tài khoản</p>
-                      <p className="font-mono font-medium">{detailStaff.bankAccountNumber || '-'}</p>
+                      <p className="text-base text-gray-500">Số tài khoản</p>
+                      <p className="font-mono font-semibold text-base">{detailStaff.bankAccountNumber || '-'}</p>
                     </div>
                   </div>
                 ) : (
-                  <div className="bg-gray-50 border border-gray-200 p-4 rounded-lg">
-                    <p className="text-sm text-gray-600">
+                  <div className="bg-gray-50 border border-gray-200 p-5 rounded-lg">
+                    <p className="text-base text-gray-600">
                       Chưa có thông tin ngân hàng. Thông tin này dùng để chi lương qua chuyển khoản.
                     </p>
                   </div>
                 )}
-              </div>
+              </FormSection>
 
               {/* Contract Info */}
-              <div className="border-t pt-4">
-                <h4 className="font-medium mb-3">Thông tin Hợp đồng Lao động</h4>
+              <FormSection title="Thông tin Hợp đồng Lao động">
                 {staffContract ? (
-                  <div className="grid grid-cols-2 gap-4 bg-green-50 p-4 rounded-lg">
+                  <div className="grid grid-cols-2 gap-4 bg-green-50 p-5 rounded-lg">
                     <div className="space-y-1">
-                      <p className="text-sm text-gray-500">Số hợp đồng</p>
-                      <p className="font-mono font-medium">{staffContract.contractNo}</p>
+                      <p className="text-base text-gray-500">Số hợp đồng</p>
+                      <p className="font-mono font-semibold text-base">{staffContract.contractNo}</p>
                     </div>
                     <div className="space-y-1">
-                      <p className="text-sm text-gray-500">Loại hợp đồng</p>
-                      <Badge className={contractTypes[staffContract.contractType]?.color || 'bg-gray-100'}>
+                      <p className="text-base text-gray-500">Loại hợp đồng</p>
+                      <Badge className={`text-sm px-3 py-1 ${contractTypes[staffContract.contractType]?.color || 'bg-gray-100'}`}>
                         {contractTypes[staffContract.contractType]?.label || staffContract.contractType}
                       </Badge>
                     </div>
                     <div className="space-y-1">
-                      <p className="text-sm text-gray-500">Ngày bắt đầu</p>
-                      <p>{formatDate(staffContract.startDate)}</p>
+                      <p className="text-base text-gray-500">Ngày bắt đầu</p>
+                      <p className="text-base">{formatDate(staffContract.startDate)}</p>
                     </div>
                     <div className="space-y-1">
-                      <p className="text-sm text-gray-500">Ngày kết thúc</p>
-                      <p>{staffContract.endDate ? formatDate(staffContract.endDate) : 'Không xác định'}</p>
+                      <p className="text-base text-gray-500">Ngày kết thúc</p>
+                      <p className="text-base">{staffContract.endDate ? formatDate(staffContract.endDate) : 'Không xác định'}</p>
                     </div>
                     <div className="space-y-1 col-span-2">
-                      <p className="text-sm text-gray-500">Lương cơ bản</p>
-                      <p className="text-xl font-bold text-green-600">{formatCurrency(staffContract.basicSalary)}</p>
+                      <p className="text-base text-gray-500">Lương cơ bản</p>
+                      <p className="text-2xl font-bold text-green-600">{formatCurrency(staffContract.basicSalary)}</p>
                     </div>
                   </div>
                 ) : (
-                  <div className="bg-amber-50 border border-amber-200 p-4 rounded-lg">
+                  <div className="bg-amber-50 border border-amber-200 p-5 rounded-lg">
                     <div className="flex items-center gap-2 text-amber-800">
-                      <XCircle size={18} />
-                      <p className="font-medium">Chưa có Hợp đồng Lao động</p>
+                      <XCircle size={20} />
+                      <p className="font-semibold text-lg">Chưa có Hợp đồng Lao động</p>
                     </div>
-                    <p className="text-sm text-amber-700 mt-1">
+                    <p className="text-base text-amber-700 mt-2">
                       Nhân sự cần có HDLD để được tính vào bảng lương hàng tháng
                     </p>
                     <Button
-                      className="mt-3"
-                      size="sm"
+                      className="mt-4 h-12 px-6 text-base gap-2"
                       onClick={() => {
                         setIsDetailDialogOpen(false);
                         handleOpenContractDialog(detailStaff);
                       }}
                     >
-                      <FileSignature size={14} className="mr-2" />
+                      <FileSignature size={18} />
                       Tạo HDLD ngay
                     </Button>
                   </div>
                 )}
-              </div>
+              </FormSection>
             </div>
           )}
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsDetailDialogOpen(false)}>
+            <Button variant="outline" onClick={() => setIsDetailDialogOpen(false)} className="h-12 px-8 text-base">
               Đóng
             </Button>
           </DialogFooter>
