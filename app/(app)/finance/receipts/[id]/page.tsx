@@ -221,22 +221,23 @@ export default function ReceiptDetailPage() {
     <div className="space-y-6 print:space-y-4">
       {/* Header - hidden when printing */}
       <div className="flex items-center justify-between print:hidden">
-        <Button variant="ghost" onClick={() => router.back()}>
-          <ArrowLeft size={16} className="mr-2" />
+        <Button variant="ghost" onClick={() => router.back()} className="h-12 px-5 text-base">
+          <ArrowLeft size={20} className="mr-2" />
           Quay lại
         </Button>
-        <div className="flex gap-2">
+        <div className="flex gap-3">
           {userRole === 'super_admin' && (
             <Button
               variant="destructive"
               onClick={() => setShowCancelDialog(true)}
+              className="h-12 px-5 text-base"
             >
-              <XCircle size={16} className="mr-2" />
+              <XCircle size={20} className="mr-2" />
               Hủy phiếu
             </Button>
           )}
-          <Button variant="outline" onClick={handlePrint}>
-            <Printer size={16} className="mr-2" />
+          <Button variant="outline" onClick={handlePrint} className="h-12 px-5 text-base">
+            <Printer size={20} className="mr-2" />
             In phiếu
           </Button>
         </div>
@@ -244,66 +245,66 @@ export default function ReceiptDetailPage() {
 
       {/* Receipt Content */}
       <Card className="print:shadow-none print:border-2">
-        <CardHeader className="text-center border-b print:border-b-2">
-          <div className="mb-2">
-            <p className="text-sm text-gray-600">TOÀ GIÁM MỤC BUÔN MA THUỘT</p>
-            <p className="font-bold text-lg">GIÁO PHẬN BUÔN MA THUỘT</p>
+        <CardHeader className="text-center border-b print:border-b-2 py-8">
+          <div className="mb-3">
+            <p className="text-base text-gray-600">TOÀ GIÁM MỤC BUÔN MA THUỘT</p>
+            <p className="font-bold text-xl">GIÁO PHẬN BUÔN MA THUỘT</p>
           </div>
-          <CardTitle className="text-2xl">
+          <CardTitle className="text-3xl">
             {isIncome ? 'PHIẾU THU' : 'PHIẾU CHI'}
           </CardTitle>
-          <CardDescription className="text-base">
-            Số: <span className="font-mono font-bold">{receipt.receiptNo}</span>
+          <CardDescription className="text-lg mt-2">
+            Số: <span className="font-mono font-bold text-xl">{receipt.receiptNo}</span>
           </CardDescription>
         </CardHeader>
 
-        <CardContent className="pt-6 space-y-6">
+        <CardContent className="pt-8 space-y-8">
           {/* Receipt Info Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-3">
-              <div className="flex items-start gap-3">
-                <Calendar size={18} className="text-gray-400 mt-0.5" />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-5">
+              <div className="flex items-start gap-4">
+                <Calendar size={24} className="text-gray-400 mt-0.5" />
                 <div>
-                  <p className="text-sm text-gray-500">Ngày lập phiếu</p>
-                  <p className="font-medium">{formatDate(receipt.receiptDate)}</p>
+                  <p className="text-base text-gray-500">Ngày lập phiếu</p>
+                  <p className="font-medium text-lg">{formatDate(receipt.receiptDate)}</p>
                 </div>
               </div>
 
               {parish && (
-                <div className="flex items-start gap-3">
-                  <Building size={18} className="text-gray-400 mt-0.5" />
+                <div className="flex items-start gap-4">
+                  <Building size={24} className="text-gray-400 mt-0.5" />
                   <div>
-                    <p className="text-sm text-gray-500">Giáo xứ</p>
-                    <p className="font-medium">{parish.parishName}</p>
+                    <p className="text-base text-gray-500">Giáo xứ</p>
+                    <p className="font-medium text-lg">{parish.parishName}</p>
                   </div>
                 </div>
               )}
 
               {fund && (
-                <div className="flex items-start gap-3">
-                  <Home size={18} className="text-gray-400 mt-0.5" />
+                <div className="flex items-start gap-4">
+                  <Home size={24} className="text-gray-400 mt-0.5" />
                   <div>
-                    <p className="text-sm text-gray-500">Loại quỹ</p>
-                    <p className="font-medium">{fund.fundName}</p>
+                    <p className="text-base text-gray-500">Loại quỹ</p>
+                    <p className="font-medium text-lg">{fund.fundName}</p>
                   </div>
                 </div>
               )}
             </div>
 
-            <div className="space-y-3">
-              <div className="flex items-start gap-3">
-                <User size={18} className="text-gray-400 mt-0.5" />
+            <div className="space-y-5">
+              <div className="flex items-start gap-4">
+                <User size={24} className="text-gray-400 mt-0.5" />
                 <div>
-                  <p className="text-sm text-gray-500">{isIncome ? 'Người nộp tiền' : 'Người nhận tiền'}</p>
-                  <p className="font-medium">{receipt.payerPayee || 'Không có thông tin'}</p>
+                  <p className="text-base text-gray-500">{isIncome ? 'Người nộp tiền' : 'Người nhận tiền'}</p>
+                  <p className="font-medium text-lg">{receipt.payerPayee || 'Không có thông tin'}</p>
                 </div>
               </div>
 
-              <div className="flex items-start gap-3">
-                <CreditCard size={18} className="text-gray-400 mt-0.5" />
+              <div className="flex items-start gap-4">
+                <CreditCard size={24} className="text-gray-400 mt-0.5" />
                 <div>
-                  <p className="text-sm text-gray-500">Hình thức thanh toán</p>
-                  <p className="font-medium">
+                  <p className="text-base text-gray-500">Hình thức thanh toán</p>
+                  <p className="font-medium text-lg">
                     {transaction?.paymentMethod === 'offline'
                       ? 'Tiền mặt'
                       : 'Chuyển khoản'}
@@ -313,13 +314,13 @@ export default function ReceiptDetailPage() {
 
               {/* Only show bank info for online (transfer) transactions */}
               {/* {transaction?.paymentMethod === 'online' && transaction?.bankAccount && (
-                <div className="flex items-start gap-3">
-                  <Building size={18} className="text-gray-400 mt-0.5" />
+                <div className="flex items-start gap-4">
+                  <Building size={24} className="text-gray-400 mt-0.5" />
                   <div>
-                    <p className="text-sm text-gray-500">
+                    <p className="text-base text-gray-500">
                       {isIncome ? 'Tài khoản nhận tiền (Giáo xứ)' : 'Tài khoản chi tiền (Giáo xứ)'}
                     </p>
-                    <p className="font-mono font-medium">{transaction.bankAccount}</p>
+                    <p className="font-mono font-medium text-lg">{transaction.bankAccount}</p>
                   </div>
                 </div>
               )} */}
@@ -328,18 +329,18 @@ export default function ReceiptDetailPage() {
 
           {/* Sender/Receiver Bank Info - Only for online transactions */}
           {transaction?.paymentMethod === 'online' && (
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 print:bg-white">
-              <div className="flex items-center gap-2 mb-3">
-                <CreditCard size={18} className="text-blue-600" />
-                <p className="font-medium text-blue-800">Thông tin chuyển khoản</p>
+            <div className="bg-blue-50 border border-blue-200 rounded-xl p-5 print:bg-white">
+              <div className="flex items-center gap-3 mb-4">
+                <CreditCard size={24} className="text-blue-600" />
+                <p className="font-medium text-lg text-blue-800">Thông tin chuyển khoản</p>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 {/* TK Người gửi (for income) or TK Người nhận (for expense) */}
                 {isIncome ? (
                   (transaction.senderBankName || transaction.senderBankAccount) && (
-                    <div className="bg-white p-3 rounded-md border">
-                      <p className="text-sm text-gray-500 mb-1">Tài khoản người gửi</p>
-                      <p className="font-medium">
+                    <div className="bg-white p-4 rounded-lg border">
+                      <p className="text-base text-gray-500 mb-2">Tài khoản người gửi</p>
+                      <p className="font-medium text-lg">
                         {transaction.senderBankAccount}
                         {transaction.senderBankName && ` - ${transaction.senderBankName}`}
                       </p>
@@ -347,9 +348,9 @@ export default function ReceiptDetailPage() {
                   )
                 ) : (
                   (transaction.receiverBankName || transaction.receiverBankAccount) && (
-                    <div className="bg-white p-3 rounded-md border">
-                      <p className="text-sm text-gray-500 mb-1">Tài khoản người nhận</p>
-                      <p className="font-medium">
+                    <div className="bg-white p-4 rounded-lg border">
+                      <p className="text-base text-gray-500 mb-2">Tài khoản người nhận</p>
+                      <p className="font-medium text-lg">
                         {transaction.receiverBankAccount}
                         {transaction.receiverBankName && ` - ${transaction.receiverBankName}`}
                       </p>
@@ -359,11 +360,11 @@ export default function ReceiptDetailPage() {
 
                 {/* TK Giáo xứ */}
                 {transaction.bankAccount && (
-                  <div className="bg-white p-3 rounded-md border">
-                    <p className="text-sm text-gray-500 mb-1">
+                  <div className="bg-white p-4 rounded-lg border">
+                    <p className="text-base text-gray-500 mb-2">
                       {isIncome ? 'Tài khoản nhận (Giáo xứ)' : 'Tài khoản chi (Giáo xứ)'}
                     </p>
-                    <p className="font-medium">{transaction.bankAccount}</p>
+                    <p className="font-medium text-lg">{transaction.bankAccount}</p>
                   </div>
                 )}
               </div>
@@ -371,27 +372,27 @@ export default function ReceiptDetailPage() {
           )}
 
           {/* Amount - Highlighted */}
-          <div className="text-center bg-gradient-to-br from-gray-50 to-gray-100 p-6 rounded-xl border-2 print:bg-white">
-            <p className="text-sm text-gray-600 mb-2 font-medium">TỔNG SỐ TIỀN</p>
-            <p className={`text-4xl font-bold ${isIncome ? 'text-green-600' : 'text-red-600'} print:text-black`}>
+          <div className="text-center bg-gradient-to-br from-gray-50 to-gray-100 p-8 rounded-xl border-2 print:bg-white">
+            <p className="text-base text-gray-600 mb-3 font-medium">TỔNG SỐ TIỀN</p>
+            <p className={`text-5xl font-bold ${isIncome ? 'text-green-600' : 'text-red-600'} print:text-black`}>
               {formatCurrency(receipt.amount)}
             </p>
-            <p className="text-sm text-gray-600 italic mt-2">
+            <p className="text-base text-gray-600 italic mt-3">
               Bằng chữ: <span className="font-medium">{numberToVietnameseWords(receipt.amount)}</span>
             </p>
-            <Badge className={`mt-2 ${isIncome ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+            <Badge className={`mt-3 text-base px-4 py-1 ${isIncome ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
               {isIncome ? 'Thu vào' : 'Chi ra'}
             </Badge>
           </div>
 
           {/* Description */}
           {receipt.description && (
-            <div className="border rounded-lg p-4 bg-amber-50 border-amber-200 print:bg-white">
-              <div className="flex items-start gap-3">
-                <FileText size={18} className="text-amber-600 mt-0.5" />
+            <div className="border rounded-xl p-5 bg-amber-50 border-amber-200 print:bg-white">
+              <div className="flex items-start gap-4">
+                <FileText size={24} className="text-amber-600 mt-0.5" />
                 <div>
-                  <p className="text-sm text-gray-600 mb-1 font-medium">Nội dung</p>
-                  <p className="text-base">{receipt.description}</p>
+                  <p className="text-base text-gray-600 mb-2 font-medium">Nội dung</p>
+                  <p className="text-lg">{receipt.description}</p>
                 </div>
               </div>
             </div>
@@ -399,12 +400,12 @@ export default function ReceiptDetailPage() {
 
           {/* Notes - only for single transaction receipts */}
           {!isCombined && transaction?.notes && (
-            <div className="border rounded-lg p-4 bg-yellow-50 border-yellow-200 print:bg-white">
-              <div className="flex items-start gap-3">
-                <FileText size={18} className="text-yellow-600 mt-0.5" />
+            <div className="border rounded-xl p-5 bg-yellow-50 border-yellow-200 print:bg-white">
+              <div className="flex items-start gap-4">
+                <FileText size={24} className="text-yellow-600 mt-0.5" />
                 <div>
-                  <p className="text-sm text-gray-600 mb-1 font-medium">Ghi chú</p>
-                  <p className="text-sm italic">{transaction.notes}</p>
+                  <p className="text-base text-gray-600 mb-2 font-medium">Ghi chú</p>
+                  <p className="text-base italic">{transaction.notes}</p>
                 </div>
               </div>
             </div>
@@ -412,43 +413,43 @@ export default function ReceiptDetailPage() {
 
           {/* Combined Receipt Items Table */}
           {isCombined && receipt.items && receipt.items.length > 0 && (
-            <div className="border-t pt-4">
-              <div className="flex items-center gap-2 mb-4">
-                <List size={18} className="text-gray-400" />
-                <h3 className="text-sm font-medium text-gray-600">
+            <div className="border-t pt-6">
+              <div className="flex items-center gap-3 mb-5">
+                <List size={24} className="text-gray-400" />
+                <h3 className="text-lg font-medium text-gray-700">
                   Chi tiết các khoản {isIncome ? 'thu' : 'chi'} ({receipt.items.length} khoản)
                 </h3>
               </div>
-              <div className="border rounded-lg overflow-hidden">
+              <div className="border rounded-xl overflow-hidden">
                 <Table>
                   <TableHeader>
                     <TableRow className="bg-gray-50">
-                      <TableHead className="font-semibold">STT</TableHead>
-                      <TableHead className="font-semibold">Mã</TableHead>
-                      <TableHead className="font-semibold">Ngày</TableHead>
-                      <TableHead className="font-semibold">{isIncome ? 'Người nộp' : 'Người nhận'}</TableHead>
-                      <TableHead className="font-semibold">Nội dung</TableHead>
-                      <TableHead className="text-right font-semibold">Số tiền</TableHead>
+                      <TableHead className="font-semibold text-base py-4">STT</TableHead>
+                      <TableHead className="font-semibold text-base py-4">Mã</TableHead>
+                      <TableHead className="font-semibold text-base py-4">Ngày</TableHead>
+                      <TableHead className="font-semibold text-base py-4">{isIncome ? 'Người nộp' : 'Người nhận'}</TableHead>
+                      <TableHead className="font-semibold text-base py-4">Nội dung</TableHead>
+                      <TableHead className="text-right font-semibold text-base py-4">Số tiền</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {receipt.items.map((item, idx) => (
                       <TableRow key={item.referenceId} className="hover:bg-gray-50">
-                        <TableCell className="text-gray-500">{idx + 1}</TableCell>
-                        <TableCell className="font-mono text-sm">{item.code}</TableCell>
-                        <TableCell className="text-sm">{formatItemDate(item.date)}</TableCell>
-                        <TableCell className="text-sm">{item.payerPayee || '-'}</TableCell>
-                        <TableCell className="text-sm max-w-xs truncate" title={item.description}>
+                        <TableCell className="text-gray-500 text-base py-4">{idx + 1}</TableCell>
+                        <TableCell className="font-mono text-base py-4">{item.code}</TableCell>
+                        <TableCell className="text-base py-4">{formatItemDate(item.date)}</TableCell>
+                        <TableCell className="text-base py-4">{item.payerPayee || '-'}</TableCell>
+                        <TableCell className="text-base max-w-xs truncate py-4" title={item.description}>
                           {item.description || '-'}
                         </TableCell>
-                        <TableCell className={`text-right font-medium ${isIncome ? 'text-green-600' : 'text-red-600'}`}>
+                        <TableCell className={`text-right font-medium text-base py-4 ${isIncome ? 'text-green-600' : 'text-red-600'}`}>
                           {formatCompactCurrency(item.amount)}
                         </TableCell>
                       </TableRow>
                     ))}
                     <TableRow className="bg-gray-100 font-semibold">
-                      <TableCell colSpan={5} className="text-right text-base">TỔNG CỘNG:</TableCell>
-                      <TableCell className={`text-right text-base ${isIncome ? 'text-green-700' : 'text-red-700'}`}>
+                      <TableCell colSpan={5} className="text-right text-lg py-4">TỔNG CỘNG:</TableCell>
+                      <TableCell className={`text-right text-lg py-4 ${isIncome ? 'text-green-700' : 'text-red-700'}`}>
                         {formatCompactCurrency(receipt.amount)}
                       </TableCell>
                     </TableRow>
@@ -460,29 +461,29 @@ export default function ReceiptDetailPage() {
 
           {/* Related Transaction - only for single transaction receipts */}
           {!isCombined && (
-            <div className="border-t pt-4">
-              <h3 className="text-sm font-medium text-gray-500 mb-3">Giao dịch liên quan</h3>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+            <div className="border-t pt-6">
+              <h3 className="text-base font-medium text-gray-600 mb-4">Giao dịch liên quan</h3>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-5">
                 <div>
-                  <p className="text-gray-500">Mã giao dịch</p>
-                  <p className="font-mono font-medium">{transactionCode}</p>
+                  <p className="text-base text-gray-500">Mã giao dịch</p>
+                  <p className="font-mono font-medium text-lg">{transactionCode}</p>
                 </div>
                 {transaction?.fiscalYear && (
                   <div>
-                    <p className="text-gray-500">Năm tài chính</p>
-                    <p className="font-medium">{transaction.fiscalYear}</p>
+                    <p className="text-base text-gray-500">Năm tài chính</p>
+                    <p className="font-medium text-lg">{transaction.fiscalYear}</p>
                   </div>
                 )}
                 {transaction?.fiscalPeriod && (
                   <div>
-                    <p className="text-gray-500">Kỳ tài chính</p>
-                    <p className="font-medium">Tháng {transaction.fiscalPeriod}</p>
+                    <p className="text-base text-gray-500">Kỳ tài chính</p>
+                    <p className="font-medium text-lg">Tháng {transaction.fiscalPeriod}</p>
                   </div>
                 )}
                 {transaction?.sourceType === 'rental_contract' && (
                   <div>
-                    <p className="text-gray-500">Nguồn</p>
-                    <Badge variant="outline" className="bg-blue-50 text-blue-700">
+                    <p className="text-base text-gray-500">Nguồn</p>
+                    <Badge variant="outline" className="bg-blue-50 text-blue-700 text-base px-3 py-1">
                       Hợp đồng thuê
                     </Badge>
                   </div>
@@ -493,14 +494,14 @@ export default function ReceiptDetailPage() {
 
           {/* Images - hidden when printing */}
           {allImages.length > 0 && (
-            <div className="border-t pt-4 print:hidden">
-              <div className="flex items-center gap-2 mb-3">
-                <ImageIcon size={18} className="text-gray-400" />
-                <h3 className="text-sm font-medium text-gray-500">
+            <div className="border-t pt-6 print:hidden">
+              <div className="flex items-center gap-3 mb-4">
+                <ImageIcon size={24} className="text-gray-400" />
+                <h3 className="text-base font-medium text-gray-600">
                   Hình ảnh chứng từ ({allImages.length})
                 </h3>
               </div>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                 {allImages.map((img, idx) => (
                   <a
                     key={idx}
@@ -512,7 +513,7 @@ export default function ReceiptDetailPage() {
                     <img
                       src={img}
                       alt={`Chứng từ ${idx + 1}`}
-                      className="w-full h-24 object-cover rounded-lg border hover:opacity-80 transition-opacity"
+                      className="w-full h-28 object-cover rounded-xl border hover:opacity-80 transition-opacity"
                     />
                   </a>
                 ))}
@@ -521,50 +522,50 @@ export default function ReceiptDetailPage() {
           )}
 
           {/* Signature Section */}
-          <div className="border-t-2 border-gray-300 pt-6 mt-8 print:mt-12">
-            <div className="grid grid-cols-3 gap-8 text-sm text-gray-600">
+          <div className="border-t-2 border-gray-300 pt-8 mt-10 print:mt-12">
+            <div className="grid grid-cols-3 gap-10 text-gray-600">
               <div className="text-center">
-                <p className="font-semibold mb-2">Người lập phiếu</p>
-                <div className="h-20 border-b border-gray-400 mb-2"></div>
-                <p className="italic text-xs">(Ký và ghi rõ họ tên)</p>
+                <p className="font-semibold text-base mb-3">Người lập phiếu</p>
+                <div className="h-24 border-b border-gray-400 mb-3"></div>
+                <p className="italic text-sm">(Ký và ghi rõ họ tên)</p>
               </div>
               <div className="text-center">
-                <p className="font-semibold mb-2">
+                <p className="font-semibold text-base mb-3">
                   {isIncome ? 'Người nộp tiền' : 'Người nhận tiền'}
                 </p>
-                <div className="h-20 border-b border-gray-400 mb-2"></div>
-                <p className="italic text-xs">(Ký và ghi rõ họ tên)</p>
+                <div className="h-24 border-b border-gray-400 mb-3"></div>
+                <p className="italic text-sm">(Ký và ghi rõ họ tên)</p>
               </div>
               <div className="text-center">
-                <p className="font-semibold mb-2">Cha xứ</p>
-                <div className="h-20 border-b border-gray-400 mb-2"></div>
-                <p className="italic text-xs">(Ký và đóng dấu)</p>
+                <p className="font-semibold text-base mb-3">Cha xứ</p>
+                <div className="h-24 border-b border-gray-400 mb-3"></div>
+                <p className="italic text-sm">(Ký và đóng dấu)</p>
               </div>
             </div>
           </div>
 
           {/* Footer */}
-          <div className="text-center text-sm text-gray-500 border-t pt-4">
+          <div className="text-center text-base text-gray-500 border-t pt-5">
             <p>Phiếu được tạo tự động bởi hệ thống GPBMT.ORG</p>
-            <p className="mt-1">Ngày tạo: {formatDate(receipt.createdAt)}</p>
+            <p className="mt-2">Ngày tạo: {formatDate(receipt.createdAt)}</p>
           </div>
         </CardContent>
       </Card>
 
       {/* Cancel Receipt Dialog */}
       <AlertDialog open={showCancelDialog} onOpenChange={setShowCancelDialog}>
-        <AlertDialogContent>
+        <AlertDialogContent className="max-w-lg">
           <AlertDialogHeader>
-            <AlertDialogTitle className="flex items-center gap-2 text-red-600">
-              <XCircle size={20} />
+            <AlertDialogTitle className="flex items-center gap-3 text-red-600 text-xl">
+              <XCircle size={28} />
               Xác nhận hủy phiếu
             </AlertDialogTitle>
             <AlertDialogDescription asChild>
-              <div className="space-y-3">
-                <p>Bạn có chắc chắn muốn hủy phiếu <strong>{receipt.receiptNo}</strong>?</p>
-                <div className="bg-amber-50 border border-amber-200 p-3 rounded-lg">
-                  <p className="text-sm text-amber-800 font-medium">Lưu ý:</p>
-                  <ul className="text-sm text-amber-700 list-disc list-inside mt-1">
+              <div className="space-y-4 pt-2">
+                <p className="text-base">Bạn có chắc chắn muốn hủy phiếu <strong className="text-lg">{receipt.receiptNo}</strong>?</p>
+                <div className="bg-amber-50 border border-amber-200 p-4 rounded-xl">
+                  <p className="text-base text-amber-800 font-medium">Lưu ý:</p>
+                  <ul className="text-base text-amber-700 list-disc list-inside mt-2 space-y-1">
                     <li>Phiếu sẽ bị hủy và không thể khôi phục</li>
                     <li>Các khoản {isIncome ? 'thu' : 'chi'} liên quan sẽ được đưa về trạng thái "Chờ duyệt"</li>
                     <li>Bạn có thể duyệt lại các khoản này sau</li>
@@ -573,12 +574,14 @@ export default function ReceiptDetailPage() {
               </div>
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={isCancelling}>Đóng</AlertDialogCancel>
+          <AlertDialogFooter className="gap-3 pt-4">
+            <AlertDialogCancel disabled={isCancelling} className="h-12 px-6 text-base">
+              Đóng
+            </AlertDialogCancel>
             <AlertDialogAction
               onClick={handleCancelReceipt}
               disabled={isCancelling}
-              className="bg-red-600 hover:bg-red-700"
+              className="bg-red-600 hover:bg-red-700 h-12 px-6 text-base"
             >
               {isCancelling ? 'Đang xử lý...' : 'Xác nhận hủy phiếu'}
             </AlertDialogAction>

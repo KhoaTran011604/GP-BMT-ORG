@@ -25,6 +25,10 @@ export async function GET(request: NextRequest) {
     const fiscalPeriod = searchParams.get('fiscalPeriod');
     const startDate = searchParams.get('startDate');
     const endDate = searchParams.get('endDate');
+    const paymentMethod = searchParams.get('paymentMethod');
+    const amountMin = searchParams.get('amountMin');
+    const amountMax = searchParams.get('amountMax');
+    const search = searchParams.get('search');
 
     const db = await getDatabase();
     const collection = db.collection<Expense>('expenses');
@@ -63,6 +67,31 @@ export async function GET(request: NextRequest) {
       if (endDate) {
         filter.expenseDate.$lte = new Date(endDate);
       }
+    }
+
+    // Filter by payment method
+    if (paymentMethod && paymentMethod !== 'all') {
+      filter.paymentMethod = paymentMethod;
+    }
+
+    // Filter by amount range
+    if (amountMin || amountMax) {
+      filter.amount = {};
+      if (amountMin) {
+        filter.amount.$gte = parseFloat(amountMin);
+      }
+      if (amountMax) {
+        filter.amount.$lte = parseFloat(amountMax);
+      }
+    }
+
+    // Search by expenseCode or payeeName
+    if (search) {
+      filter.$or = [
+        { expenseCode: { $regex: search, $options: 'i' } },
+        { payeeName: { $regex: search, $options: 'i' } },
+        { description: { $regex: search, $options: 'i' } },
+      ];
     }
 
     const expenses = await collection

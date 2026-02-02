@@ -69,6 +69,8 @@ interface TransactionFiltersProps {
     onDateReset: () => void;
     // Apply filter callback
     onApplyFilters: () => void;
+    // Active tab to conditionally show/hide filters
+    activeTab?: 'income' | 'expense' | 'adjustment';
 }
 
 export function TransactionFilters({
@@ -102,6 +104,7 @@ export function TransactionFilters({
     onDateToChange,
     onDateReset,
     onApplyFilters,
+    activeTab,
 }: TransactionFiltersProps) {
     // Local state for filters (only synced to parent on Apply)
     const [localSearchTerm, setLocalSearchTerm] = useState(searchTerm);
@@ -136,8 +139,9 @@ export function TransactionFilters({
     const hasLocalDateRange = localDateFrom || localDateTo;
 
     // Count active filters from parent state (for badge display)
+    // Exclude status filter for adjustment tab since adjustments don't have approval status
     const activeFilterCount = [
-        statusFilter !== 'all',
+        activeTab !== 'adjustment' && statusFilter !== 'all',
         searchTerm,
         parishFilter !== 'all',
         fundFilter !== 'all',
@@ -150,8 +154,9 @@ export function TransactionFilters({
     ].filter(Boolean).length;
 
     // Count local active filters (for summary display inside drawer)
+    // Exclude status filter for adjustment tab since adjustments don't have approval status
     const localActiveFilterCount = [
-        localStatusFilter !== 'all',
+        activeTab !== 'adjustment' && localStatusFilter !== 'all',
         localSearchTerm,
         localParishFilter !== 'all',
         localFundFilter !== 'all',
@@ -312,85 +317,85 @@ export function TransactionFilters({
                     )}
                 </Button>
             </SheetTrigger>
-            <SheetContent side="right" className="w-[480px] sm:w-[540px] sm:max-w-[540px] overflow-y-auto px-6">
-                <SheetHeader className="pb-4">
-                    <SheetTitle className="flex items-center gap-2">
-                        <Filter size={18} />
+            <SheetContent side="right" className="w-[520px] sm:w-[580px] sm:max-w-[580px] overflow-y-auto px-6">
+                <SheetHeader className="pb-5">
+                    <SheetTitle className="flex items-center gap-3 text-xl">
+                        <Filter size={24} />
                         Bộ lọc nâng cao
                     </SheetTitle>
                 </SheetHeader>
 
-                <div className="space-y-5">
+                <div className="space-y-6">
                     {/* Search - Đặt lên đầu */}
-                    <div className="space-y-1.5">
-                        <Label className="text-xs text-gray-600">Tìm kiếm</Label>
+                    <div className="space-y-2">
+                        <Label className="text-base text-gray-700 font-medium">Tìm kiếm</Label>
                         <div className="relative">
-                            <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400" />
+                            <Search size={20} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                             <Input
                                 placeholder="Mã GD, người nộp/nhận..."
                                 value={localSearchTerm}
                                 onChange={(e) => setLocalSearchTerm(e.target.value)}
-                                className="pl-8 h-9"
+                                className="pl-10 h-12 text-base"
                             />
                         </div>
                     </div>
 
                     {/* Date Range Section */}
-                    <div className="space-y-2 p-3 bg-gray-50 rounded-lg">
+                    <div className="space-y-3 p-4 bg-gray-50 rounded-xl">
                         <div className="flex items-center gap-2">
-                            <Calendar size={14} className="text-gray-500" />
-                            <Label className="text-xs font-medium">Khoảng thời gian</Label>
+                            <Calendar size={20} className="text-gray-500" />
+                            <Label className="text-base font-medium">Khoảng thời gian</Label>
                         </div>
                         <Tabs defaultValue="quick" className="w-full">
-                            <TabsList className="grid w-full grid-cols-2 h-8">
-                                <TabsTrigger value="quick" className="text-xs">Gợi ý</TabsTrigger>
-                                <TabsTrigger value="custom" className="text-xs">Tùy chỉnh</TabsTrigger>
+                            <TabsList className="grid w-full grid-cols-2 h-11">
+                                <TabsTrigger value="quick" className="text-base">Gợi ý</TabsTrigger>
+                                <TabsTrigger value="custom" className="text-base">Tùy chỉnh</TabsTrigger>
                             </TabsList>
-                            <TabsContent value="quick" className="mt-2">
-                                <div className="grid grid-cols-5 gap-1.5">
+                            <TabsContent value="quick" className="mt-3">
+                                <div className="grid grid-cols-5 gap-2">
                                     {presets.map((preset) => (
                                         <Button
                                             key={preset.value}
                                             variant="outline"
                                             size="sm"
                                             onClick={() => applyPreset(preset.value)}
-                                            className="h-7 px-2 text-[11px]"
+                                            className="h-10 px-2 text-sm"
                                         >
                                             {preset.label}
                                         </Button>
                                     ))}
                                 </div>
                             </TabsContent>
-                            <TabsContent value="custom" className="mt-2">
-                                <div className="grid grid-cols-2 gap-2">
-                                    <div className="space-y-1">
-                                        <Label className="text-[10px] text-gray-500">Từ ngày</Label>
+                            <TabsContent value="custom" className="mt-3">
+                                <div className="grid grid-cols-2 gap-3">
+                                    <div className="space-y-2">
+                                        <Label className="text-sm text-gray-600">Từ ngày</Label>
                                         <Input
                                             type="date"
                                             value={localDateFrom}
                                             onChange={(e) => setLocalDateFrom(e.target.value)}
                                             min={getMinDate()}
                                             max={localDateTo || getMaxDate()}
-                                            className="h-8 text-xs"
+                                            className="h-12 text-base"
                                         />
                                     </div>
-                                    <div className="space-y-1">
-                                        <Label className="text-[10px] text-gray-500">Đến ngày</Label>
+                                    <div className="space-y-2">
+                                        <Label className="text-sm text-gray-600">Đến ngày</Label>
                                         <Input
                                             type="date"
                                             value={localDateTo}
                                             onChange={(e) => setLocalDateTo(e.target.value)}
                                             min={localDateFrom || getMinDate()}
                                             max={getMaxDate()}
-                                            className="h-8 text-xs"
+                                            className="h-12 text-base"
                                         />
                                     </div>
                                 </div>
                             </TabsContent>
                         </Tabs>
                         {hasLocalDateRange && (
-                            <div className="flex items-center justify-between px-2 py-1.5 bg-blue-100 rounded text-xs">
-                                <span className="text-blue-700">
+                            <div className="flex items-center justify-between px-3 py-2.5 bg-blue-100 rounded-lg text-base">
+                                <span className="text-blue-700 font-medium">
                                     {localDateFrom && localDateTo
                                         ? `${formatDisplayDate(localDateFrom)} - ${formatDisplayDate(localDateTo)}`
                                         : localDateFrom
@@ -398,36 +403,38 @@ export function TransactionFilters({
                                             : `Đến ${formatDisplayDate(localDateTo)}`
                                     }
                                 </span>
-                                <button onClick={handleLocalDateReset} className="text-blue-700 hover:text-red-600 p-0.5">
-                                    <X size={12} />
+                                <button onClick={handleLocalDateReset} className="text-blue-700 hover:text-red-600 p-1">
+                                    <X size={18} />
                                 </button>
                             </div>
                         )}
                     </div>
 
                     {/* Filters Grid */}
-                    <div className="grid grid-cols-2 gap-3">
-                        {/* Status Filter */}
-                        <div className="space-y-1.5">
-                            <Label className="text-xs text-gray-600">Trạng thái</Label>
-                            <Select value={localStatusFilter} onValueChange={setLocalStatusFilter}>
-                                <SelectTrigger className="h-9">
-                                    <SelectValue placeholder="Tất cả" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="all">Tất cả</SelectItem>
-                                    <SelectItem value="pending">Chờ duyệt</SelectItem>
-                                    <SelectItem value="approved">Đã duyệt</SelectItem>
-                                    <SelectItem value="rejected">Từ chối</SelectItem>
-                                </SelectContent>
-                            </Select>
-                        </div>
+                    <div className="grid grid-cols-2 gap-4">
+                        {/* Status Filter - Hidden for adjustment tab since adjustments don't have approval status */}
+                        {activeTab !== 'adjustment' && (
+                            <div className="space-y-2">
+                                <Label className="text-base text-gray-700 font-medium">Trạng thái</Label>
+                                <Select value={localStatusFilter} onValueChange={setLocalStatusFilter}>
+                                    <SelectTrigger className="h-12 text-base">
+                                        <SelectValue placeholder="Tất cả" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="all">Tất cả</SelectItem>
+                                        <SelectItem value="pending">Chờ duyệt</SelectItem>
+                                        <SelectItem value="approved">Đã duyệt</SelectItem>
+                                        <SelectItem value="rejected">Từ chối</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                        )}
 
                         {/* Payment Method Filter */}
-                        <div className="space-y-1.5">
-                            <Label className="text-xs text-gray-600">Hình thức</Label>
+                        <div className="space-y-2">
+                            <Label className="text-base text-gray-700 font-medium">Hình thức</Label>
                             <Select value={localPaymentMethodFilter} onValueChange={setLocalPaymentMethodFilter}>
-                                <SelectTrigger className="h-9">
+                                <SelectTrigger className="h-12 text-base">
                                     <SelectValue placeholder="Tất cả" />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -439,10 +446,10 @@ export function TransactionFilters({
                         </div>
 
                         {/* Parish Filter */}
-                        <div className="space-y-1.5">
-                            <Label className="text-xs text-gray-600">Giáo xứ</Label>
+                        <div className="space-y-2">
+                            <Label className="text-base text-gray-700 font-medium">Giáo xứ</Label>
                             <Select value={localParishFilter} onValueChange={setLocalParishFilter}>
-                                <SelectTrigger className="h-9">
+                                <SelectTrigger className="h-12 text-base">
                                     <SelectValue placeholder="Tất cả" />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -457,10 +464,10 @@ export function TransactionFilters({
                         </div>
 
                         {/* Fund Filter */}
-                        <div className="space-y-1.5">
-                            <Label className="text-xs text-gray-600">Quỹ</Label>
+                        <div className="space-y-2">
+                            <Label className="text-base text-gray-700 font-medium">Quỹ</Label>
                             <Select value={localFundFilter} onValueChange={setLocalFundFilter}>
-                                <SelectTrigger className="h-9">
+                                <SelectTrigger className="h-12 text-base">
                                     <SelectValue placeholder="Tất cả" />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -475,10 +482,10 @@ export function TransactionFilters({
                         </div>
 
                         {/* Fiscal Year */}
-                        <div className="space-y-1.5">
-                            <Label className="text-xs text-gray-600">Năm tài chính</Label>
+                        <div className="space-y-2">
+                            <Label className="text-base text-gray-700 font-medium">Năm tài chính</Label>
                             <Select value={localFiscalYearFilter} onValueChange={setLocalFiscalYearFilter}>
-                                <SelectTrigger className="h-9">
+                                <SelectTrigger className="h-12 text-base">
                                     <SelectValue placeholder="Tất cả" />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -493,10 +500,10 @@ export function TransactionFilters({
                         </div>
 
                         {/* Fiscal Period */}
-                        <div className="space-y-1.5">
-                            <Label className="text-xs text-gray-600">Kỳ tài chính</Label>
+                        <div className="space-y-2">
+                            <Label className="text-base text-gray-700 font-medium">Kỳ tài chính</Label>
                             <Select value={localFiscalPeriodFilter} onValueChange={setLocalFiscalPeriodFilter}>
-                                <SelectTrigger className="h-9">
+                                <SelectTrigger className="h-12 text-base">
                                     <SelectValue placeholder="Tất cả" />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -511,109 +518,109 @@ export function TransactionFilters({
                         </div>
 
                         {/* Amount Min */}
-                        <div className="space-y-1.5">
-                            <Label className="text-xs text-gray-600">Số tiền từ</Label>
+                        <div className="space-y-2">
+                            <Label className="text-base text-gray-700 font-medium">Số tiền từ</Label>
                             <Input
                                 type="number"
                                 placeholder="0"
                                 value={localAmountMin}
                                 onChange={(e) => setLocalAmountMin(e.target.value)}
-                                className="h-9"
+                                className="h-12 text-base"
                             />
                         </div>
 
                         {/* Amount Max */}
-                        <div className="space-y-1.5">
-                            <Label className="text-xs text-gray-600">Số tiền đến</Label>
+                        <div className="space-y-2">
+                            <Label className="text-base text-gray-700 font-medium">Số tiền đến</Label>
                             <Input
                                 type="number"
                                 placeholder="0"
                                 value={localAmountMax}
                                 onChange={(e) => setLocalAmountMax(e.target.value)}
-                                className="h-9"
+                                className="h-12 text-base"
                             />
                         </div>
                     </div>
 
                     {/* Active filters summary (local state) */}
                     {localActiveFilterCount > 0 && (
-                        <div className="border-t pt-4 space-y-2">
+                        <div className="border-t pt-5 space-y-3">
                             <div className="flex items-center justify-between">
-                                <span className="text-xs text-gray-500 font-medium">Đang chọn:</span>
+                                <span className="text-base text-gray-600 font-medium">Đang chọn:</span>
                                 <Button
                                     variant="ghost"
                                     size="sm"
                                     onClick={handleResetAndApply}
-                                    className="text-red-600 hover:text-red-700 h-6 text-xs px-2"
+                                    className="text-red-600 hover:text-red-700 h-9 text-base px-3"
                                 >
-                                    <X size={12} className="mr-1" />
+                                    <X size={18} className="mr-1" />
                                     Xóa tất cả
                                 </Button>
                             </div>
-                            <div className="flex flex-wrap gap-1.5">
+                            <div className="flex flex-wrap gap-2">
                                 {hasLocalDateRange && (
-                                    <Badge variant="secondary" className="text-[10px] h-5">
+                                    <Badge variant="secondary" className="text-sm h-8 px-3">
                                         {localDateFrom && localDateTo
                                             ? `${formatDisplayDate(localDateFrom)} - ${formatDisplayDate(localDateTo)}`
                                             : localDateFrom
                                                 ? `Từ ${formatDisplayDate(localDateFrom)}`
                                                 : `Đến ${formatDisplayDate(localDateTo)}`
                                         }
-                                        <button onClick={handleLocalDateReset} className="ml-1 hover:text-red-500">×</button>
+                                        <button onClick={handleLocalDateReset} className="ml-2 hover:text-red-500 text-lg">×</button>
                                     </Badge>
                                 )}
-                                {localStatusFilter !== 'all' && (
-                                    <Badge variant="secondary" className="text-[10px] h-5">
+                                {activeTab !== 'adjustment' && localStatusFilter !== 'all' && (
+                                    <Badge variant="secondary" className="text-sm h-8 px-3">
                                         {localStatusFilter === 'pending' ? 'Chờ duyệt' : localStatusFilter === 'approved' ? 'Đã duyệt' : 'Từ chối'}
-                                        <button onClick={() => setLocalStatusFilter('all')} className="ml-1 hover:text-red-500">×</button>
+                                        <button onClick={() => setLocalStatusFilter('all')} className="ml-2 hover:text-red-500 text-lg">×</button>
                                     </Badge>
                                 )}
                                 {localSearchTerm && (
-                                    <Badge variant="secondary" className="text-[10px] h-5">
+                                    <Badge variant="secondary" className="text-sm h-8 px-3">
                                         "{localSearchTerm}"
-                                        <button onClick={() => setLocalSearchTerm('')} className="ml-1 hover:text-red-500">×</button>
+                                        <button onClick={() => setLocalSearchTerm('')} className="ml-2 hover:text-red-500 text-lg">×</button>
                                     </Badge>
                                 )}
                                 {localParishFilter !== 'all' && (
-                                    <Badge variant="secondary" className="text-[10px] h-5">
+                                    <Badge variant="secondary" className="text-sm h-8 px-3">
                                         {parishes.find(p => p._id?.toString() === localParishFilter)?.parishName || localParishFilter}
-                                        <button onClick={() => setLocalParishFilter('all')} className="ml-1 hover:text-red-500">×</button>
+                                        <button onClick={() => setLocalParishFilter('all')} className="ml-2 hover:text-red-500 text-lg">×</button>
                                     </Badge>
                                 )}
                                 {localFundFilter !== 'all' && (
-                                    <Badge variant="secondary" className="text-[10px] h-5">
+                                    <Badge variant="secondary" className="text-sm h-8 px-3">
                                         {funds.find(f => f._id?.toString() === localFundFilter)?.fundName || localFundFilter}
-                                        <button onClick={() => setLocalFundFilter('all')} className="ml-1 hover:text-red-500">×</button>
+                                        <button onClick={() => setLocalFundFilter('all')} className="ml-2 hover:text-red-500 text-lg">×</button>
                                     </Badge>
                                 )}
                                 {localPaymentMethodFilter !== 'all' && (
-                                    <Badge variant="secondary" className="text-[10px] h-5">
+                                    <Badge variant="secondary" className="text-sm h-8 px-3">
                                         {localPaymentMethodFilter === 'offline' ? 'Tiền mặt' : 'CK'}
-                                        <button onClick={() => setLocalPaymentMethodFilter('all')} className="ml-1 hover:text-red-500">×</button>
+                                        <button onClick={() => setLocalPaymentMethodFilter('all')} className="ml-2 hover:text-red-500 text-lg">×</button>
                                     </Badge>
                                 )}
                                 {localAmountMin && (
-                                    <Badge variant="secondary" className="text-[10px] h-5">
+                                    <Badge variant="secondary" className="text-sm h-8 px-3">
                                         ≥{parseInt(localAmountMin).toLocaleString('vi-VN')}đ
-                                        <button onClick={() => setLocalAmountMin('')} className="ml-1 hover:text-red-500">×</button>
+                                        <button onClick={() => setLocalAmountMin('')} className="ml-2 hover:text-red-500 text-lg">×</button>
                                     </Badge>
                                 )}
                                 {localAmountMax && (
-                                    <Badge variant="secondary" className="text-[10px] h-5">
+                                    <Badge variant="secondary" className="text-sm h-8 px-3">
                                         ≤{parseInt(localAmountMax).toLocaleString('vi-VN')}đ
-                                        <button onClick={() => setLocalAmountMax('')} className="ml-1 hover:text-red-500">×</button>
+                                        <button onClick={() => setLocalAmountMax('')} className="ml-2 hover:text-red-500 text-lg">×</button>
                                     </Badge>
                                 )}
                                 {localFiscalYearFilter !== 'all' && (
-                                    <Badge variant="secondary" className="text-[10px] h-5">
+                                    <Badge variant="secondary" className="text-sm h-8 px-3">
                                         Năm {localFiscalYearFilter}
-                                        <button onClick={() => setLocalFiscalYearFilter('all')} className="ml-1 hover:text-red-500">×</button>
+                                        <button onClick={() => setLocalFiscalYearFilter('all')} className="ml-2 hover:text-red-500 text-lg">×</button>
                                     </Badge>
                                 )}
                                 {localFiscalPeriodFilter !== 'all' && (
-                                    <Badge variant="secondary" className="text-[10px] h-5">
+                                    <Badge variant="secondary" className="text-sm h-8 px-3">
                                         T{localFiscalPeriodFilter}
-                                        <button onClick={() => setLocalFiscalPeriodFilter('all')} className="ml-1 hover:text-red-500">×</button>
+                                        <button onClick={() => setLocalFiscalPeriodFilter('all')} className="ml-2 hover:text-red-500 text-lg">×</button>
                                     </Badge>
                                 )}
                             </div>
@@ -621,16 +628,16 @@ export function TransactionFilters({
                     )}
 
                     {/* Apply Button */}
-                    <div className="border-t pt-4 mt-4 flex gap-3">
+                    <div className="border-t pt-5 mt-5 flex gap-4">
                         <Button
                             variant="outline"
-                            className="flex-1 h-12 text-base"
+                            className="flex-1 h-14 text-lg"
                             onClick={handleResetAndApply}
                         >
                             Đặt lại
                         </Button>
                         <Button
-                            className="flex-1 h-12 text-base"
+                            className="flex-1 h-14 text-lg"
                             onClick={handleApply}
                         >
                             Áp dụng
