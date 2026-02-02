@@ -37,6 +37,7 @@ import { Fund, BankAccount } from '@/lib/schemas';
 import { formatCompactCurrency } from '@/lib/utils';
 import { ContactCombobox } from '@/components/finance/ContactCombobox';
 import { QuickAddContactDialog } from '@/components/finance/QuickAddContactDialog';
+import { ConfirmDeleteDialog } from '@/components/ui/confirm-delete-dialog';
 
 interface ContractIncome {
   _id: string;
@@ -147,6 +148,11 @@ export default function RentalContractsPage() {
   });
 
   const [submitting, setSubmitting] = useState(false);
+
+  // Delete confirmation dialog states
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<RentalContractItem | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     fetchData();
@@ -360,15 +366,23 @@ export default function RentalContractsPage() {
     }
   };
 
-  const handleDelete = async (contract: RentalContractItem) => {
-    if (!confirm(`Bạn có chắc muốn xóa hợp đồng ${contract.contractCode}?`)) return;
+  const handleDelete = (contract: RentalContractItem) => {
+    setDeleteTarget(contract);
+    setShowDeleteDialog(true);
+  };
 
+  const confirmDelete = async () => {
+    if (!deleteTarget) return;
+
+    setDeleting(true);
     try {
-      const response = await fetch(`/api/rental-contracts/${contract._id}`, {
+      const response = await fetch(`/api/rental-contracts/${deleteTarget._id}`, {
         method: 'DELETE'
       });
 
       if (response.ok) {
+        setShowDeleteDialog(false);
+        setDeleteTarget(null);
         fetchData();
         alert('Xóa hợp đồng thành công');
       } else {
@@ -378,6 +392,8 @@ export default function RentalContractsPage() {
     } catch (error) {
       console.error('Error deleting contract:', error);
       alert('Không thể xóa hợp đồng');
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -734,18 +750,19 @@ export default function RentalContractsPage() {
         </CardContent>
       </Card>
 
-      {/* Create Dialog */}
+      {/* Create Dialog - Full Screen */}
       <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="text-xl">Tạo Hợp đồng Cho thuê Mới</DialogTitle>
-            <DialogDescription className="text-base">
-              Điền đầy đủ thông tin hợp đồng cho thuê bất động sản
-            </DialogDescription>
-          </DialogHeader>
+        <DialogContent size="fullscreen">
+          <div className="flex-1 overflow-y-auto">
+            <div className="max-w-5xl mx-auto px-6 py-6 space-y-6">
+              <DialogHeader className="pb-4 border-b">
+                <DialogTitle className="text-2xl font-bold">Tạo Hợp đồng Cho thuê Mới</DialogTitle>
+                <DialogDescription className="text-base">
+                  Điền đầy đủ thông tin hợp đồng cho thuê bất động sản
+                </DialogDescription>
+              </DialogHeader>
 
-          <div className="space-y-6">
-            {/* Thông tin cơ bản */}
+              {/* Thông tin cơ bản */}
             <FormSection title="Thông tin cơ bản" icon={<FileSignature size={18} />}>
               <FormGrid>
                 <FormField>
@@ -1075,16 +1092,17 @@ export default function RentalContractsPage() {
                 </FormField>
               </FormGrid>
             </FormSection>
-          </div>
 
-          <DialogFooter className="gap-2 sm:gap-0">
-            <Button variant="outline" onClick={() => setShowCreateDialog(false)} className="h-12 px-8 text-base sm:w-auto w-full">
-              Hủy
-            </Button>
-            <Button onClick={handleCreate} disabled={submitting} className="h-12 px-8 text-base sm:w-auto w-full">
-              {submitting ? 'Đang tạo...' : 'Tạo hợp đồng'}
-            </Button>
-          </DialogFooter>
+              <DialogFooter className="pt-6 border-t gap-3">
+                <Button variant="outline" onClick={() => setShowCreateDialog(false)} className="h-14 px-8 text-lg sm:w-auto w-full">
+                  Hủy
+                </Button>
+                <Button onClick={handleCreate} disabled={submitting} className="h-14 px-8 text-lg font-semibold sm:w-auto w-full">
+                  {submitting ? 'Đang tạo...' : 'Tạo hợp đồng'}
+                </Button>
+              </DialogFooter>
+            </div>
+          </div>
         </DialogContent>
       </Dialog>
 
@@ -1174,168 +1192,170 @@ export default function RentalContractsPage() {
         </DialogContent>
       </Dialog>
 
-      {/* Convert to Income Dialog */}
+      {/* Convert to Income Dialog - Full Screen */}
       <Dialog open={showConvertDialog} onOpenChange={setShowConvertDialog}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle className="text-xl">Tạo Giao dịch Thu từ Hợp đồng</DialogTitle>
-            <DialogDescription className="text-base">
-              Hợp đồng: {selectedContract?.contractCode} - {selectedContract?.propertyName}
-            </DialogDescription>
-          </DialogHeader>
+        <DialogContent size="fullscreen">
+          <div className="flex-1 overflow-y-auto">
+            <div className="max-w-5xl mx-auto px-6 py-6 space-y-6">
+              <DialogHeader className="pb-4 border-b">
+                <DialogTitle className="text-2xl font-bold">Tạo Giao dịch Thu từ Hợp đồng</DialogTitle>
+                <DialogDescription className="text-lg">
+                  Hợp đồng: <span className="font-semibold">{selectedContract?.contractCode}</span> - {selectedContract?.propertyName}
+                </DialogDescription>
+              </DialogHeader>
 
-          <div className="space-y-6">
-            <FormSection title="Thông tin Giao dịch" icon={<Receipt size={18} />}>
-              <FormGrid>
-                <FormField>
-                  <FormLabel required>Quỹ</FormLabel>
-                  <Select
-                    value={convertData.fundId}
-                    onValueChange={(v) => setConvertData({ ...convertData, fundId: v })}
-                  >
-                    <SelectTrigger className="h-12 text-base">
-                      <SelectValue placeholder="Chọn quỹ" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {funds.filter(f => f._id).map((f) => (
-                        <SelectItem key={f._id!.toString()} value={f._id!.toString()} className="text-base py-3">
-                          {f.fundName}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </FormField>
-
-                <FormField>
-                  <FormLabel required>Số tiền (VNĐ)</FormLabel>
-                  <Input
-                    type="number"
-                    placeholder="0"
-                    value={convertData.amount}
-                    onChange={(e) => setConvertData({ ...convertData, amount: e.target.value })}
-                    className="h-12 text-base"
-                  />
-                </FormField>
-
-                <FormField>
-                  <FormLabel required>Ngày thu</FormLabel>
-                  <Input
-                    type="date"
-                    value={convertData.incomeDate}
-                    onChange={(e) => setConvertData({ ...convertData, incomeDate: e.target.value })}
-                    className="h-12 text-base"
-                  />
-                </FormField>
-
-                <FormField>
-                  <FormLabel required>Kỳ thanh toán</FormLabel>
-                  <Input
-                    placeholder="VD: Tháng 01/2024, Quý 1/2024"
-                    value={convertData.paymentPeriod}
-                    onChange={(e) => setConvertData({ ...convertData, paymentPeriod: e.target.value })}
-                    className="h-12 text-base"
-                  />
-                </FormField>
-
-                <FormField className="col-span-2">
-                  <FormLabel>Người gửi (Đối tượng)</FormLabel>
-                  <ContactCombobox
-                    value={convertData.contactId}
-                    onChange={(v) => setConvertData({ ...convertData, contactId: v })}
-                    onCreateNew={() => setShowQuickAddContact(true)}
-                    contacts={contacts}
-                    placeholder="Chọn người gửi..."
-                  />
-                  <p className="text-sm text-muted-foreground mt-1">
-                    Mặc định: {selectedContract?.tenantName}
-                  </p>
-                </FormField>
-              </FormGrid>
-            </FormSection>
-
-            <FormSection title="Hình thức Thanh toán" icon={<Wallet size={18} />}>
-              <FormGrid>
-                <FormField>
-                  <FormLabel>Hình thức</FormLabel>
-                  <Select
-                    value={convertData.paymentMethod}
-                    onValueChange={(v) => setConvertData({ ...convertData, paymentMethod: v, bankAccountId: '' })}
-                  >
-                    <SelectTrigger className="h-12 text-base">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="offline" className="text-base py-3">Tiền mặt</SelectItem>
-                      <SelectItem value="online" className="text-base py-3">Chuyển khoản</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </FormField>
-
-                {convertData.paymentMethod === 'online' && (
+              <FormSection title="Thông tin Giao dịch" icon={<Receipt size={20} />}>
+                <FormGrid>
                   <FormField>
-                    <FormLabel required>Tài khoản ngân hàng (nhận tiền)</FormLabel>
-                    {bankAccounts.filter(ba => ba.accountType === 'income' || ba.accountType === 'both').length > 0 ? (
-                      <Select
-                        value={convertData.bankAccountId}
-                        onValueChange={(v) => setConvertData({ ...convertData, bankAccountId: v })}
-                      >
-                        <SelectTrigger className="h-12 text-base">
-                          <SelectValue placeholder="Chọn tài khoản ngân hàng" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {bankAccounts
-                            .filter(ba => ba.accountType === 'income' || ba.accountType === 'both')
-                            .map((ba) => (
-                              <SelectItem key={ba._id!.toString()} value={ba._id!.toString()} className="text-base py-3">
-                                {ba.accountNumber} - {ba.bankName}
-                                {ba.isDefault && ' ★'}
-                              </SelectItem>
-                            ))}
-                        </SelectContent>
-                      </Select>
-                    ) : (
-                      <div className="text-base text-gray-500 p-3 border rounded-md bg-gray-50">
-                        Chưa có tài khoản ngân hàng. <a href="/finance/bank-accounts" className="text-blue-600 hover:underline">Thêm tài khoản</a>
-                      </div>
-                    )}
+                    <FormLabel required className="text-base font-semibold">Quỹ</FormLabel>
+                    <Select
+                      value={convertData.fundId}
+                      onValueChange={(v) => setConvertData({ ...convertData, fundId: v })}
+                    >
+                      <SelectTrigger className="h-14 text-lg">
+                        <SelectValue placeholder="Chọn quỹ" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {funds.filter(f => f._id).map((f) => (
+                          <SelectItem key={f._id!.toString()} value={f._id!.toString()} className="text-base py-3">
+                            {f.fundName}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </FormField>
-                )}
 
-                <FormField className="col-span-2">
-                  <FormLabel>Ghi chú</FormLabel>
-                  <Textarea
-                    placeholder="Ghi chú thêm..."
-                    rows={3}
-                    value={convertData.notes}
-                    onChange={(e) => setConvertData({ ...convertData, notes: e.target.value })}
-                    className="text-base"
-                  />
-                </FormField>
-              </FormGrid>
-            </FormSection>
+                  <FormField>
+                    <FormLabel required className="text-base font-semibold">Số tiền (VNĐ)</FormLabel>
+                    <Input
+                      type="number"
+                      placeholder="0"
+                      value={convertData.amount}
+                      onChange={(e) => setConvertData({ ...convertData, amount: e.target.value })}
+                      className="h-14 text-lg"
+                    />
+                  </FormField>
+
+                  <FormField>
+                    <FormLabel required className="text-base font-semibold">Ngày thu</FormLabel>
+                    <Input
+                      type="date"
+                      value={convertData.incomeDate}
+                      onChange={(e) => setConvertData({ ...convertData, incomeDate: e.target.value })}
+                      className="h-14 text-lg"
+                    />
+                  </FormField>
+
+                  <FormField>
+                    <FormLabel required className="text-base font-semibold">Kỳ thanh toán</FormLabel>
+                    <Input
+                      placeholder="VD: Tháng 01/2024, Quý 1/2024"
+                      value={convertData.paymentPeriod}
+                      onChange={(e) => setConvertData({ ...convertData, paymentPeriod: e.target.value })}
+                      className="h-14 text-lg"
+                    />
+                  </FormField>
+
+                  <FormField className="col-span-2">
+                    <FormLabel className="text-base font-semibold">Người gửi (Đối tượng)</FormLabel>
+                    <ContactCombobox
+                      value={convertData.contactId}
+                      onChange={(v) => setConvertData({ ...convertData, contactId: v })}
+                      onCreateNew={() => setShowQuickAddContact(true)}
+                      contacts={contacts}
+                      placeholder="Chọn người gửi..."
+                    />
+                    <p className="text-base text-muted-foreground mt-2">
+                      Mặc định: <span className="font-medium">{selectedContract?.tenantName}</span>
+                    </p>
+                  </FormField>
+                </FormGrid>
+              </FormSection>
+
+              <FormSection title="Hình thức Thanh toán" icon={<Wallet size={20} />}>
+                <FormGrid>
+                  <FormField>
+                    <FormLabel className="text-base font-semibold">Hình thức</FormLabel>
+                    <Select
+                      value={convertData.paymentMethod}
+                      onValueChange={(v) => setConvertData({ ...convertData, paymentMethod: v, bankAccountId: '' })}
+                    >
+                      <SelectTrigger className="h-14 text-lg">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="offline" className="text-base py-3">Tiền mặt</SelectItem>
+                        <SelectItem value="online" className="text-base py-3">Chuyển khoản</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </FormField>
+
+                  {convertData.paymentMethod === 'online' && (
+                    <FormField>
+                      <FormLabel required className="text-base font-semibold">Tài khoản ngân hàng (nhận tiền)</FormLabel>
+                      {bankAccounts.filter(ba => ba.accountType === 'income' || ba.accountType === 'both').length > 0 ? (
+                        <Select
+                          value={convertData.bankAccountId}
+                          onValueChange={(v) => setConvertData({ ...convertData, bankAccountId: v })}
+                        >
+                          <SelectTrigger className="h-14 text-lg">
+                            <SelectValue placeholder="Chọn tài khoản ngân hàng" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {bankAccounts
+                              .filter(ba => ba.accountType === 'income' || ba.accountType === 'both')
+                              .map((ba) => (
+                                <SelectItem key={ba._id!.toString()} value={ba._id!.toString()} className="text-base py-3">
+                                  {ba.accountNumber} - {ba.bankName}
+                                  {ba.isDefault && ' ★'}
+                                </SelectItem>
+                              ))}
+                          </SelectContent>
+                        </Select>
+                      ) : (
+                        <div className="text-lg text-gray-500 p-4 border rounded-md bg-gray-50">
+                          Chưa có tài khoản ngân hàng. <a href="/finance/bank-accounts" className="text-blue-600 hover:underline">Thêm tài khoản</a>
+                        </div>
+                      )}
+                    </FormField>
+                  )}
+
+                  <FormField className="col-span-2">
+                    <FormLabel className="text-base font-semibold">Ghi chú</FormLabel>
+                    <Textarea
+                      placeholder="Ghi chú thêm..."
+                      rows={4}
+                      value={convertData.notes}
+                      onChange={(e) => setConvertData({ ...convertData, notes: e.target.value })}
+                      className="text-lg"
+                    />
+                  </FormField>
+                </FormGrid>
+              </FormSection>
+
+              <DialogFooter className="pt-6 border-t gap-3">
+                <Button variant="outline" onClick={() => {
+                  setShowConvertDialog(false);
+                  setConvertData({
+                    fundId: '',
+                    amount: '',
+                    incomeDate: new Date().toISOString().split('T')[0],
+                    paymentPeriod: '',
+                    paymentMethod: 'offline',
+                    bankAccountId: '',
+                    bankAccount: '',
+                    contactId: '',
+                    notes: ''
+                  });
+                }} className="h-14 px-8 text-lg sm:w-auto w-full">
+                  Hủy
+                </Button>
+                <Button onClick={handleConvertToIncome} disabled={submitting} className="h-14 px-8 text-lg font-semibold sm:w-auto w-full">
+                  {submitting ? 'Đang xử lý...' : 'Tạo giao dịch'}
+                </Button>
+              </DialogFooter>
+            </div>
           </div>
-
-          <DialogFooter className="gap-2 sm:gap-0">
-            <Button variant="outline" onClick={() => {
-              setShowConvertDialog(false);
-              setConvertData({
-                fundId: '',
-                amount: '',
-                incomeDate: new Date().toISOString().split('T')[0],
-                paymentPeriod: '',
-                paymentMethod: 'offline',
-                bankAccountId: '',
-                bankAccount: '',
-                contactId: '',
-                notes: ''
-              });
-            }} className="h-12 px-8 text-base sm:w-auto w-full">
-              Hủy
-            </Button>
-            <Button onClick={handleConvertToIncome} disabled={submitting} className="h-12 px-8 text-base sm:w-auto w-full">
-              {submitting ? 'Đang xử lý...' : 'Tạo giao dịch'}
-            </Button>
-          </DialogFooter>
         </DialogContent>
       </Dialog>
 
@@ -1531,6 +1551,18 @@ export default function RentalContractsPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <ConfirmDeleteDialog
+        open={showDeleteDialog}
+        onOpenChange={(open) => {
+          setShowDeleteDialog(open);
+          if (!open) setDeleteTarget(null);
+        }}
+        onConfirm={confirmDelete}
+        description={`Bạn có chắc muốn xóa hợp đồng ${deleteTarget?.contractCode}?`}
+        loading={deleting}
+      />
     </div>
   );
 }

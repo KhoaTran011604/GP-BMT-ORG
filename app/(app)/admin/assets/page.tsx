@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { AssetFormDialog } from '@/components/admin/AssetFormDialog';
 import { AssetDetailModal } from '@/components/admin/AssetDetailModal';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+import { ConfirmDeleteDialog } from '@/components/ui/confirm-delete-dialog';
 import { toast } from 'sonner';
 import { Edit, Plus, Trash2 } from 'lucide-react';
 import { formatCompactCurrency } from '@/lib/utils';
@@ -50,6 +50,7 @@ export default function AssetsPage() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedAsset, setSelectedAsset] = useState<Asset | null>(null);
   const [assetToDelete, setAssetToDelete] = useState<Asset | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     fetchAssets();
@@ -95,6 +96,7 @@ export default function AssetsPage() {
   const handleDeleteConfirm = async () => {
     if (!assetToDelete) return;
 
+    setDeleting(true);
     try {
       const res = await fetch(`/api/assets/${assetToDelete._id}`, {
         method: 'DELETE',
@@ -105,13 +107,14 @@ export default function AssetsPage() {
       }
 
       toast.success('Xóa tài sản thành công');
+      setDeleteDialogOpen(false);
+      setAssetToDelete(null);
       fetchAssets();
     } catch (error) {
       console.error('Error deleting asset:', error);
       toast.error('Lỗi khi xóa tài sản');
     } finally {
-      setDeleteDialogOpen(false);
-      setAssetToDelete(null);
+      setDeleting(false);
     }
   };
 
@@ -299,23 +302,16 @@ export default function AssetsPage() {
         onDelete={() => handleDeleteClick(selectedAsset!)}
       />
 
-      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle className="text-xl">Xác nhận xóa</AlertDialogTitle>
-            <AlertDialogDescription className="text-base">
-              Bạn có chắc chắn muốn xóa tài sản <strong>{assetToDelete?.assetName}</strong>?
-              Hành động này không thể hoàn tác.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter className="gap-2 sm:gap-0">
-            <AlertDialogCancel className="h-12 px-6 text-base">Hủy</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDeleteConfirm} className="h-12 px-6 text-base bg-red-600 hover:bg-red-700">
-              Xóa
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <ConfirmDeleteDialog
+        open={deleteDialogOpen}
+        onOpenChange={(open) => {
+          setDeleteDialogOpen(open);
+          if (!open) setAssetToDelete(null);
+        }}
+        onConfirm={handleDeleteConfirm}
+        description={`Bạn có chắc chắn muốn xóa tài sản "${assetToDelete?.assetName}"? Hành động này không thể hoàn tác.`}
+        loading={deleting}
+      />
     </div>
   );
 }
