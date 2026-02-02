@@ -30,6 +30,7 @@ import {
 } from '@/components/ui/form-section';
 import { useAuth } from '@/lib/auth-context';
 import { Plus, Edit2, Trash2, Search } from 'lucide-react';
+import { ConfirmDeleteDialog } from '@/components/ui/confirm-delete-dialog';
 
 interface Parish {
   _id: string;
@@ -59,6 +60,11 @@ export default function ParishPage() {
     phone: '',
     email: '',
   });
+
+  // Delete confirmation dialog states
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<Parish | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   // Filter parishes based on search query
   const filteredParishes = useMemo(() => {
@@ -146,21 +152,31 @@ export default function ParishPage() {
     }
   };
 
-  const handleDelete = async (parishId: string) => {
-    if (!confirm('Bạn chắc chắn muốn xóa Giáo xứ này?')) return;
+  const handleDelete = (parish: Parish) => {
+    setDeleteTarget(parish);
+    setShowDeleteDialog(true);
+  };
 
+  const confirmDelete = async () => {
+    if (!deleteTarget) return;
+
+    setDeleting(true);
     try {
-      const response = await fetch(`/api/parishes/${parishId}`, {
+      const response = await fetch(`/api/parishes/${deleteTarget._id}`, {
         method: 'DELETE',
       });
 
       if (response.ok) {
+        setShowDeleteDialog(false);
+        setDeleteTarget(null);
         fetchParishes();
       } else {
         alert('Error deleting parish');
       }
     } catch (error) {
       console.error('Error deleting parish:', error);
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -268,7 +284,7 @@ export default function ParishPage() {
                           <Button
                             variant="ghost"
                             className="action-btn text-red-600 hover:text-red-700 hover:bg-red-50"
-                            onClick={() => handleDelete(parish._id)}
+                            onClick={() => handleDelete(parish)}
                             title="Xóa"
                           >
                             <Trash2 />
@@ -421,6 +437,18 @@ export default function ParishPage() {
           </form>
         </DialogContent>
       </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <ConfirmDeleteDialog
+        open={showDeleteDialog}
+        onOpenChange={(open) => {
+          setShowDeleteDialog(open);
+          if (!open) setDeleteTarget(null);
+        }}
+        onConfirm={confirmDelete}
+        description={`Bạn chắc chắn muốn xóa Giáo xứ "${deleteTarget?.parishName}"?`}
+        loading={deleting}
+      />
     </div>
   );
 }

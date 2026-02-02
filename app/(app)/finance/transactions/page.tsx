@@ -41,6 +41,7 @@ import {
 } from '@/components/ui/form-section';
 import { ImageUpload } from '@/components/finance/ImageUpload';
 import { formatCompactCurrency } from '@/lib/utils';
+import { ConfirmDeleteDialog } from '@/components/ui/confirm-delete-dialog';
 
 type TransactionType = 'income' | 'expense' | 'adjustment';
 
@@ -162,6 +163,11 @@ export default function TransactionsPage() {
   const [showAdjustmentDialog, setShowAdjustmentDialog] = useState(false);
   const [showEditAdjustmentDialog, setShowEditAdjustmentDialog] = useState(false);
   const [selectedAdjustment, setSelectedAdjustment] = useState<AdjustmentItem | null>(null);
+
+  // Delete confirmation dialog states
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<{ type: 'transaction' | 'adjustment'; item: TransactionItem | AdjustmentItem } | null>(null);
+  const [deleting, setDeleting] = useState(false);
   const [adjustmentFormData, setAdjustmentFormData] = useState({
     parishId: '',
     fundId: '',
@@ -456,22 +462,9 @@ export default function TransactionsPage() {
     }
   };
 
-  const handleDeleteAdjustment = async (item: AdjustmentItem) => {
-    if (!confirm('Bạn có chắc muốn xóa phiếu điều chỉnh này?')) return;
-
-    try {
-      const response = await fetch(`/api/adjustments/${item._id}`, { method: 'DELETE' });
-
-      if (response.ok) {
-        fetchData();
-      } else {
-        const error = await response.json();
-        alert(`Lỗi: ${error.error || 'Không thể xóa'}`);
-      }
-    } catch (error) {
-      console.error('Error deleting adjustment:', error);
-      alert('Không thể xóa phiếu điều chỉnh');
-    }
+  const handleDeleteAdjustment = (item: AdjustmentItem) => {
+    setDeleteTarget({ type: 'adjustment', item });
+    setShowDeleteDialog(true);
   };
 
   const openEditAdjustmentDialog = (item: AdjustmentItem) => {
@@ -663,30 +656,46 @@ export default function TransactionsPage() {
     }
   };
 
-  const handleDelete = async (item: TransactionItem) => {
+  const handleDelete = (item: TransactionItem) => {
     if (item.status !== 'pending') {
       alert('Chỉ có thể xóa giao dịch đang chờ duyệt');
       return;
     }
 
-    if (!confirm('Bạn có chắc muốn xóa giao dịch này?')) return;
+    setDeleteTarget({ type: 'transaction', item });
+    setShowDeleteDialog(true);
+  };
 
+  const confirmDelete = async () => {
+    if (!deleteTarget) return;
+
+    setDeleting(true);
     try {
-      const endpoint = item.type === 'income'
-        ? `/api/incomes/${item._id}`
-        : `/api/expenses/${item._id}`;
+      let endpoint = '';
+      if (deleteTarget.type === 'adjustment') {
+        endpoint = `/api/adjustments/${deleteTarget.item._id}`;
+      } else {
+        const item = deleteTarget.item as TransactionItem;
+        endpoint = item.type === 'income'
+          ? `/api/incomes/${item._id}`
+          : `/api/expenses/${item._id}`;
+      }
 
       const response = await fetch(endpoint, { method: 'DELETE' });
 
       if (response.ok) {
+        setShowDeleteDialog(false);
+        setDeleteTarget(null);
         fetchData();
       } else {
         const error = await response.json();
         alert(`Lỗi: ${error.error || 'Không thể xóa'}`);
       }
     } catch (error) {
-      console.error('Error deleting transaction:', error);
-      alert('Không thể xóa giao dịch');
+      console.error('Error deleting:', error);
+      alert('Không thể xóa');
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -1366,17 +1375,19 @@ export default function TransactionsPage() {
 
       {/* Create Dialog */}
       <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
-        <DialogContent size="xl" className="max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>
-              Tạo {createType === 'income' ? 'khoản thu' : 'khoản chi'} mới
-            </DialogTitle>
-            <DialogDescription>
-              Điền thông tin để tạo giao dịch mới
-            </DialogDescription>
-          </DialogHeader>
+        <DialogContent size="fullscreen">
+          <div className="flex-1 overflow-y-auto">
+            <div className="max-w-5xl mx-auto px-6 py-6 space-y-6">
+              <DialogHeader className="pb-4 border-b">
+                <DialogTitle className="text-2xl font-bold">
+                  Tạo {createType === 'income' ? 'khoản thu' : 'khoản chi'} mới
+                </DialogTitle>
+                <DialogDescription className="text-base">
+                  Điền thông tin để tạo giao dịch mới
+                </DialogDescription>
+              </DialogHeader>
 
-          <div className="space-y-6">
+              <div className="space-y-6">
             {/* Loại giao dịch */}
             <FormSection title="Loại giao dịch">
               <div className="flex gap-4">
@@ -1384,7 +1395,7 @@ export default function TransactionsPage() {
                   type="button"
                   variant={createType === 'income' ? 'default' : 'outline'}
                   onClick={() => setCreateType('income')}
-                  className="flex-1 gap-2 h-12 text-base"
+                  className="flex-1 gap-3 h-14 text-lg font-semibold"
                 >
                   <ArrowDownCircle size={20} />
                   Khoản thu
@@ -1393,7 +1404,7 @@ export default function TransactionsPage() {
                   type="button"
                   variant={createType === 'expense' ? 'default' : 'outline'}
                   onClick={() => setCreateType('expense')}
-                  className="flex-1 gap-2 h-12 text-base"
+                  className="flex-1 gap-3 h-14 text-lg font-semibold"
                 >
                   <ArrowUpCircle size={20} />
                   Khoản chi
@@ -1412,12 +1423,12 @@ export default function TransactionsPage() {
                     value={formData.fundId}
                     onValueChange={(v) => setFormData({ ...formData, fundId: v })}
                   >
-                    <SelectTrigger className="h-12 text-base">
+                    <SelectTrigger className="h-14 text-lg">
                       <SelectValue placeholder="Chọn quỹ" />
                     </SelectTrigger>
                     <SelectContent>
                       {funds.filter(f => f._id).map((f) => (
-                        <SelectItem key={f._id!.toString()} value={f._id!.toString()} className="text-base py-3">
+                        <SelectItem key={f._id!.toString()} value={f._id!.toString()} className="text-lg py-3">
                           {f.fundName}
                         </SelectItem>
                       ))}
@@ -1433,12 +1444,12 @@ export default function TransactionsPage() {
                     value={formData.categoryId}
                     onValueChange={(v) => setFormData({ ...formData, categoryId: v })}
                   >
-                    <SelectTrigger className="h-12 text-base">
+                    <SelectTrigger className="h-14 text-lg">
                       <SelectValue placeholder={createType === 'income' ? 'Chọn danh mục thu' : 'Chọn danh mục chi'} />
                     </SelectTrigger>
                     <SelectContent>
                       {expenseCategories.filter(cat => cat._id && cat.categoryType === createType).map((cat) => (
-                        <SelectItem key={cat._id!.toString()} value={cat._id!.toString()} className="text-base py-3">
+                        <SelectItem key={cat._id!.toString()} value={cat._id!.toString()} className="text-lg py-3">
                           {cat.categoryCode} - {cat.categoryName}
                         </SelectItem>
                       ))}
@@ -1455,7 +1466,7 @@ export default function TransactionsPage() {
                     placeholder="0"
                     value={formData.amount}
                     onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
-                    className="h-12 text-base"
+                    className="h-14 text-lg"
                   />
                 </FormField>
 
@@ -1465,7 +1476,7 @@ export default function TransactionsPage() {
                     type="date"
                     value={formData.transactionDate}
                     onChange={(e) => setFormData({ ...formData, transactionDate: e.target.value })}
-                    className="h-12 text-base"
+                    className="h-14 text-lg"
                   />
                 </FormField>
               </FormGrid>
@@ -1525,12 +1536,12 @@ export default function TransactionsPage() {
                           }
                         }}
                       >
-                        <SelectTrigger className="h-12 text-base">
+                        <SelectTrigger className="h-14 text-lg">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="offline" className="text-base py-3">Tiền mặt</SelectItem>
-                          <SelectItem value="online" disabled={!canSelectOnline} className="text-base py-3">
+                          <SelectItem value="offline" className="text-lg py-3">Tiền mặt</SelectItem>
+                          <SelectItem value="online" disabled={!canSelectOnline} className="text-lg py-3">
                             Chuyển khoản {!canSelectOnline && '(Thiếu TK ngân hàng)'}
                           </SelectItem>
                         </SelectContent>
@@ -1554,12 +1565,12 @@ export default function TransactionsPage() {
                         value={formData.bankAccountId}
                         onValueChange={(v) => setFormData({ ...formData, bankAccountId: v })}
                       >
-                        <SelectTrigger className="h-12 text-base">
+                        <SelectTrigger className="h-14 text-lg">
                           <SelectValue placeholder="Chọn tài khoản ngân hàng" />
                         </SelectTrigger>
                         <SelectContent>
                           {bankAccounts.map((ba) => (
-                            <SelectItem key={ba._id!.toString()} value={ba._id!.toString()} className="text-base py-3">
+                            <SelectItem key={ba._id!.toString()} value={ba._id!.toString()} className="text-lg py-3">
                               <div className="flex items-center gap-2">
                                 <span className="font-mono">{ba.accountNumber}</span>
                                 <span className="text-gray-500">-</span>
@@ -1584,7 +1595,7 @@ export default function TransactionsPage() {
                         placeholder="VD: Vietcombank, BIDV..."
                         value={formData.contactBankName}
                         onChange={(e) => setFormData({ ...formData, contactBankName: e.target.value })}
-                        className="h-12 text-base"
+                        className="h-14 text-lg"
                       />
                     </FormField>
                     <FormField>
@@ -1593,7 +1604,7 @@ export default function TransactionsPage() {
                         placeholder="Số tài khoản"
                         value={formData.contactBankAccount}
                         onChange={(e) => setFormData({ ...formData, contactBankAccount: e.target.value })}
-                        className="h-12 text-base"
+                        className="h-14 text-lg"
                       />
                     </FormField>
                   </FormGrid>
@@ -1609,7 +1620,7 @@ export default function TransactionsPage() {
                   placeholder="Nội dung giao dịch"
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  className="text-base min-h-[80px]"
+                  className="text-lg min-h-[100px]"
                 />
               </FormField>
 
@@ -1628,45 +1639,49 @@ export default function TransactionsPage() {
                   placeholder="Ghi chú thêm"
                   value={formData.notes}
                   onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                  className="text-base min-h-[80px]"
+                  className="text-lg min-h-[100px]"
                 />
               </FormField>
             </FormSection>
-          </div>
+              </div>
 
-          <DialogFooter>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => setShowCreateDialog(false)}
-              className="h-12 px-8 text-base sm:w-auto w-full"
-            >
-              Hủy bỏ
-            </Button>
-            <Button
-              onClick={handleCreate}
-              disabled={submitting}
-              className="h-12 px-8 text-base sm:w-auto w-full"
-            >
-              {submitting ? 'Đang tạo...' : 'Tạo giao dịch'}
-            </Button>
-          </DialogFooter>
+              <DialogFooter className="pt-6 border-t gap-3">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setShowCreateDialog(false)}
+                  className="h-14 px-8 text-lg"
+                >
+                  Hủy bỏ
+                </Button>
+                <Button
+                  onClick={handleCreate}
+                  disabled={submitting}
+                  className="h-14 px-8 text-lg font-semibold"
+                >
+                  {submitting ? 'Đang tạo...' : 'Tạo giao dịch'}
+                </Button>
+              </DialogFooter>
+            </div>
+          </div>
         </DialogContent>
       </Dialog>
 
       {/* Edit Dialog */}
       <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
-        <DialogContent size="xl" className="max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>
-              Sửa {selectedItem?.type === 'income' ? 'khoản thu' : 'khoản chi'}
-            </DialogTitle>
-            <DialogDescription>
-              Chỉ có thể sửa giao dịch đang chờ duyệt
-            </DialogDescription>
-          </DialogHeader>
+        <DialogContent size="fullscreen">
+          <div className="flex-1 overflow-y-auto">
+            <div className="max-w-5xl mx-auto px-6 py-6 space-y-6">
+              <DialogHeader className="pb-4 border-b">
+                <DialogTitle className="text-2xl font-bold">
+                  Sửa {selectedItem?.type === 'income' ? 'khoản thu' : 'khoản chi'}
+                </DialogTitle>
+                <DialogDescription className="text-base">
+                  Chỉ có thể sửa giao dịch đang chờ duyệt
+                </DialogDescription>
+              </DialogHeader>
 
-          <div className="space-y-6">
+              <div className="space-y-6">
             {/* Thông tin giao dịch */}
             <FormSection title="Thông tin giao dịch">
               <FormGrid columns={2}>
@@ -1678,12 +1693,12 @@ export default function TransactionsPage() {
                     value={formData.fundId}
                     onValueChange={(v) => setFormData({ ...formData, fundId: v })}
                   >
-                    <SelectTrigger className="h-12 text-base">
+                    <SelectTrigger className="h-14 text-lg">
                       <SelectValue placeholder="Chọn quỹ" />
                     </SelectTrigger>
                     <SelectContent>
                       {funds.filter(f => f._id).map((f) => (
-                        <SelectItem key={f._id!.toString()} value={f._id!.toString()} className="text-base py-3">
+                        <SelectItem key={f._id!.toString()} value={f._id!.toString()} className="text-lg py-3">
                           {f.fundName}
                         </SelectItem>
                       ))}
@@ -1699,12 +1714,12 @@ export default function TransactionsPage() {
                     value={formData.categoryId}
                     onValueChange={(v) => setFormData({ ...formData, categoryId: v })}
                   >
-                    <SelectTrigger className="h-12 text-base">
+                    <SelectTrigger className="h-14 text-lg">
                       <SelectValue placeholder={selectedItem?.type === 'income' ? 'Chọn danh mục thu' : 'Chọn danh mục chi'} />
                     </SelectTrigger>
                     <SelectContent>
                       {expenseCategories.filter(cat => cat._id && (cat.categoryType === selectedItem?.type || cat._id.toString() === formData.categoryId)).map((cat) => (
-                        <SelectItem key={cat._id!.toString()} value={cat._id!.toString()} className="text-base py-3">
+                        <SelectItem key={cat._id!.toString()} value={cat._id!.toString()} className="text-lg py-3">
                           {cat.categoryCode} - {cat.categoryName}
                         </SelectItem>
                       ))}
@@ -1721,7 +1736,7 @@ export default function TransactionsPage() {
                     placeholder="0"
                     value={formData.amount}
                     onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
-                    className="h-12 text-base"
+                    className="h-14 text-lg"
                   />
                 </FormField>
 
@@ -1731,7 +1746,7 @@ export default function TransactionsPage() {
                     type="date"
                     value={formData.transactionDate}
                     onChange={(e) => setFormData({ ...formData, transactionDate: e.target.value })}
-                    className="h-12 text-base"
+                    className="h-14 text-lg"
                   />
                 </FormField>
               </FormGrid>
@@ -1791,12 +1806,12 @@ export default function TransactionsPage() {
                           }
                         }}
                       >
-                        <SelectTrigger className="h-12 text-base">
+                        <SelectTrigger className="h-14 text-lg">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="offline" className="text-base py-3">Tiền mặt</SelectItem>
-                          <SelectItem value="online" disabled={!canSelectOnline} className="text-base py-3">
+                          <SelectItem value="offline" className="text-lg py-3">Tiền mặt</SelectItem>
+                          <SelectItem value="online" disabled={!canSelectOnline} className="text-lg py-3">
                             Chuyển khoản {!canSelectOnline && '(Thiếu TK ngân hàng)'}
                           </SelectItem>
                         </SelectContent>
@@ -1820,12 +1835,12 @@ export default function TransactionsPage() {
                         value={formData.bankAccountId}
                         onValueChange={(v) => setFormData({ ...formData, bankAccountId: v })}
                       >
-                        <SelectTrigger className="h-12 text-base">
+                        <SelectTrigger className="h-14 text-lg">
                           <SelectValue placeholder="Chọn tài khoản ngân hàng" />
                         </SelectTrigger>
                         <SelectContent>
                           {bankAccounts.map((ba) => (
-                            <SelectItem key={ba._id!.toString()} value={ba._id!.toString()} className="text-base py-3">
+                            <SelectItem key={ba._id!.toString()} value={ba._id!.toString()} className="text-lg py-3">
                               {ba.accountNumber} - {ba.bankName} ({ba.accountName})
                             </SelectItem>
                           ))}
@@ -1845,7 +1860,7 @@ export default function TransactionsPage() {
                         placeholder="VD: Vietcombank, BIDV..."
                         value={formData.contactBankName}
                         onChange={(e) => setFormData({ ...formData, contactBankName: e.target.value })}
-                        className="h-12 text-base"
+                        className="h-14 text-lg"
                       />
                     </FormField>
                     <FormField>
@@ -1854,7 +1869,7 @@ export default function TransactionsPage() {
                         placeholder="Số tài khoản"
                         value={formData.contactBankAccount}
                         onChange={(e) => setFormData({ ...formData, contactBankAccount: e.target.value })}
-                        className="h-12 text-base"
+                        className="h-14 text-lg"
                       />
                     </FormField>
                   </FormGrid>
@@ -1870,7 +1885,7 @@ export default function TransactionsPage() {
                   placeholder="Nội dung giao dịch"
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  className="text-base min-h-20"
+                  className="text-lg min-h-[100px]"
                 />
               </FormField>
 
@@ -1889,33 +1904,35 @@ export default function TransactionsPage() {
                   placeholder="Ghi chú thêm"
                   value={formData.notes}
                   onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                  className="text-base min-h-20"
+                  className="text-lg min-h-[100px]"
                 />
               </FormField>
             </FormSection>
-          </div>
+              </div>
 
-          <DialogFooter>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => {
-                setShowEditDialog(false);
-                setSelectedItem(null);
-                resetForm();
-              }}
-              className="h-12 px-8 text-base sm:w-auto w-full"
-            >
-              Hủy bỏ
-            </Button>
-            <Button
-              onClick={handleUpdate}
-              disabled={submitting}
-              className="h-12 px-8 text-base sm:w-auto w-full"
-            >
-              {submitting ? 'Đang lưu...' : 'Lưu thay đổi'}
-            </Button>
-          </DialogFooter>
+              <DialogFooter className="pt-6 border-t gap-3">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => {
+                    setShowEditDialog(false);
+                    setSelectedItem(null);
+                    resetForm();
+                  }}
+                  className="h-14 px-8 text-lg"
+                >
+                  Hủy bỏ
+                </Button>
+                <Button
+                  onClick={handleUpdate}
+                  disabled={submitting}
+                  className="h-14 px-8 text-lg font-semibold"
+                >
+                  {submitting ? 'Đang lưu...' : 'Lưu thay đổi'}
+                </Button>
+              </DialogFooter>
+            </div>
+          </div>
         </DialogContent>
       </Dialog>
 
@@ -2028,12 +2045,12 @@ export default function TransactionsPage() {
                     value={adjustmentFormData.adjustmentType}
                     onValueChange={(v) => setAdjustmentFormData({ ...adjustmentFormData, adjustmentType: v as 'increase' | 'decrease' })}
                   >
-                    <SelectTrigger className="h-12 text-base">
+                    <SelectTrigger className="h-14 text-lg">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="increase" className="text-base py-3">Tăng (+)</SelectItem>
-                      <SelectItem value="decrease" className="text-base py-3">Giảm (-)</SelectItem>
+                      <SelectItem value="increase" className="text-lg py-3">Tăng (+)</SelectItem>
+                      <SelectItem value="decrease" className="text-lg py-3">Giảm (-)</SelectItem>
                     </SelectContent>
                   </Select>
                 </FormField>
@@ -2044,12 +2061,12 @@ export default function TransactionsPage() {
                     value={adjustmentFormData.fundId}
                     onValueChange={(v) => setAdjustmentFormData({ ...adjustmentFormData, fundId: v })}
                   >
-                    <SelectTrigger className="h-12 text-base">
+                    <SelectTrigger className="h-14 text-lg">
                       <SelectValue placeholder="Chọn quỹ để điều chỉnh" />
                     </SelectTrigger>
                     <SelectContent>
                       {funds.filter(f => f._id).map((f) => (
-                        <SelectItem key={f._id!.toString()} value={f._id!.toString()} className="text-base py-3">
+                        <SelectItem key={f._id!.toString()} value={f._id!.toString()} className="text-lg py-3">
                           {f.fundName}
                         </SelectItem>
                       ))}
@@ -2064,13 +2081,13 @@ export default function TransactionsPage() {
                   value={adjustmentFormData.bankAccountId || "__none__"}
                   onValueChange={(v) => setAdjustmentFormData({ ...adjustmentFormData, bankAccountId: v === "__none__" ? "" : v })}
                 >
-                  <SelectTrigger className="h-12 text-base">
+                  <SelectTrigger className="h-14 text-lg">
                     <SelectValue placeholder="Chọn tài khoản để điều chỉnh" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="__none__" className="text-base py-3">-- Không chọn --</SelectItem>
+                    <SelectItem value="__none__" className="text-lg py-3">-- Không chọn --</SelectItem>
                     {bankAccounts.map((ba) => (
-                      <SelectItem key={ba._id!.toString()} value={ba._id!.toString()} className="text-base py-3">
+                      <SelectItem key={ba._id!.toString()} value={ba._id!.toString()} className="text-lg py-3">
                         {ba.accountNumber} - {ba.bankName}
                       </SelectItem>
                     ))}
@@ -2090,7 +2107,7 @@ export default function TransactionsPage() {
                     placeholder="0"
                     value={adjustmentFormData.amount}
                     onChange={(e) => setAdjustmentFormData({ ...adjustmentFormData, amount: e.target.value })}
-                    className="h-12 text-base"
+                    className="h-14 text-lg"
                   />
                 </FormField>
 
@@ -2100,7 +2117,7 @@ export default function TransactionsPage() {
                     type="date"
                     value={adjustmentFormData.adjustmentDate}
                     onChange={(e) => setAdjustmentFormData({ ...adjustmentFormData, adjustmentDate: e.target.value })}
-                    className="h-12 text-base"
+                    className="h-14 text-lg"
                   />
                 </FormField>
               </FormGrid>
@@ -2114,7 +2131,7 @@ export default function TransactionsPage() {
                   placeholder="Nhập lý do điều chỉnh"
                   value={adjustmentFormData.description}
                   onChange={(e) => setAdjustmentFormData({ ...adjustmentFormData, description: e.target.value })}
-                  className="text-base min-h-20"
+                  className="text-lg min-h-[100px]"
                 />
               </FormField>
 
@@ -2133,7 +2150,7 @@ export default function TransactionsPage() {
                   placeholder="Ghi chú thêm"
                   value={adjustmentFormData.notes}
                   onChange={(e) => setAdjustmentFormData({ ...adjustmentFormData, notes: e.target.value })}
-                  className="text-base min-h-20"
+                  className="text-lg min-h-[100px]"
                 />
               </FormField>
             </FormSection>
@@ -2178,12 +2195,12 @@ export default function TransactionsPage() {
                   value={adjustmentFormData.parishId}
                   onValueChange={(v) => setAdjustmentFormData({ ...adjustmentFormData, parishId: v })}
                 >
-                  <SelectTrigger className="h-12 text-base">
+                  <SelectTrigger className="h-14 text-lg">
                     <SelectValue placeholder="Chọn giáo xứ" />
                   </SelectTrigger>
                   <SelectContent>
                     {parishes.filter(p => p._id).map((p) => (
-                      <SelectItem key={p._id!.toString()} value={p._id!.toString()} className="text-base py-3">
+                      <SelectItem key={p._id!.toString()} value={p._id!.toString()} className="text-lg py-3">
                         {p.parishName}
                       </SelectItem>
                     ))}
@@ -2198,12 +2215,12 @@ export default function TransactionsPage() {
                     value={adjustmentFormData.adjustmentType}
                     onValueChange={(v) => setAdjustmentFormData({ ...adjustmentFormData, adjustmentType: v as 'increase' | 'decrease' })}
                   >
-                    <SelectTrigger className="h-12 text-base">
+                    <SelectTrigger className="h-14 text-lg">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="increase" className="text-base py-3">Tăng (+)</SelectItem>
-                      <SelectItem value="decrease" className="text-base py-3">Giảm (-)</SelectItem>
+                      <SelectItem value="increase" className="text-lg py-3">Tăng (+)</SelectItem>
+                      <SelectItem value="decrease" className="text-lg py-3">Giảm (-)</SelectItem>
                     </SelectContent>
                   </Select>
                 </FormField>
@@ -2214,12 +2231,12 @@ export default function TransactionsPage() {
                     value={adjustmentFormData.fundId}
                     onValueChange={(v) => setAdjustmentFormData({ ...adjustmentFormData, fundId: v })}
                   >
-                    <SelectTrigger className="h-12 text-base">
+                    <SelectTrigger className="h-14 text-lg">
                       <SelectValue placeholder="Chọn quỹ để điều chỉnh" />
                     </SelectTrigger>
                     <SelectContent>
                       {funds.filter(f => f._id).map((f) => (
-                        <SelectItem key={f._id!.toString()} value={f._id!.toString()} className="text-base py-3">
+                        <SelectItem key={f._id!.toString()} value={f._id!.toString()} className="text-lg py-3">
                           {f.fundName}
                         </SelectItem>
                       ))}
@@ -2234,13 +2251,13 @@ export default function TransactionsPage() {
                   value={adjustmentFormData.bankAccountId || "__none__"}
                   onValueChange={(v) => setAdjustmentFormData({ ...adjustmentFormData, bankAccountId: v === "__none__" ? "" : v })}
                 >
-                  <SelectTrigger className="h-12 text-base">
+                  <SelectTrigger className="h-14 text-lg">
                     <SelectValue placeholder="Chọn tài khoản để điều chỉnh" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="__none__" className="text-base py-3">-- Không chọn --</SelectItem>
+                    <SelectItem value="__none__" className="text-lg py-3">-- Không chọn --</SelectItem>
                     {bankAccounts.map((ba) => (
-                      <SelectItem key={ba._id!.toString()} value={ba._id!.toString()} className="text-base py-3">
+                      <SelectItem key={ba._id!.toString()} value={ba._id!.toString()} className="text-lg py-3">
                         {ba.accountNumber} - {ba.bankName}
                       </SelectItem>
                     ))}
@@ -2260,7 +2277,7 @@ export default function TransactionsPage() {
                     placeholder="0"
                     value={adjustmentFormData.amount}
                     onChange={(e) => setAdjustmentFormData({ ...adjustmentFormData, amount: e.target.value })}
-                    className="h-12 text-base"
+                    className="h-14 text-lg"
                   />
                 </FormField>
 
@@ -2270,7 +2287,7 @@ export default function TransactionsPage() {
                     type="date"
                     value={adjustmentFormData.adjustmentDate}
                     onChange={(e) => setAdjustmentFormData({ ...adjustmentFormData, adjustmentDate: e.target.value })}
-                    className="h-12 text-base"
+                    className="h-14 text-lg"
                   />
                 </FormField>
               </FormGrid>
@@ -2284,7 +2301,7 @@ export default function TransactionsPage() {
                   placeholder="Nhập lý do điều chỉnh"
                   value={adjustmentFormData.description}
                   onChange={(e) => setAdjustmentFormData({ ...adjustmentFormData, description: e.target.value })}
-                  className="text-base min-h-20"
+                  className="text-lg min-h-[100px]"
                 />
               </FormField>
 
@@ -2303,7 +2320,7 @@ export default function TransactionsPage() {
                   placeholder="Ghi chú thêm"
                   value={adjustmentFormData.notes}
                   onChange={(e) => setAdjustmentFormData({ ...adjustmentFormData, notes: e.target.value })}
-                  className="text-base min-h-20"
+                  className="text-lg min-h-[100px]"
                 />
               </FormField>
             </FormSection>
@@ -2341,6 +2358,22 @@ export default function TransactionsPage() {
           onClose={() => setShowGallery(false)}
         />
       )}
+
+      {/* Delete Confirmation Dialog */}
+      <ConfirmDeleteDialog
+        open={showDeleteDialog}
+        onOpenChange={(open) => {
+          setShowDeleteDialog(open);
+          if (!open) setDeleteTarget(null);
+        }}
+        onConfirm={confirmDelete}
+        description={
+          deleteTarget?.type === 'adjustment'
+            ? 'Bạn có chắc muốn xóa phiếu điều chỉnh này?'
+            : 'Bạn có chắc muốn xóa giao dịch này?'
+        }
+        loading={deleting}
+      />
     </div>
   );
 }

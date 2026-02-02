@@ -14,17 +14,8 @@ import {
   DialogDescription,
   DialogFooter,
 } from '@/components/ui/dialog';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
+import { ConfirmDeleteDialog } from '@/components/ui/confirm-delete-dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Plus, Pencil, Trash2, Shield, UserCog, Lock, CheckCircle, XCircle, User, Key } from 'lucide-react';
@@ -461,35 +452,32 @@ export default function UsersPage() {
                     </TableCell>
                     {isSuperAdmin && (
                       <TableCell className="py-4">
-                        <div className="flex justify-end gap-2">
+                        <div className="flex justify-end gap-1">
                           {u.role !== 'super_admin' && (
                             <>
                               <Button
-                                variant="outline"
-                                size="sm"
+                                variant="ghost"
+                                className="action-btn"
                                 onClick={() => openEditDialog(u)}
-                                className="h-10 px-3 text-sm"
+                                title="Chỉnh sửa"
                               >
-                                <Pencil size={16} className="mr-1" />
-                                Sửa
+                                <Pencil size={18} />
                               </Button>
                               <Button
-                                variant="outline"
-                                size="sm"
+                                variant="ghost"
+                                className="action-btn"
                                 onClick={() => { setSelectedUser(u); setNewPassword(''); setShowPasswordDialog(true); }}
-                                className="h-10 px-3 text-sm"
+                                title="Đổi mật khẩu"
                               >
-                                <Lock size={16} className="mr-1" />
-                                Mật khẩu
+                                <Lock size={18} />
                               </Button>
                               <Button
-                                variant="outline"
-                                size="sm"
-                                className="h-10 px-3 text-sm text-red-600 border-red-200 hover:bg-red-50 hover:border-red-300"
+                                variant="ghost"
+                                className="action-btn text-red-600 hover:text-red-700 hover:bg-red-50"
                                 onClick={() => { setSelectedUser(u); setShowDeleteDialog(true); }}
+                                title="Xóa"
                               >
-                                <Trash2 size={16} className="mr-1" />
-                                Xóa
+                                <Trash2 size={18} />
                               </Button>
                             </>
                           )}
@@ -854,36 +842,16 @@ export default function UsersPage() {
       </Dialog>
 
       {/* Delete Confirmation Dialog */}
-      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-        <AlertDialogContent className="sm:max-w-lg">
-          <AlertDialogHeader>
-            <AlertDialogTitle className="text-xl flex items-center gap-2">
-              <Trash2 className="text-red-600" size={24} />
-              Xác nhận xóa người dùng
-            </AlertDialogTitle>
-            <AlertDialogDescription className="text-base mt-4 space-y-3">
-              <p>
-                Bạn có chắc chắn muốn xóa người dùng <strong className="text-gray-900">{selectedUser?.fullName}</strong>?
-              </p>
-              <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-800">
-                <strong>Cảnh báo:</strong> Hành động này không thể hoàn tác. Tất cả dữ liệu liên quan đến người dùng này sẽ bị xóa vĩnh viễn.
-              </div>
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter className="mt-6 gap-3">
-            <AlertDialogCancel className="h-12 px-6 text-base">
-              Hủy bỏ
-            </AlertDialogCancel>
-            <AlertDialogAction
-              className="bg-red-600 hover:bg-red-700 h-12 px-8 text-base font-semibold"
-              onClick={handleDelete}
-              disabled={submitting}
-            >
-              {submitting ? 'Đang xóa...' : 'Xác nhận xóa'}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <ConfirmDeleteDialog
+        open={showDeleteDialog}
+        onOpenChange={(open) => {
+          setShowDeleteDialog(open);
+          if (!open) setSelectedUser(null);
+        }}
+        onConfirm={handleDelete}
+        description={`Bạn có chắc chắn muốn xóa người dùng "${selectedUser?.fullName}"? Hành động này không thể hoàn tác.`}
+        loading={submitting}
+      />
     </div>
   );
 }

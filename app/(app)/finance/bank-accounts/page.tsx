@@ -33,6 +33,7 @@ import { Badge } from '@/components/ui/badge';
 import { Plus, Pencil, Trash2, Building2, Star } from 'lucide-react';
 import { useAuth } from '@/lib/auth-context';
 import { formatCompactCurrency } from '@/lib/utils';
+import { ConfirmDeleteDialog } from '@/components/ui/confirm-delete-dialog';
 
 interface BankAccountItem {
   _id: string;
@@ -116,6 +117,11 @@ export default function BankAccountsPage() {
   });
 
   const [submitting, setSubmitting] = useState(false);
+
+  // Delete confirmation dialog states
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<BankAccountItem | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     fetchAccounts();
@@ -234,15 +240,23 @@ export default function BankAccountsPage() {
     }
   };
 
-  const handleDelete = async (account: BankAccountItem) => {
-    if (!confirm(`Bạn có chắc muốn vô hiệu hóa tài khoản ${account.accountCode}?`)) return;
+  const handleDelete = (account: BankAccountItem) => {
+    setDeleteTarget(account);
+    setShowDeleteDialog(true);
+  };
 
+  const confirmDelete = async () => {
+    if (!deleteTarget) return;
+
+    setDeleting(true);
     try {
-      const response = await fetch(`/api/bank-accounts/${account._id}`, {
+      const response = await fetch(`/api/bank-accounts/${deleteTarget._id}`, {
         method: 'DELETE'
       });
 
       if (response.ok) {
+        setShowDeleteDialog(false);
+        setDeleteTarget(null);
         fetchAccounts();
         alert('Đã vô hiệu hóa tài khoản');
       } else {
@@ -252,6 +266,8 @@ export default function BankAccountsPage() {
     } catch (error) {
       console.error('Error deleting account:', error);
       alert('Không thể xóa tài khoản');
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -638,6 +654,20 @@ export default function BankAccountsPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <ConfirmDeleteDialog
+        open={showDeleteDialog}
+        onOpenChange={(open) => {
+          setShowDeleteDialog(open);
+          if (!open) setDeleteTarget(null);
+        }}
+        onConfirm={confirmDelete}
+        title="Xác nhận vô hiệu hóa"
+        description={`Bạn có chắc muốn vô hiệu hóa tài khoản ${deleteTarget?.accountCode}?`}
+        confirmText="Vô hiệu hóa"
+        loading={deleting}
+      />
     </div>
   );
 }

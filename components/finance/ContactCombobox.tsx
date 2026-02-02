@@ -73,21 +73,21 @@ export function ContactCombobox({
   };
 
   return (
-    <div className="flex  w-100 gap-3">
+    <div className="flex gap-2">
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
           <Button
             variant="outline"
             role="combobox"
             aria-expanded={open}
-            className="w-full justify-between font-normal"
+            className="flex-1 justify-between font-normal h-14 text-lg px-4"
             disabled={loading}
           >
             {selectedContact ? (
               <span className="truncate">
                 {selectedContact.name}
                 {selectedContact.phone && (
-                  <span className="text-muted-foreground ml-1">
+                  <span className="text-muted-foreground ml-2">
                     ({selectedContact.phone})
                   </span>
                 )}
@@ -95,31 +95,32 @@ export function ContactCombobox({
             ) : (
               <span className="text-muted-foreground">{placeholder}</span>
             )}
-            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+            <ChevronsUpDown className="ml-2 h-5 w-5 shrink-0 opacity-50" />
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="w-50 p-0" align="start">
+        <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0" align="start">
           <Command>
-            <CommandInput placeholder="Tìm theo tên hoặc SĐT..." />
-            <CommandList>
-              <CommandEmpty>Không tìm thấy đối tượng.</CommandEmpty>
+            <CommandInput placeholder="Tìm theo tên hoặc SĐT..." className="h-12 text-base" />
+            <CommandList className="max-h-[300px]">
+              <CommandEmpty className="py-4 text-base">Không tìm thấy đối tượng.</CommandEmpty>
               <CommandGroup>
                 {contacts.map((contact) => (
                   <CommandItem
                     key={contact._id}
                     value={`${contact.name} ${contact.phone || ''}`}
                     onSelect={() => handleSelect(contact._id)}
+                    className="py-3 px-3 text-base cursor-pointer"
                   >
                     <Check
                       className={cn(
-                        'mr-2 h-4 w-4',
+                        'mr-3 h-5 w-5',
                         value === contact._id ? 'opacity-100' : 'opacity-0'
                       )}
                     />
                     <div className="flex flex-col">
-                      <span>{contact.name}</span>
+                      <span className="text-base font-medium">{contact.name}</span>
                       {contact.phone && (
-                        <span className="text-xs text-muted-foreground">
+                        <span className="text-sm text-muted-foreground">
                           {contact.phone}
                         </span>
                       )}
@@ -136,10 +137,10 @@ export function ContactCombobox({
           type="button"
           variant="outline"
           size="icon"
+          className="h-14 w-14 shrink-0"
           onClick={onCreateNew}
-          title="Thêm mới đối tượng"
         >
-          <Plus className="h-4 w-4" />
+          <Plus className="h-6 w-6" />
         </Button>
       )}
     </div>

@@ -24,6 +24,7 @@ import {
 } from '@/components/ui/select';
 import { formatCompactCurrency } from '@/lib/utils';
 import { ArrowLeft, Building2, Church, Wallet, Plus, Pencil, Trash2 } from 'lucide-react';
+import { ConfirmDeleteDialog } from '@/components/ui/confirm-delete-dialog';
 
 interface Fund {
   _id: string;
@@ -77,6 +78,11 @@ export default function FundsPage() {
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [selectedFund, setSelectedFund] = useState<Fund | null>(null);
   const [submitting, setSubmitting] = useState(false);
+
+  // Delete confirmation dialog states
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<Fund | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   // Form data
   const [formData, setFormData] = useState({
@@ -189,15 +195,23 @@ export default function FundsPage() {
     }
   };
 
-  const handleDelete = async (fund: Fund) => {
-    if (!confirm(`Bạn có chắc muốn xóa quỹ "${fund.fundName}"?`)) return;
+  const handleDelete = (fund: Fund) => {
+    setDeleteTarget(fund);
+    setShowDeleteDialog(true);
+  };
 
+  const confirmDelete = async () => {
+    if (!deleteTarget) return;
+
+    setDeleting(true);
     try {
-      const response = await fetch(`/api/funds/${fund._id}`, {
+      const response = await fetch(`/api/funds/${deleteTarget._id}`, {
         method: 'DELETE',
       });
 
       if (response.ok) {
+        setShowDeleteDialog(false);
+        setDeleteTarget(null);
         fetchFunds();
         alert('Xóa quỹ thành công');
       } else {
@@ -207,6 +221,8 @@ export default function FundsPage() {
     } catch (error) {
       console.error('Error deleting fund:', error);
       alert('Không thể xóa quỹ');
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -576,6 +592,18 @@ export default function FundsPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <ConfirmDeleteDialog
+        open={showDeleteDialog}
+        onOpenChange={(open) => {
+          setShowDeleteDialog(open);
+          if (!open) setDeleteTarget(null);
+        }}
+        onConfirm={confirmDelete}
+        description={`Bạn có chắc muốn xóa quỹ "${deleteTarget?.fundName}"?`}
+        loading={deleting}
+      />
     </div>
   );
 }
