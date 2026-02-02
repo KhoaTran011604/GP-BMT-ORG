@@ -18,9 +18,16 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import {
+  FormSection,
+  FormField,
+  FormLabel,
+  FormGrid,
+} from '@/components/ui/form-section';
 import { useAuth } from '@/lib/auth-context';
 import { Plus, Edit2, Trash2, Search } from 'lucide-react';
 
@@ -164,12 +171,12 @@ export default function ParishPage() {
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold">Quản lý Giáo xứ</h1>
-          <p className="text-gray-600">Danh sách các giáo xứ trong Giáo phận</p>
+          <h1 className="page-title">Quản lý Giáo xứ</h1>
+          <p className="page-description">Danh sách các giáo xứ trong Giáo phận</p>
         </div>
         {canEdit && (
-          <Button onClick={() => handleOpenDialog()} className="gap-2">
-            <Plus size={20} />
+          <Button onClick={() => handleOpenDialog()} className="h-12 px-6 text-base font-semibold">
+            <Plus size={20} className="mr-2" />
             Thêm Giáo xứ
           </Button>
         )}
@@ -179,39 +186,42 @@ export default function ParishPage() {
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <div>
-            <CardTitle>Danh sách Giáo xứ</CardTitle>
-            <CardDescription>
+            <CardTitle className="text-xl sm:text-2xl">Danh sách Giáo xứ</CardTitle>
+            <CardDescription className="text-base mt-1">
               {filteredParishes.length} / {parishes.length} giáo xứ
             </CardDescription>
           </div>
-          <div className="relative w-72">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+          <div className="relative w-80">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
             <Input
               placeholder="Tìm kiếm theo tên, mã, bổn mạng..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10"
+              className="pl-12 h-12 text-base"
             />
           </div>
         </CardHeader>
         <CardContent>
           {loading ? (
-            <div className="text-center py-8 text-gray-500">Đang tải dữ liệu...</div>
+            <div className="empty-state">
+              <p className="empty-state-text">Đang tải dữ liệu...</p>
+            </div>
           ) : filteredParishes.length === 0 ? (
-            <div className="text-center py-8 text-gray-500">
+            <div className="empty-state">
               {parishes.length === 0 ? (
                 <>
-                  <p className="mb-4">Chưa có Giáo xứ nào</p>
+                  <p className="empty-state-icon">⛪</p>
+                  <p className="empty-state-text mb-4">Chưa có Giáo xứ nào</p>
                   {canEdit && (
-                    <Button onClick={() => handleOpenDialog()}>Thêm Giáo xứ đầu tiên</Button>
+                    <Button onClick={() => handleOpenDialog()} className="h-12 px-6 text-base font-semibold">Thêm Giáo xứ đầu tiên</Button>
                   )}
                 </>
               ) : (
-                <p>Không tìm thấy giáo xứ phù hợp</p>
+                <p className="empty-state-text">Không tìm thấy giáo xứ phù hợp</p>
               )}
             </div>
           ) : (
-            <Table>
+            <Table className="table-lg">
               <TableHeader>
                 <TableRow>
                   <TableHead>Mã GX</TableHead>
@@ -246,23 +256,22 @@ export default function ParishPage() {
                     </TableCell>
                     <TableCell>
                       {canEdit && (
-                        <div className="flex gap-1">
+                        <div className="flex gap-2">
                           <Button
                             variant="ghost"
-                            size="icon"
                             onClick={() => handleOpenDialog(parish)}
-                            title="Sửa"
+                            title="Chỉnh sửa"
+                            className="action-btn"
                           >
-                            <Edit2 size={16} />
+                            <Edit2 />
                           </Button>
                           <Button
                             variant="ghost"
-                            size="icon"
-                            className="text-red-600 hover:text-red-700"
+                            className="action-btn text-red-600 hover:text-red-700 hover:bg-red-50"
                             onClick={() => handleDelete(parish._id)}
                             title="Xóa"
                           >
-                            <Trash2 size={16} />
+                            <Trash2 />
                           </Button>
                         </div>
                       )}
@@ -277,7 +286,7 @@ export default function ParishPage() {
 
       {/* Add/Edit Dialog */}
       <Dialog open={showDialog} onOpenChange={setShowDialog}>
-        <DialogContent>
+        <DialogContent size="lg">
           <DialogHeader>
             <DialogTitle>
               {editingParish ? 'Cập nhật Giáo xứ' : 'Thêm Giáo xứ mới'}
@@ -289,103 +298,126 @@ export default function ParishPage() {
             </DialogDescription>
           </DialogHeader>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Mã Giáo xứ *</label>
-              <Input
-                placeholder="VD: GX001"
-                value={formData.parishCode}
-                onChange={(e) =>
-                  setFormData({ ...formData, parishCode: e.target.value })
-                }
-                required
-                disabled={!!editingParish}
-              />
-            </div>
+          <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Section 1: Thông tin cơ bản */}
+            <FormSection title="Thông tin cơ bản">
+              <FormGrid columns={2}>
+                <FormField>
+                  <FormLabel required>Mã Giáo xứ</FormLabel>
+                  <Input
+                    placeholder="VD: GX001"
+                    value={formData.parishCode}
+                    onChange={(e) =>
+                      setFormData({ ...formData, parishCode: e.target.value })
+                    }
+                    required
+                    disabled={!!editingParish}
+                    className="h-12 text-base"
+                  />
+                </FormField>
 
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Tên Giáo xứ *</label>
-              <Input
-                placeholder="VD: Giáo xứ Thánh Phaolô"
-                value={formData.parishName}
-                onChange={(e) =>
-                  setFormData({ ...formData, parishName: e.target.value })
-                }
-                required
-              />
-            </div>
+                <FormField>
+                  <FormLabel required>Tên Giáo xứ</FormLabel>
+                  <Input
+                    placeholder="VD: Giáo xứ Thánh Phaolô"
+                    value={formData.parishName}
+                    onChange={(e) =>
+                      setFormData({ ...formData, parishName: e.target.value })
+                    }
+                    required
+                    className="h-12 text-base"
+                  />
+                </FormField>
+              </FormGrid>
+            </FormSection>
 
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Bổn mạng *</label>
-              <Input
-                placeholder="VD: Thánh Phaolô"
-                value={formData.patronSaint}
-                onChange={(e) =>
-                  setFormData({ ...formData, patronSaint: e.target.value })
-                }
-                required
-              />
-            </div>
+            {/* Section 2: Bổn mạng */}
+            <FormSection title="Bổn mạng Giáo xứ">
+              <FormGrid columns={2}>
+                <FormField>
+                  <FormLabel required>Thánh Bổn mạng</FormLabel>
+                  <Input
+                    placeholder="VD: Thánh Phaolô"
+                    value={formData.patronSaint}
+                    onChange={(e) =>
+                      setFormData({ ...formData, patronSaint: e.target.value })
+                    }
+                    required
+                    className="h-12 text-base"
+                  />
+                </FormField>
 
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Ngày lễ Bổn mạng</label>
-              <Input
-                placeholder="VD: 29/6"
-                value={formData.feastDay}
-                onChange={(e) =>
-                  setFormData({ ...formData, feastDay: e.target.value })
-                }
-              />
-            </div>
+                <FormField>
+                  <FormLabel>Ngày lễ Bổn mạng</FormLabel>
+                  <Input
+                    placeholder="VD: 29/6"
+                    value={formData.feastDay}
+                    onChange={(e) =>
+                      setFormData({ ...formData, feastDay: e.target.value })
+                    }
+                    className="h-12 text-base"
+                  />
+                </FormField>
+              </FormGrid>
+            </FormSection>
 
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Địa chỉ *</label>
-              <Input
-                placeholder="Địa chỉ Giáo xứ"
-                value={formData.address}
-                onChange={(e) =>
-                  setFormData({ ...formData, address: e.target.value })
-                }
-                required
-              />
-            </div>
+            {/* Section 3: Thông tin liên hệ */}
+            <FormSection title="Thông tin liên hệ">
+              <FormField>
+                <FormLabel required>Địa chỉ</FormLabel>
+                <Input
+                  placeholder="Địa chỉ Giáo xứ"
+                  value={formData.address}
+                  onChange={(e) =>
+                    setFormData({ ...formData, address: e.target.value })
+                  }
+                  required
+                  className="h-12 text-base"
+                />
+              </FormField>
 
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Điện thoại</label>
-              <Input
-                placeholder="0123456789"
-                value={formData.phone}
-                onChange={(e) =>
-                  setFormData({ ...formData, phone: e.target.value })
-                }
-              />
-            </div>
+              <FormGrid columns={2}>
+                <FormField>
+                  <FormLabel>Điện thoại</FormLabel>
+                  <Input
+                    placeholder="0123456789"
+                    value={formData.phone}
+                    onChange={(e) =>
+                      setFormData({ ...formData, phone: e.target.value })
+                    }
+                    className="h-12 text-base"
+                  />
+                </FormField>
 
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Email</label>
-              <Input
-                type="email"
-                placeholder="email@example.com"
-                value={formData.email}
-                onChange={(e) =>
-                  setFormData({ ...formData, email: e.target.value })
-                }
-              />
-            </div>
+                <FormField>
+                  <FormLabel>Email</FormLabel>
+                  <Input
+                    type="email"
+                    placeholder="email@example.com"
+                    value={formData.email}
+                    onChange={(e) =>
+                      setFormData({ ...formData, email: e.target.value })
+                    }
+                    className="h-12 text-base"
+                  />
+                </FormField>
+              </FormGrid>
+            </FormSection>
 
-            <div className="flex gap-2 pt-4">
+            {/* Actions */}
+            <DialogFooter>
               <Button
                 type="button"
                 variant="outline"
                 onClick={() => setShowDialog(false)}
-                className="flex-1"
+                className="h-12 px-8 text-base sm:w-auto w-full"
               >
-                Hủy
+                Hủy bỏ
               </Button>
-              <Button type="submit" className="flex-1">
-                {editingParish ? 'Cập nhật' : 'Thêm'}
+              <Button type="submit" className="h-12 px-8 text-base sm:w-auto w-full">
+                {editingParish ? 'Cập nhật' : 'Thêm mới'}
               </Button>
-            </div>
+            </DialogFooter>
           </form>
         </DialogContent>
       </Dialog>

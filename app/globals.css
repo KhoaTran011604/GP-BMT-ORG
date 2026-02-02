@@ -147,3 +147,95 @@
     scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
   }
 }
+
+/* ========================================
+   ELDERLY-FRIENDLY UI STYLES
+   Font lớn, rõ ràng, dễ sử dụng cho người già
+   ======================================== */
+
+@layer components {
+  /* Page Headers - Tiêu đề trang lớn */
+  .page-title {
+    @apply text-2xl sm:text-3xl font-bold text-gray-900;
+  }
+
+  .page-description {
+    @apply text-base sm:text-lg text-gray-600 mt-1;
+  }
+
+  /* Cards - Thẻ thông tin */
+  .stat-card {
+    @apply p-5 sm:p-6;
+  }
+
+  .stat-value {
+    @apply text-3xl sm:text-4xl font-bold;
+  }
+
+  .stat-label {
+    @apply text-base sm:text-lg text-gray-600 mt-1;
+  }
+
+  /* Form Elements - Các thành phần form */
+  .form-input-lg {
+    @apply h-12 text-base px-4;
+  }
+
+  .form-select-lg {
+    @apply h-12 text-base;
+  }
+
+  .form-label-lg {
+    @apply text-base font-medium text-gray-700 mb-2 block;
+  }
+
+  /* Buttons - Nút bấm lớn */
+  .btn-lg {
+    @apply h-12 px-6 text-base font-medium;
+  }
+
+  .btn-xl {
+    @apply h-14 px-8 text-lg font-medium;
+  }
+
+  /* Table - Bảng dữ liệu */
+  .table-lg th {
+    @apply text-sm sm:text-base font-semibold py-4 px-4;
+  }
+
+  .table-lg td {
+    @apply text-sm sm:text-base py-4 px-4;
+  }
+
+  /* Action Buttons in Table */
+  .action-btn {
+    @apply h-10 w-10 p-0 flex items-center justify-center;
+  }
+
+  .action-btn svg {
+    @apply h-5 w-5;
+  }
+
+  /* Search Input */
+  .search-input {
+    @apply h-12 text-base pl-12 pr-4;
+  }
+
+  /* Badge/Status */
+  .status-badge {
+    @apply px-3 py-1.5 rounded-full text-sm font-medium;
+  }
+
+  /* Empty State */
+  .empty-state {
+    @apply text-center py-16;
+  }
+
+  .empty-state-icon {
+    @apply text-6xl mb-4;
+  }
+
+  .empty-state-text {
+    @apply text-lg text-gray-500;
+  }
+}

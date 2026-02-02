@@ -301,13 +301,12 @@ export function TransactionFilters({
             <SheetTrigger asChild>
                 <Button
                     variant={activeFilterCount > 0 ? "default" : "outline"}
-                    size="sm"
-                    className="gap-2"
+                    className="h-10 px-5 text-base gap-2"
                 >
-                    <Filter size={16} />
+                    <Filter size={20} />
                     Bộ lọc
                     {activeFilterCount > 0 && (
-                        <Badge className="ml-1 bg-red-500 text-white text-xs px-1.5 py-0">
+                        <Badge className="ml-1 bg-red-500 text-white text-sm px-2 py-0.5">
                             {activeFilterCount}
                         </Badge>
                     )}
@@ -622,16 +621,16 @@ export function TransactionFilters({
                     )}
 
                     {/* Apply Button */}
-                    <div className="border-t pt-4 mt-4 flex gap-2">
+                    <div className="border-t pt-4 mt-4 flex gap-3">
                         <Button
                             variant="outline"
-                            className="flex-1"
+                            className="flex-1 h-12 text-base"
                             onClick={handleResetAndApply}
                         >
                             Đặt lại
                         </Button>
                         <Button
-                            className="flex-1"
+                            className="flex-1 h-12 text-base"
                             onClick={handleApply}
                         >
                             Áp dụng

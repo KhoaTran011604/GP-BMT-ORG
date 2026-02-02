@@ -381,10 +381,10 @@ export function BatchApproveDialog({
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent>
+            <DialogContent size="lg" className="max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
-                    <DialogTitle>Xác nhận duyệt hàng loạt</DialogTitle>
-                    <DialogDescription>
+                    <DialogTitle className="text-xl">Xác nhận duyệt hàng loạt</DialogTitle>
+                    <DialogDescription className="text-base">
                         Bạn sắp duyệt {selectedCount} khoản {transactionType === 'income' ? 'thu' : 'chi'} đang chờ xử lý.
                     </DialogDescription>
                 </DialogHeader>
@@ -392,17 +392,17 @@ export function BatchApproveDialog({
                 <div className="space-y-4">
                     {hasInvalidTransactions && (
                         <div className="bg-red-50 border border-red-200 p-4 rounded-lg">
-                            <p className="text-sm text-red-800 font-medium mb-2">
+                            <p className="text-base text-red-800 font-medium mb-2">
                                 Không thể duyệt {invalidTransactions.length} khoản sau do phương thức thanh toán chưa khả dụng:
                             </p>
-                            <ul className="text-sm text-red-700 list-disc pl-5 space-y-1">
+                            <ul className="text-base text-red-700 list-disc pl-5 space-y-1">
                                 {invalidTransactions.map(t => (
                                     <li key={t._id}>
                                         <span className="font-mono">{t.code}</span> - {transactionType === 'income' ? 'Người nộp' : 'Người nhận'} chưa cung cấp tài khoản ngân hàng
                                     </li>
                                 ))}
                             </ul>
-                            <p className="text-sm text-red-600 mt-2">
+                            <p className="text-base text-red-600 mt-2">
                                 Vui lòng bỏ chọn các khoản này hoặc cập nhật thông tin ngân hàng cho {transactionType === 'income' ? 'người nộp' : 'người nhận'}.
                             </p>
                         </div>
@@ -411,12 +411,12 @@ export function BatchApproveDialog({
                     {!hasInvalidTransactions && (
                         <>
                             <div className="bg-blue-50 border border-blue-200 p-4 rounded-lg">
-                                <p className="text-sm text-blue-800">
+                                <p className="text-base text-blue-800">
                                     <strong>Tạo phiếu riêng biệt:</strong> Hệ thống sẽ tự động tạo <strong>{selectedCount} phiếu {transactionType === 'income' ? 'thu' : 'chi'} riêng biệt</strong> (mỗi khoản sẽ có 1 phiếu riêng).
                                 </p>
                             </div>
                             <div className="bg-amber-50 border border-amber-200 p-4 rounded-lg">
-                                <p className="text-sm text-amber-800">
+                                <p className="text-base text-amber-800">
                                     <strong>Lưu ý:</strong> Hành động này không thể hoàn tác.
                                 </p>
                             </div>
@@ -424,29 +424,29 @@ export function BatchApproveDialog({
                     )}
 
                     <div>
-                        <p className="text-sm font-medium mb-2">Danh sách các khoản được chọn:</p>
-                        <div className="max-h-40 overflow-y-auto border rounded-lg">
+                        <p className="text-base font-medium mb-2">Danh sách các khoản được chọn:</p>
+                        <div className="max-h-48 overflow-y-auto border rounded-lg">
                             {transactions.map(t => {
                                 const isInvalid = invalidTransactions.some(inv => inv._id === t._id);
                                 return (
-                                    <div key={t._id} className={`flex justify-between items-center p-2 border-b last:border-b-0 ${isInvalid ? 'bg-red-50' : 'hover:bg-gray-50'}`}>
+                                    <div key={t._id} className={`flex justify-between items-center p-3 border-b last:border-b-0 ${isInvalid ? 'bg-red-50' : 'hover:bg-gray-50'}`}>
                                         <div className="flex items-center gap-2">
-                                            {isInvalid && <XCircle size={14} className="text-red-500" />}
-                                            <span className={`font-mono text-sm ${isInvalid ? 'text-red-600' : ''}`}>{t.code}</span>
+                                            {isInvalid && <XCircle size={18} className="text-red-500" />}
+                                            <span className={`font-mono text-base ${isInvalid ? 'text-red-600' : ''}`}>{t.code}</span>
                                             {t.paymentMethod === 'online' && (
-                                                <span className="text-xs text-blue-600 bg-blue-100 px-1.5 py-0.5 rounded">CK</span>
+                                                <span className="text-sm text-blue-600 bg-blue-100 px-2 py-0.5 rounded">CK</span>
                                             )}
                                         </div>
-                                        <span className={`font-semibold ${transactionType === 'income' ? 'text-green-600' : 'text-red-600'}`}>
+                                        <span className={`font-semibold text-base ${transactionType === 'income' ? 'text-green-600' : 'text-red-600'}`}>
                                             {formatCompactCurrency(t.amount)}
                                         </span>
                                     </div>
                                 );
                             })}
                         </div>
-                        <div className="mt-2 pt-2 border-t flex justify-between items-center">
-                            <span className="font-medium">Tổng cộng:</span>
-                            <span className={`font-bold text-lg ${transactionType === 'income' ? 'text-green-600' : 'text-red-600'}`}>
+                        <div className="mt-3 pt-3 border-t flex justify-between items-center">
+                            <span className="font-medium text-base">Tổng cộng:</span>
+                            <span className={`font-bold text-xl ${transactionType === 'income' ? 'text-green-600' : 'text-red-600'}`}>
                                 {formatCompactCurrency(totalAmount)}
                             </span>
                         </div>
@@ -458,11 +458,12 @@ export function BatchApproveDialog({
                         variant="outline"
                         onClick={() => onOpenChange(false)}
                         disabled={processing}
+                        className="h-12 px-8 text-base sm:w-auto w-full"
                     >
-                        Hủy
+                        Hủy bỏ
                     </Button>
                     <Button
-                        className="bg-green-600 hover:bg-green-700"
+                        className="h-12 px-8 text-base bg-green-600 hover:bg-green-700 sm:w-auto w-full"
                         onClick={onConfirm}
                         disabled={processing || hasInvalidTransactions}
                     >
@@ -470,7 +471,7 @@ export function BatchApproveDialog({
                             <>Đang xử lý...</>
                         ) : (
                             <>
-                                <CheckCircle size={16} className="mr-2" />
+                                <CheckCircle size={20} className="mr-2" />
                                 Xác nhận duyệt {selectedCount} khoản
                             </>
                         )}

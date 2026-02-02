@@ -106,21 +106,25 @@ export function TransactionTable({
     const canManageApprovals = userRole === 'super_admin' || userRole === 'cha_quan_ly';
 
     if (loading) {
-        return <div className="text-center py-8 text-gray-500">Đang tải...</div>;
+        return (
+            <div className="empty-state">
+                <p className="empty-state-text">Đang tải dữ liệu...</p>
+            </div>
+        );
     }
 
     if (transactions.length === 0) {
         return (
-            <div className="text-center py-8 text-gray-500">
+            <div className="empty-state">
                 {hasActiveFilters ? (
                     <div>
-                        <p className="mb-2">Không tìm thấy giao dịch phù hợp với bộ lọc</p>
-                        <Button variant="outline" size="sm" onClick={onResetFilters}>
+                        <p className="empty-state-text mb-4">Không tìm thấy giao dịch phù hợp với bộ lọc</p>
+                        <Button variant="outline" className="btn-lg" onClick={onResetFilters}>
                             Xóa bộ lọc
                         </Button>
                     </div>
                 ) : (
-                    'Không có dữ liệu'
+                    <p className="empty-state-text">Không có dữ liệu</p>
                 )}
             </div>
         );
@@ -130,28 +134,27 @@ export function TransactionTable({
         <>
             {/* Batch Action Bar */}
             {selectedIds.size > 0 && (
-                <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                        <CheckSquare size={18} className="text-blue-600" />
-                        <span className="font-medium text-blue-700">
+                <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                        <CheckSquare size={24} className="text-blue-600" />
+                        <span className="font-medium text-lg text-blue-700">
                             Đã chọn {selectedIds.size} khoản {activeTab === 'income' ? 'thu' : 'chi'} đang chờ duyệt
                         </span>
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-3">
                         {canManageApprovals && (
                             <Button
-                                size="sm"
                                 onClick={onBatchApprove}
-                                className="bg-green-600 hover:bg-green-700"
+                                className="h-10 px-6 text-base bg-green-600 hover:bg-green-700"
                             >
-                                <CheckCircle size={16} className="mr-1" />
+                                <CheckCircle size={20} className="mr-2" />
                                 Duyệt {selectedIds.size} khoản
                             </Button>
                         )}
                         <Button
                             variant="outline"
-                            size="sm"
                             onClick={onClearSelection}
+                            className="h-10 px-6 text-base"
                         >
                             Bỏ chọn
                         </Button>
@@ -159,7 +162,7 @@ export function TransactionTable({
                 </div>
             )}
 
-            <Table>
+            <Table className="table-lg">
                 <TableHeader>
                     <TableRow>
                         {/* Checkbox column for pending items */}
@@ -221,61 +224,59 @@ export function TransactionTable({
                                 {item.images.length > 0 ? (
                                     <Button
                                         variant="ghost"
-                                        size="sm"
+                                        className="action-btn"
                                         onClick={() => onViewImages(item)}
+                                        title="Xem ảnh"
                                     >
-                                        <Eye size={16} className="mr-1" />
-                                        {item.images.length}
+                                        <Eye />
+                                        <span className="ml-1 text-sm">{item.images.length}</span>
                                     </Button>
                                 ) : (
-                                    <span className="text-gray-400 text-sm">-</span>
+                                    <span className="text-gray-400">-</span>
                                 )}
                             </TableCell>
                             <TableCell>
-                                <StatusBadge status={item.status} variant="sm" />
+                                <StatusBadge status={item.status} />
                             </TableCell>
                             <TableCell>
-                                <div className="flex gap-1">
+                                <div className="flex gap-2">
                                     <Button
                                         variant="ghost"
-                                        size="sm"
-                                        className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                                        className="action-btn text-blue-600 hover:text-blue-700 hover:bg-blue-50"
                                         onClick={() => onViewDetail(item)}
                                         title="Chi tiết"
                                     >
-                                        <FileText size={16} />
+                                        <FileText />
                                     </Button>
                                     {item.status === 'pending' && (
                                         <>
                                             <Button
                                                 variant="ghost"
-                                                size="icon"
+                                                className="action-btn"
                                                 onClick={() => onEdit(item)}
                                                 title="Sửa"
                                             >
-                                                <Pencil size={16} />
+                                                <Pencil />
                                             </Button>
                                             <Button
                                                 variant="ghost"
-                                                size="icon"
-                                                className="text-red-600 hover:text-red-700"
+                                                className="action-btn text-red-600 hover:text-red-700 hover:bg-red-50"
                                                 onClick={() => onDelete(item)}
                                                 title="Xóa"
                                             >
-                                                <Trash2 size={16} />
+                                                <Trash2 />
                                             </Button>
                                         </>
                                     )}
                                     {item.status === 'approved' && (
                                         <Button
                                             variant="outline"
-                                            size="sm"
-                                            className="text-purple-600 hover:text-purple-700 hover:bg-purple-50 border-purple-200 gap-1"
+                                            className="h-10 px-4 text-base text-purple-600 hover:text-purple-700 hover:bg-purple-50 border-purple-200 gap-1"
                                             onClick={() => onPrint(item)}
                                             disabled={loadingReceipt}
                                             title="In phiếu thu/chi"
                                         >
-                                            <Printer size={14} />
+                                            <Printer size={18} />
                                             In phiếu
                                         </Button>
                                     )}

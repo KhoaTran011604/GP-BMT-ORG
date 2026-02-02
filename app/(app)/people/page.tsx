@@ -5,15 +5,17 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Label } from '@/components/ui/label';
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { FormSection, FormField, FormLabel, FormGrid } from '@/components/ui/form-section';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Pencil, Trash2 } from 'lucide-react';
 
 interface Person {
   _id: string;
-  familyId: string;
+  parishId: string;
+  parishName?: string;
+  familyId?: string;
   familyName?: string;
   saintName: string;
   fullName: string;
@@ -28,22 +30,28 @@ interface Person {
   status: string;
 }
 
+interface Parish {
+  _id: string;
+  parishCode: string;
+  parishName: string;
+}
+
 export default function PeoplePage() {
   const [people, setPeople] = useState<Person[]>([]);
-  const [families, setFamilies] = useState<any[]>([]);
+  const [parishes, setParishes] = useState<Parish[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingPerson, setEditingPerson] = useState<Person | null>(null);
   const [deletingPerson, setDeletingPerson] = useState<Person | null>(null);
   const [formData, setFormData] = useState({
-    familyId: '',
+    parishId: '',
     saintName: '',
     fullName: '',
     gender: 'male' as 'male' | 'female',
     dob: '',
     birthplace: '',
-    relationship: 'chu_ho',
+    relationship: 'giao_dan',
     phone: '',
     email: '',
     occupation: '',
@@ -56,9 +64,9 @@ export default function PeoplePage() {
 
   const fetchData = async () => {
     try {
-      const [peopleRes, familiesRes] = await Promise.all([
+      const [peopleRes, parishesRes] = await Promise.all([
         fetch('/api/people'),
-        fetch('/api/families')
+        fetch('/api/parishes')
       ]);
 
       if (peopleRes.ok) {
@@ -66,9 +74,9 @@ export default function PeoplePage() {
         setPeople(data.data || []);
       }
 
-      if (familiesRes.ok) {
-        const data = await familiesRes.json();
-        setFamilies(data.data || []);
+      if (parishesRes.ok) {
+        const data = await parishesRes.json();
+        setParishes(data.data || []);
       }
     } catch (error) {
       console.error('Error fetching data:', error);
@@ -97,13 +105,13 @@ export default function PeoplePage() {
         setIsDialogOpen(false);
         setEditingPerson(null);
         setFormData({
-          familyId: '',
+          parishId: '',
           saintName: '',
           fullName: '',
           gender: 'male',
           dob: '',
           birthplace: '',
-          relationship: 'chu_ho',
+          relationship: 'giao_dan',
           phone: '',
           email: '',
           occupation: '',
@@ -119,13 +127,13 @@ export default function PeoplePage() {
   const handleEdit = (person: Person) => {
     setEditingPerson(person);
     setFormData({
-      familyId: person.familyId,
+      parishId: person.parishId || '',
       saintName: person.saintName,
       fullName: person.fullName,
       gender: person.gender,
       dob: person.dob ? new Date(person.dob).toISOString().split('T')[0] : '',
       birthplace: person.birthplace || '',
-      relationship: person.relationship,
+      relationship: person.relationship || 'giao_dan',
       phone: person.phone || '',
       email: person.email || '',
       occupation: person.occupation || '',
@@ -156,13 +164,13 @@ export default function PeoplePage() {
     if (!open) {
       setEditingPerson(null);
       setFormData({
-        familyId: '',
+        parishId: '',
         saintName: '',
         fullName: '',
         gender: 'male',
         dob: '',
         birthplace: '',
-        relationship: 'chu_ho',
+        relationship: 'giao_dan',
         phone: '',
         email: '',
         occupation: '',
@@ -174,7 +182,7 @@ export default function PeoplePage() {
   const filteredPeople = people.filter(p =>
     p.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
     p.saintName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (p.familyName && p.familyName.toLowerCase().includes(searchTerm.toLowerCase()))
+    (p.parishName && p.parishName.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
   if (loading) {
@@ -189,146 +197,182 @@ export default function PeoplePage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Danh sách Giáo dân</h1>
-          <p className="text-gray-600">Quản lý thông tin giáo dân</p>
+          <h1 className="page-title">Danh sách Giáo dân</h1>
+          <p className="page-description">Quản lý thông tin giáo dân</p>
         </div>
         <Dialog open={isDialogOpen} onOpenChange={handleDialogClose}>
           <DialogTrigger asChild>
-            <Button>+ Thêm Giáo dân</Button>
+            <Button className="h-12 px-6 text-base">+ Thêm Giáo dân</Button>
           </DialogTrigger>
-          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogContent size="xl">
             <DialogHeader>
               <DialogTitle>{editingPerson ? 'Chỉnh sửa Giáo dân' : 'Thêm Giáo dân mới'}</DialogTitle>
             </DialogHeader>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="col-span-2">
-                  <Label>Gia đình *</Label>
-                  <Select
-                    value={formData.familyId}
-                    onValueChange={(value) => setFormData({ ...formData, familyId: value })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Chọn Gia đình" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {families.map((family) => (
-                        <SelectItem key={family._id} value={family._id}>
-                          {family.familyCode} - {family.familyName}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <Label>Tên thánh *</Label>
-                  <Input
-                    value={formData.saintName}
-                    onChange={(e) => setFormData({ ...formData, saintName: e.target.value })}
-                    placeholder="VD: Phaolo"
-                    required
-                  />
-                </div>
-                <div>
-                  <Label>Họ và tên *</Label>
-                  <Input
-                    value={formData.fullName}
-                    onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
-                    placeholder="VD: Nguyen Van A"
-                    required
-                  />
-                </div>
-                <div>
-                  <Label>Giới tính *</Label>
-                  <Select
-                    value={formData.gender}
-                    onValueChange={(value: 'male' | 'female') => setFormData({ ...formData, gender: value })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="male">Nam</SelectItem>
-                      <SelectItem value="female">Nữ</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <Label>Ngày sinh *</Label>
-                  <Input
-                    type="date"
-                    value={formData.dob}
-                    onChange={(e) => setFormData({ ...formData, dob: e.target.value })}
-                    required
-                  />
-                </div>
-                <div>
-                  <Label>Nơi sinh</Label>
-                  <Input
-                    value={formData.birthplace}
-                    onChange={(e) => setFormData({ ...formData, birthplace: e.target.value })}
-                    placeholder="Nơi sinh"
-                  />
-                </div>
-                <div>
-                  <Label>Quan hệ *</Label>
-                  <Select
-                    value={formData.relationship}
-                    onValueChange={(value) => setFormData({ ...formData, relationship: value })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="chu_ho">Chủ hộ</SelectItem>
-                      <SelectItem value="vo_chong">Vợ/Chồng</SelectItem>
-                      <SelectItem value="con">Con</SelectItem>
-                      <SelectItem value="cha_me">Cha/Mẹ</SelectItem>
-                      <SelectItem value="anh_chi_em">Anh/Chị/Em</SelectItem>
-                      <SelectItem value="khac">Khác</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <Label>Điện thoại</Label>
-                  <Input
-                    value={formData.phone}
-                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                    placeholder="Số điện thoại"
-                  />
-                </div>
-                <div>
-                  <Label>Email</Label>
-                  <Input
-                    type="email"
-                    value={formData.email}
-                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    placeholder="Email"
-                  />
-                </div>
-                <div>
-                  <Label>Nghề nghiệp</Label>
-                  <Input
-                    value={formData.occupation}
-                    onChange={(e) => setFormData({ ...formData, occupation: e.target.value })}
-                    placeholder="Nghề nghiệp"
-                  />
-                </div>
-                <div className="col-span-2">
-                  <Label>Ghi chú</Label>
+            <form onSubmit={handleSubmit} className="space-y-6">
+              {/* Section 1: Thông tin Giáo xứ */}
+              <FormSection title="Thông tin Giáo xứ">
+                <FormGrid columns={2}>
+                  <FormField>
+                    <FormLabel required>Giáo xứ</FormLabel>
+                    <Select
+                      value={formData.parishId}
+                      onValueChange={(value) => setFormData({ ...formData, parishId: value })}
+                    >
+                      <SelectTrigger className="h-12 text-base">
+                        <SelectValue placeholder="Chọn Giáo xứ" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {parishes.map((parish) => (
+                          <SelectItem key={parish._id} value={parish._id} className="text-base py-3">
+                            {parish.parishCode} - {parish.parishName}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </FormField>
+                  <FormField>
+                    <FormLabel required>Vai trò</FormLabel>
+                    <Select
+                      value={formData.relationship}
+                      onValueChange={(value) => setFormData({ ...formData, relationship: value })}
+                    >
+                      <SelectTrigger className="h-12 text-base">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="giao_dan" className="text-base py-3">Giáo dân</SelectItem>
+                        <SelectItem value="giao_ly_vien" className="text-base py-3">Giáo lý viên</SelectItem>
+                        <SelectItem value="ca_vien" className="text-base py-3">Ca viên</SelectItem>
+                        <SelectItem value="hoi_dong" className="text-base py-3">Hội đồng Giáo xứ</SelectItem>
+                        <SelectItem value="tu_si" className="text-base py-3">Tu sĩ</SelectItem>
+                        <SelectItem value="khac" className="text-base py-3">Khác</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </FormField>
+                </FormGrid>
+              </FormSection>
+
+              {/* Section 2: Thông tin cá nhân */}
+              <FormSection title="Thông tin cá nhân">
+                <FormGrid columns={2}>
+                  <FormField>
+                    <FormLabel required>Tên thánh</FormLabel>
+                    <Input
+                      value={formData.saintName}
+                      onChange={(e) => setFormData({ ...formData, saintName: e.target.value })}
+                      placeholder="VD: Phaolô"
+                      required
+                      className="h-12 text-base"
+                    />
+                  </FormField>
+                  <FormField>
+                    <FormLabel required>Họ và tên</FormLabel>
+                    <Input
+                      value={formData.fullName}
+                      onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
+                      placeholder="VD: Nguyễn Văn A"
+                      required
+                      className="h-12 text-base"
+                    />
+                  </FormField>
+                  <FormField>
+                    <FormLabel required>Giới tính</FormLabel>
+                    <Select
+                      value={formData.gender}
+                      onValueChange={(value: 'male' | 'female') => setFormData({ ...formData, gender: value })}
+                    >
+                      <SelectTrigger className="h-12 text-base">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="male" className="text-base py-3">Nam</SelectItem>
+                        <SelectItem value="female" className="text-base py-3">Nữ</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </FormField>
+                  <FormField>
+                    <FormLabel required>Ngày sinh</FormLabel>
+                    <Input
+                      type="date"
+                      value={formData.dob}
+                      onChange={(e) => setFormData({ ...formData, dob: e.target.value })}
+                      required
+                      className="h-12 text-base"
+                    />
+                  </FormField>
+                  <FormField>
+                    <FormLabel>Nơi sinh</FormLabel>
+                    <Input
+                      value={formData.birthplace}
+                      onChange={(e) => setFormData({ ...formData, birthplace: e.target.value })}
+                      placeholder="Nơi sinh"
+                      className="h-12 text-base"
+                    />
+                  </FormField>
+                  <FormField>
+                    <FormLabel>Nghề nghiệp</FormLabel>
+                    <Input
+                      value={formData.occupation}
+                      onChange={(e) => setFormData({ ...formData, occupation: e.target.value })}
+                      placeholder="Nghề nghiệp"
+                      className="h-12 text-base"
+                    />
+                  </FormField>
+                </FormGrid>
+              </FormSection>
+
+              {/* Section 3: Thông tin liên hệ */}
+              <FormSection title="Thông tin liên hệ">
+                <FormGrid columns={2}>
+                  <FormField>
+                    <FormLabel>Điện thoại</FormLabel>
+                    <Input
+                      value={formData.phone}
+                      onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                      placeholder="Số điện thoại"
+                      className="h-12 text-base"
+                    />
+                  </FormField>
+                  <FormField>
+                    <FormLabel>Email</FormLabel>
+                    <Input
+                      type="email"
+                      value={formData.email}
+                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                      placeholder="Email"
+                      className="h-12 text-base"
+                    />
+                  </FormField>
+                </FormGrid>
+              </FormSection>
+
+              {/* Section 4: Ghi chú */}
+              <FormSection title="Ghi chú thêm">
+                <FormField>
+                  <FormLabel>Ghi chú</FormLabel>
                   <Input
                     value={formData.notes}
                     onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                    placeholder="Ghi chú"
+                    placeholder="Ghi chú thêm về giáo dân"
+                    className="h-12 text-base"
                   />
-                </div>
-              </div>
-              <div className="flex justify-end gap-2">
-                <Button type="button" variant="outline" onClick={() => handleDialogClose(false)}>
-                  Hủy
+                </FormField>
+              </FormSection>
+
+              {/* Actions */}
+              <DialogFooter>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => handleDialogClose(false)}
+                  className="h-12 px-8 text-base sm:w-auto w-full"
+                >
+                  Hủy bỏ
                 </Button>
-                <Button type="submit">{editingPerson ? 'Cập nhật' : 'Lưu'}</Button>
-              </div>
+                <Button type="submit" className="h-12 px-8 text-base sm:w-auto w-full">
+                  {editingPerson ? 'Cập nhật' : 'Lưu thông tin'}
+                </Button>
+              </DialogFooter>
             </form>
           </DialogContent>
         </Dialog>
@@ -337,33 +381,33 @@ export default function PeoplePage() {
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card>
-          <CardContent className="p-4">
-            <div className="text-2xl font-bold text-blue-600">{people.length}</div>
-            <p className="text-sm text-gray-600">Tổng số giáo dân</p>
+          <CardContent className="stat-card">
+            <div className="stat-value text-blue-600">{people.length}</div>
+            <p className="stat-label">Tổng số giáo dân</p>
           </CardContent>
         </Card>
         <Card>
-          <CardContent className="p-4">
-            <div className="text-2xl font-bold text-green-600">
+          <CardContent className="stat-card">
+            <div className="stat-value text-green-600">
               {people.filter(p => p.status === 'active').length}
             </div>
-            <p className="text-sm text-gray-600">Đang hoạt động</p>
+            <p className="stat-label">Đang hoạt động</p>
           </CardContent>
         </Card>
         <Card>
-          <CardContent className="p-4">
-            <div className="text-2xl font-bold text-orange-600">
+          <CardContent className="stat-card">
+            <div className="stat-value text-orange-600">
               {people.filter(p => p.gender === 'male').length}
             </div>
-            <p className="text-sm text-gray-600">Nam</p>
+            <p className="stat-label">Nam</p>
           </CardContent>
         </Card>
         <Card>
-          <CardContent className="p-4">
-            <div className="text-2xl font-bold text-purple-600">
+          <CardContent className="stat-card">
+            <div className="stat-value text-purple-600">
               {people.filter(p => p.gender === 'female').length}
             </div>
-            <p className="text-sm text-gray-600">Nữ</p>
+            <p className="stat-label">Nữ</p>
           </CardContent>
         </Card>
       </div>
@@ -371,31 +415,31 @@ export default function PeoplePage() {
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
-            <CardTitle>Danh sách Giáo dân ({filteredPeople.length})</CardTitle>
+            <CardTitle className="text-xl sm:text-2xl">Danh sách Giáo dân ({filteredPeople.length})</CardTitle>
             <Input
-              placeholder="Tìm kiếm..."
+              placeholder="Tìm kiếm theo tên, giáo xứ..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-64"
+              className="w-72 h-12 text-base"
             />
           </div>
         </CardHeader>
         <CardContent>
           {filteredPeople.length === 0 ? (
-            <div className="text-center py-12 text-gray-500">
-              <p className="text-4xl mb-4">👤</p>
-              <p>Chưa có giáo dân nào được đăng ký</p>
+            <div className="empty-state">
+              <p className="empty-state-icon">👤</p>
+              <p className="empty-state-text">Chưa có giáo dân nào được đăng ký</p>
             </div>
           ) : (
-            <Table>
+            <Table className="table-lg">
               <TableHeader>
                 <TableRow>
                   <TableHead>Tên thánh</TableHead>
                   <TableHead>Họ và tên</TableHead>
-                  <TableHead>Gia đình</TableHead>
+                  <TableHead>Giáo xứ</TableHead>
                   <TableHead>Giới tính</TableHead>
                   <TableHead>Ngày sinh</TableHead>
-                  <TableHead>Quan hệ</TableHead>
+                  <TableHead>Vai trò</TableHead>
                   <TableHead>Điện thoại</TableHead>
                   <TableHead>Trạng thái</TableHead>
                   <TableHead className="text-right">Thao tác</TableHead>
@@ -406,19 +450,19 @@ export default function PeoplePage() {
                   <TableRow key={person._id}>
                     <TableCell className="font-medium">{person.saintName}</TableCell>
                     <TableCell>{person.fullName}</TableCell>
-                    <TableCell>{person.familyName || '-'}</TableCell>
+                    <TableCell>{person.parishName || '-'}</TableCell>
                     <TableCell>{person.gender === 'male' ? 'Nam' : 'Nữ'}</TableCell>
                     <TableCell>{person.dob ? new Date(person.dob).toLocaleDateString('vi-VN') : '-'}</TableCell>
                     <TableCell>
-                      {person.relationship === 'chu_ho' ? 'Chủ hộ' :
-                       person.relationship === 'vo_chong' ? 'Vợ/Chồng' :
-                       person.relationship === 'con' ? 'Con' :
-                       person.relationship === 'cha_me' ? 'Cha/Mẹ' :
-                       person.relationship === 'anh_chi_em' ? 'Anh/Chị/Em' : 'Khác'}
+                      {person.relationship === 'giao_dan' ? 'Giáo dân' :
+                       person.relationship === 'giao_ly_vien' ? 'Giáo lý viên' :
+                       person.relationship === 'ca_vien' ? 'Ca viên' :
+                       person.relationship === 'hoi_dong' ? 'Hội đồng GX' :
+                       person.relationship === 'tu_si' ? 'Tu sĩ' : 'Khác'}
                     </TableCell>
                     <TableCell>{person.phone || '-'}</TableCell>
                     <TableCell>
-                      <span className={`px-2 py-1 rounded-full text-xs ${
+                      <span className={`status-badge ${
                         person.status === 'active'
                           ? 'bg-green-100 text-green-800'
                           : person.status === 'moved'
@@ -436,19 +480,19 @@ export default function PeoplePage() {
                       <div className="flex justify-end gap-2">
                         <Button
                           variant="ghost"
-                          size="sm"
                           onClick={() => handleEdit(person)}
-                          className="h-8 w-8 p-0"
+                          className="action-btn"
+                          title="Chỉnh sửa"
                         >
-                          <Pencil className="h-4 w-4" />
+                          <Pencil />
                         </Button>
                         <Button
                           variant="ghost"
-                          size="sm"
                           onClick={() => setDeletingPerson(person)}
-                          className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
+                          className="action-btn text-red-600 hover:text-red-700 hover:bg-red-50"
+                          title="Xóa"
                         >
-                          <Trash2 className="h-4 w-4" />
+                          <Trash2 />
                         </Button>
                       </div>
                     </TableCell>
@@ -462,19 +506,19 @@ export default function PeoplePage() {
 
       {/* Delete Confirmation Dialog */}
       <AlertDialog open={!!deletingPerson} onOpenChange={(open) => !open && setDeletingPerson(null)}>
-        <AlertDialogContent>
+        <AlertDialogContent className="sm:max-w-lg">
           <AlertDialogHeader>
-            <AlertDialogTitle>Xác nhận xóa</AlertDialogTitle>
-            <AlertDialogDescription>
+            <AlertDialogTitle className="text-xl sm:text-2xl">Xác nhận xóa</AlertDialogTitle>
+            <AlertDialogDescription className="text-base mt-3">
               Bạn có chắc chắn muốn xóa giáo dân <strong>{deletingPerson?.saintName} {deletingPerson?.fullName}</strong>?
               <br />
-              Hành động này không thể hoàn tác.
+              <span className="text-red-600 font-medium">Hành động này không thể hoàn tác.</span>
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Hủy</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete} className="bg-red-600 hover:bg-red-700">
-              Xóa
+          <AlertDialogFooter className="gap-3 mt-6">
+            <AlertDialogCancel className="h-12 px-6 text-base">Hủy bỏ</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete} className="h-12 px-6 text-base bg-red-600 hover:bg-red-700">
+              Xác nhận xóa
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

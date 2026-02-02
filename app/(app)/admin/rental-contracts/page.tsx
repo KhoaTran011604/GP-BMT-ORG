@@ -29,8 +29,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Plus, Pencil, Trash2, FileText, ArrowRightCircle, Eye, Receipt, CheckCircle, XCircle, Loader2 } from 'lucide-react';
+import { Plus, Pencil, Trash2, FileText, ArrowRightCircle, Eye, Receipt, CheckCircle, XCircle, Loader2, FileSignature, Users, Calendar, Building2, Wallet } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { FormSection, FormField, FormLabel, FormGrid } from '@/components/ui/form-section';
 import { useAuth } from '@/lib/auth-context';
 import { Fund, BankAccount } from '@/lib/schemas';
 import { formatCompactCurrency } from '@/lib/utils';
@@ -534,71 +535,104 @@ export default function RentalContractsPage() {
     <div className="container mx-auto p-6 space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold">Quản lý Hợp đồng Cho thuê</h1>
-          <p className="text-gray-500">Quản lý hợp đồng và chuyển đổi thành giao dịch</p>
+          <h1 className="page-title">Quản lý Hợp đồng Cho thuê</h1>
+          <p className="page-description">Quản lý hợp đồng và chuyển đổi thành giao dịch</p>
         </div>
         <Button onClick={() => {
           resetForm();
           setShowCreateDialog(true);
-        }} className="gap-2">
-          <Plus size={18} />
+        }} className="h-12 px-6 text-base font-semibold">
+          <Plus size={20} className="mr-2" />
           Tạo hợp đồng
         </Button>
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <Card>
-          <CardHeader className="pb-2">
-            <CardDescription>Tổng số hợp đồng</CardDescription>
-            <CardTitle className="text-2xl">{stats.total}</CardTitle>
-          </CardHeader>
+          <CardContent className="stat-card">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                <FileSignature className="text-blue-600" size={24} />
+              </div>
+              <div>
+                <div className="stat-value">{stats.total}</div>
+                <p className="stat-label">Tổng số hợp đồng</p>
+              </div>
+            </div>
+          </CardContent>
         </Card>
         <Card>
-          <CardHeader className="pb-2">
-            <CardDescription>Đang hoạt động</CardDescription>
-            <CardTitle className="text-2xl text-green-600">{stats.active}</CardTitle>
-          </CardHeader>
+          <CardContent className="stat-card">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                <CheckCircle className="text-green-600" size={24} />
+              </div>
+              <div>
+                <div className="stat-value text-green-600">{stats.active}</div>
+                <p className="stat-label">Đang hoạt động</p>
+              </div>
+            </div>
+          </CardContent>
         </Card>
         <Card>
-          <CardHeader className="pb-2">
-            <CardDescription>Hết hạn</CardDescription>
-            <CardTitle className="text-2xl text-gray-600">{stats.expired}</CardTitle>
-          </CardHeader>
+          <CardContent className="stat-card">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center">
+                <Calendar className="text-gray-600" size={24} />
+              </div>
+              <div>
+                <div className="stat-value text-gray-600">{stats.expired}</div>
+                <p className="stat-label">Hết hạn</p>
+              </div>
+            </div>
+          </CardContent>
         </Card>
         <Card>
-          <CardHeader className="pb-2">
-            <CardDescription>Doanh thu/tháng</CardDescription>
-            <CardTitle className="text-lg text-blue-600">{formatCompactCurrency(stats.totalRevenue)}</CardTitle>
-          </CardHeader>
+          <CardContent className="stat-card">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                <Wallet className="text-purple-600" size={24} />
+              </div>
+              <div>
+                <div className="stat-value text-purple-600">{formatCompactCurrency(stats.totalRevenue)}</div>
+                <p className="stat-label">Doanh thu/tháng</p>
+              </div>
+            </div>
+          </CardContent>
         </Card>
       </div>
 
       <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
+        <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
-            <CardTitle>Danh sách Hợp đồng</CardTitle>
-            <CardDescription>Quản lý các hợp đồng cho thuê bất động sản</CardDescription>
+            <CardTitle className="text-xl sm:text-2xl">Danh sách Hợp đồng</CardTitle>
+            <CardDescription className="text-base mt-1">Quản lý các hợp đồng cho thuê bất động sản</CardDescription>
           </div>
           <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="w-40">
+            <SelectTrigger className="h-12 text-base w-full sm:w-48">
               <SelectValue placeholder="Lọc trạng thái" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Tất cả</SelectItem>
-              <SelectItem value="active">Đang thuê</SelectItem>
-              <SelectItem value="pending">Chờ kích hoạt</SelectItem>
-              <SelectItem value="expired">Hết hạn</SelectItem>
-              <SelectItem value="terminated">Đã chấm dứt</SelectItem>
+              <SelectItem value="all" className="text-base py-3">Tất cả</SelectItem>
+              <SelectItem value="active" className="text-base py-3">Đang thuê</SelectItem>
+              <SelectItem value="pending" className="text-base py-3">Chờ kích hoạt</SelectItem>
+              <SelectItem value="expired" className="text-base py-3">Hết hạn</SelectItem>
+              <SelectItem value="terminated" className="text-base py-3">Đã chấm dứt</SelectItem>
             </SelectContent>
           </Select>
         </CardHeader>
         <CardContent>
           {loading ? (
-            <div className="text-center py-8 text-gray-500">Đang tải...</div>
+            <div className="empty-state">
+              <p className="empty-state-text">Đang tải...</p>
+            </div>
           ) : contracts.length === 0 ? (
-            <div className="text-center py-8 text-gray-500">Chưa có hợp đồng nào</div>
+            <div className="empty-state">
+              <FileSignature size={64} className="mx-auto mb-4 opacity-50" />
+              <p className="empty-state-text">Chưa có hợp đồng nào</p>
+            </div>
           ) : (
-            <Table>
+            <Table className="table-lg">
               <TableHeader>
                 <TableRow>
                   <TableHead>Mã HĐ</TableHead>
@@ -635,15 +669,15 @@ export default function RentalContractsPage() {
                       </div>
                     </TableCell>
                     <TableCell>
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(contract.status)}`}>
+                      <Badge className={`text-sm px-3 py-1 ${getStatusColor(contract.status)}`}>
                         {getStatusText(contract.status)}
-                      </span>
+                      </Badge>
                     </TableCell>
                     <TableCell>
                       <div className="flex gap-1">
                         <Button
                           variant="ghost"
-                          size="icon"
+                          className="action-btn"
                           onClick={() => {
                             setSelectedContract(contract);
                             setContractIncomes([]);
@@ -652,21 +686,20 @@ export default function RentalContractsPage() {
                           }}
                           title="Chi tiết"
                         >
-                          <Eye size={16} />
+                          <Eye size={18} />
                         </Button>
                         <Button
                           variant="ghost"
-                          size="icon"
+                          className="action-btn"
                           onClick={() => openEditDialog(contract)}
                           title="Sửa"
                         >
-                          <Pencil size={16} />
+                          <Pencil size={18} />
                         </Button>
                         {contract.status === 'active' && (
                           <Button
                             variant="ghost"
-                            size="icon"
-                            className="text-blue-600 hover:text-blue-700"
+                            className="action-btn text-blue-600 hover:text-blue-700"
                             onClick={() => {
                               setSelectedContract(contract);
                               setConvertData({
@@ -680,17 +713,16 @@ export default function RentalContractsPage() {
                             }}
                             title="Tạo giao dịch thu"
                           >
-                            <ArrowRightCircle size={16} />
+                            <ArrowRightCircle size={18} />
                           </Button>
                         )}
                         <Button
                           variant="ghost"
-                          size="icon"
-                          className="text-red-600 hover:text-red-700"
+                          className="action-btn text-red-600 hover:text-red-700"
                           onClick={() => handleDelete(contract)}
                           title="Xóa"
                         >
-                          <Trash2 size={16} />
+                          <Trash2 size={18} />
                         </Button>
                       </div>
                     </TableCell>
@@ -706,244 +738,262 @@ export default function RentalContractsPage() {
       <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
         <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Tạo Hợp đồng Cho thuê Mới</DialogTitle>
-            <DialogDescription>
+            <DialogTitle className="text-xl">Tạo Hợp đồng Cho thuê Mới</DialogTitle>
+            <DialogDescription className="text-base">
               Điền đầy đủ thông tin hợp đồng cho thuê bất động sản
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label>Mã hợp đồng *</Label>
-              <Input
-                placeholder="VD: HD-2024-001"
-                value={formData.contractCode}
-                onChange={(e) => setFormData({ ...formData, contractCode: e.target.value })}
-              />
-            </div>
+          <div className="space-y-6">
+            {/* Thông tin cơ bản */}
+            <FormSection title="Thông tin cơ bản" icon={<FileSignature size={18} />}>
+              <FormGrid>
+                <FormField>
+                  <FormLabel required>Mã hợp đồng</FormLabel>
+                  <Input
+                    placeholder="VD: HD-2024-001"
+                    value={formData.contractCode}
+                    onChange={(e) => setFormData({ ...formData, contractCode: e.target.value })}
+                    className="h-12 text-base"
+                  />
+                </FormField>
 
-            <div className="space-y-2">
-              <Label>Tài sản cho thuê * (chỉ hiển thị tài sản chưa được thuê)</Label>
-              <Select
-                value={formData.assetId}
-                onValueChange={handleAssetSelect}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Chọn tài sản" />
-                </SelectTrigger>
-                <SelectContent>
-                  {assets.length === 0 ? (
-                    <div className="p-2 text-sm text-gray-500 text-center">
-                      Không có tài sản khả dụng
-                    </div>
-                  ) : (
-                    assets.map((asset) => (
-                      <SelectItem key={asset._id} value={asset._id}>
-                        {asset.assetCode} - {asset.assetName} {asset.area ? `(${asset.area} m²)` : ''}
-                      </SelectItem>
-                    ))
-                  )}
-                </SelectContent>
-              </Select>
-            </div>
+                <FormField className="col-span-2">
+                  <FormLabel required>Tài sản cho thuê (chỉ hiển thị tài sản chưa được thuê)</FormLabel>
+                  <Select
+                    value={formData.assetId}
+                    onValueChange={handleAssetSelect}
+                  >
+                    <SelectTrigger className="h-12 text-base">
+                      <SelectValue placeholder="Chọn tài sản" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {assets.length === 0 ? (
+                        <div className="p-3 text-base text-gray-500 text-center">
+                          Không có tài sản khả dụng
+                        </div>
+                      ) : (
+                        assets.map((asset) => (
+                          <SelectItem key={asset._id} value={asset._id} className="text-base py-3">
+                            {asset.assetCode} - {asset.assetName} {asset.area ? `(${asset.area} m²)` : ''}
+                          </SelectItem>
+                        ))
+                      )}
+                    </SelectContent>
+                  </Select>
+                </FormField>
+              </FormGrid>
+            </FormSection>
 
-            <div className="border-t pt-4">
-              <h3 className="font-semibold mb-3">Thông tin Bất động sản (tự động điền từ tài sản)</h3>
+            {/* Thông tin Bất động sản */}
+            <FormSection title="Thông tin Bất động sản" icon={<Building2 size={18} />}>
               {formData.assetId && (
-                <p className="text-sm text-blue-600 mb-3">Thông tin tài sản được tự động điền từ tài sản đã chọn</p>
+                <p className="text-sm text-blue-600 mb-4">Thông tin tài sản được tự động điền từ tài sản đã chọn</p>
               )}
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2 col-span-2">
-                  <Label>Tên tài sản *</Label>
+              <FormGrid>
+                <FormField className="col-span-2">
+                  <FormLabel required>Tên tài sản</FormLabel>
                   <Input
                     placeholder="VD: Nhà 2 tầng đường Nguyễn Văn A"
                     value={formData.propertyName}
                     onChange={(e) => setFormData({ ...formData, propertyName: e.target.value })}
                     readOnly={!!formData.assetId}
-                    className={formData.assetId ? 'bg-gray-50' : ''}
+                    className={`h-12 text-base ${formData.assetId ? 'bg-gray-50' : ''}`}
                   />
-                </div>
+                </FormField>
 
-                <div className="space-y-2 col-span-2">
-                  <Label>Địa chỉ *</Label>
+                <FormField className="col-span-2">
+                  <FormLabel required>Địa chỉ</FormLabel>
                   <Input
                     placeholder="Địa chỉ đầy đủ"
                     value={formData.propertyAddress}
                     onChange={(e) => setFormData({ ...formData, propertyAddress: e.target.value })}
                     readOnly={!!formData.assetId}
-                    className={formData.assetId ? 'bg-gray-50' : ''}
+                    className={`h-12 text-base ${formData.assetId ? 'bg-gray-50' : ''}`}
                   />
-                </div>
+                </FormField>
 
-                <div className="space-y-2">
-                  <Label>Loại tài sản</Label>
+                <FormField>
+                  <FormLabel>Loại tài sản</FormLabel>
                   <Select
                     value={formData.propertyType}
                     onValueChange={(v) => setFormData({ ...formData, propertyType: v })}
                     disabled={!!formData.assetId}
                   >
-                    <SelectTrigger className={formData.assetId ? 'bg-gray-50' : ''}>
+                    <SelectTrigger className={`h-12 text-base ${formData.assetId ? 'bg-gray-50' : ''}`}>
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="land">Đất</SelectItem>
-                      <SelectItem value="house">Nhà</SelectItem>
-                      <SelectItem value="apartment">Căn hộ</SelectItem>
-                      <SelectItem value="commercial">Thương mại</SelectItem>
-                      <SelectItem value="other">Khác</SelectItem>
+                      <SelectItem value="land" className="text-base py-3">Đất</SelectItem>
+                      <SelectItem value="house" className="text-base py-3">Nhà</SelectItem>
+                      <SelectItem value="apartment" className="text-base py-3">Căn hộ</SelectItem>
+                      <SelectItem value="commercial" className="text-base py-3">Thương mại</SelectItem>
+                      <SelectItem value="other" className="text-base py-3">Khác</SelectItem>
                     </SelectContent>
                   </Select>
-                </div>
+                </FormField>
 
-                <div className="space-y-2">
-                  <Label>Diện tích (m²)</Label>
+                <FormField>
+                  <FormLabel>Diện tích (m²)</FormLabel>
                   <Input
                     type="number"
                     placeholder="0"
                     value={formData.propertyArea}
                     onChange={(e) => setFormData({ ...formData, propertyArea: e.target.value })}
                     readOnly={!!formData.assetId}
-                    className={formData.assetId ? 'bg-gray-50' : ''}
+                    className={`h-12 text-base ${formData.assetId ? 'bg-gray-50' : ''}`}
                   />
-                </div>
-              </div>
-            </div>
+                </FormField>
+              </FormGrid>
+            </FormSection>
 
-            <div className="border-t pt-4">
-              <h3 className="font-semibold mb-3">Thông tin Bên thuê</h3>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>Tên bên thuê *</Label>
+            {/* Thông tin Bên thuê */}
+            <FormSection title="Thông tin Bên thuê" icon={<Users size={18} />}>
+              <FormGrid>
+                <FormField>
+                  <FormLabel required>Tên bên thuê</FormLabel>
                   <Input
                     placeholder="Họ tên đầy đủ"
                     value={formData.tenantName}
                     onChange={(e) => setFormData({ ...formData, tenantName: e.target.value })}
+                    className="h-12 text-base"
                   />
-                </div>
+                </FormField>
 
-                <div className="space-y-2">
-                  <Label>CMND/CCCD</Label>
+                <FormField>
+                  <FormLabel>CMND/CCCD</FormLabel>
                   <Input
                     placeholder="Số CMND/CCCD"
                     value={formData.tenantIdNumber}
                     onChange={(e) => setFormData({ ...formData, tenantIdNumber: e.target.value })}
+                    className="h-12 text-base"
                   />
-                </div>
+                </FormField>
 
-                <div className="space-y-2">
-                  <Label>Số điện thoại</Label>
+                <FormField>
+                  <FormLabel>Số điện thoại</FormLabel>
                   <Input
                     placeholder="0123456789"
                     value={formData.tenantPhone}
                     onChange={(e) => setFormData({ ...formData, tenantPhone: e.target.value })}
+                    className="h-12 text-base"
                   />
-                </div>
+                </FormField>
 
-                <div className="space-y-2">
-                  <Label>Email</Label>
+                <FormField>
+                  <FormLabel>Email</FormLabel>
                   <Input
                     type="email"
                     placeholder="email@example.com"
                     value={formData.tenantEmail}
                     onChange={(e) => setFormData({ ...formData, tenantEmail: e.target.value })}
+                    className="h-12 text-base"
                   />
-                </div>
+                </FormField>
 
-                <div className="space-y-2 col-span-2">
-                  <Label>Địa chỉ</Label>
+                <FormField className="col-span-2">
+                  <FormLabel>Địa chỉ</FormLabel>
                   <Input
                     placeholder="Địa chỉ bên thuê"
                     value={formData.tenantAddress}
                     onChange={(e) => setFormData({ ...formData, tenantAddress: e.target.value })}
+                    className="h-12 text-base"
                   />
-                </div>
+                </FormField>
 
-                <div className="space-y-2 col-span-2">
-                  <Label>Thông tin ngân hàng (bên thuê)</Label>
-                  <div className="grid grid-cols-3 gap-2">
+                <FormField className="col-span-2">
+                  <FormLabel>Thông tin ngân hàng (bên thuê)</FormLabel>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                     <Input
                       placeholder="Ngân hàng"
                       value={formData.tenantBankName}
                       onChange={(e) => setFormData({ ...formData, tenantBankName: e.target.value })}
+                      className="h-12 text-base"
                     />
                     <Input
                       placeholder="Chi nhánh"
                       value={formData.tenantBankBranch}
                       onChange={(e) => setFormData({ ...formData, tenantBankBranch: e.target.value })}
+                      className="h-12 text-base"
                     />
                     <Input
                       placeholder="Số tài khoản"
                       value={formData.tenantBankAccount}
                       onChange={(e) => setFormData({ ...formData, tenantBankAccount: e.target.value })}
+                      className="h-12 text-base"
                     />
                   </div>
                   {!canSelectOnlinePayment && (
-                    <p className="text-xs text-amber-600">Nhập ngân hàng và STK để chọn thanh toán chuyển khoản</p>
+                    <p className="text-sm text-amber-600 mt-2">Nhập ngân hàng và STK để chọn thanh toán chuyển khoản</p>
                   )}
-                </div>
-              </div>
-            </div>
+                </FormField>
+              </FormGrid>
+            </FormSection>
 
-            <div className="border-t pt-4">
-              <h3 className="font-semibold mb-3">Điều khoản Hợp đồng</h3>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>Ngày bắt đầu *</Label>
+            {/* Điều khoản Hợp đồng */}
+            <FormSection title="Điều khoản Hợp đồng" icon={<Calendar size={18} />}>
+              <FormGrid>
+                <FormField>
+                  <FormLabel required>Ngày bắt đầu</FormLabel>
                   <Input
                     type="date"
                     value={formData.startDate}
                     onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
+                    className="h-12 text-base"
                   />
-                </div>
+                </FormField>
 
-                <div className="space-y-2">
-                  <Label>Ngày kết thúc *</Label>
+                <FormField>
+                  <FormLabel required>Ngày kết thúc</FormLabel>
                   <Input
                     type="date"
                     value={formData.endDate}
                     onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
+                    className="h-12 text-base"
                   />
-                </div>
+                </FormField>
 
-                <div className="space-y-2">
-                  <Label>Giá thuê (VNĐ) *</Label>
+                <FormField>
+                  <FormLabel required>Giá thuê (VNĐ)</FormLabel>
                   <Input
                     type="number"
                     placeholder="0"
                     value={formData.rentAmount}
                     onChange={(e) => setFormData({ ...formData, rentAmount: e.target.value })}
+                    className="h-12 text-base"
                   />
-                </div>
+                </FormField>
 
-                <div className="space-y-2">
-                  <Label>Chu kỳ thanh toán</Label>
+                <FormField>
+                  <FormLabel>Chu kỳ thanh toán</FormLabel>
                   <Select
                     value={formData.paymentCycle}
                     onValueChange={(v) => setFormData({ ...formData, paymentCycle: v })}
                   >
-                    <SelectTrigger>
+                    <SelectTrigger className="h-12 text-base">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="monthly">Hàng tháng</SelectItem>
-                      <SelectItem value="quarterly">Hàng quý</SelectItem>
-                      <SelectItem value="yearly">Hàng năm</SelectItem>
+                      <SelectItem value="monthly" className="text-base py-3">Hàng tháng</SelectItem>
+                      <SelectItem value="quarterly" className="text-base py-3">Hàng quý</SelectItem>
+                      <SelectItem value="yearly" className="text-base py-3">Hàng năm</SelectItem>
                     </SelectContent>
                   </Select>
-                </div>
+                </FormField>
 
-                <div className="space-y-2">
-                  <Label>Tiền đặt cọc (VNĐ)</Label>
+                <FormField>
+                  <FormLabel>Tiền đặt cọc (VNĐ)</FormLabel>
                   <Input
                     type="number"
                     placeholder="0"
                     value={formData.depositAmount}
                     onChange={(e) => setFormData({ ...formData, depositAmount: e.target.value })}
+                    className="h-12 text-base"
                   />
-                </div>
+                </FormField>
 
-                <div className="space-y-2">
-                  <Label>Hình thức thanh toán</Label>
+                <FormField>
+                  <FormLabel>Hình thức thanh toán</FormLabel>
                   <Select
                     value={formData.paymentMethod}
                     onValueChange={(v) => {
@@ -951,21 +1001,21 @@ export default function RentalContractsPage() {
                       setFormData({ ...formData, paymentMethod: v, bankAccountId: '', bankAccount: '' });
                     }}
                   >
-                    <SelectTrigger>
+                    <SelectTrigger className="h-12 text-base">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="offline">Tiền mặt</SelectItem>
-                      <SelectItem value="online" disabled={!canSelectOnlinePayment}>
+                      <SelectItem value="offline" className="text-base py-3">Tiền mặt</SelectItem>
+                      <SelectItem value="online" disabled={!canSelectOnlinePayment} className="text-base py-3">
                         Chuyển khoản {!canSelectOnlinePayment && '(cần nhập TK bên thuê)'}
                       </SelectItem>
                     </SelectContent>
                   </Select>
-                </div>
+                </FormField>
 
                 {formData.paymentMethod === 'online' && (
-                  <div className="space-y-2 col-span-2">
-                    <Label>Tài khoản ngân hàng (nhận tiền) *</Label>
+                  <FormField className="col-span-2">
+                    <FormLabel required>Tài khoản ngân hàng (nhận tiền)</FormLabel>
                     {bankAccounts.filter(ba => ba.accountType === 'income' || ba.accountType === 'both').length > 0 ? (
                       <Select
                         value={formData.bankAccountId}
@@ -980,14 +1030,14 @@ export default function RentalContractsPage() {
                           });
                         }}
                       >
-                        <SelectTrigger>
+                        <SelectTrigger className="h-12 text-base">
                           <SelectValue placeholder="Chọn tài khoản ngân hàng" />
                         </SelectTrigger>
                         <SelectContent>
                           {bankAccounts
                             .filter(ba => ba.accountType === 'income' || ba.accountType === 'both')
                             .map((ba) => (
-                              <SelectItem key={ba._id!.toString()} value={ba._id!.toString()}>
+                              <SelectItem key={ba._id!.toString()} value={ba._id!.toString()} className="text-base py-3">
                                 {ba.accountNumber} - {ba.bankName}
                                 {ba.isDefault && ' ★'}
                               </SelectItem>
@@ -995,41 +1045,43 @@ export default function RentalContractsPage() {
                         </SelectContent>
                       </Select>
                     ) : (
-                      <div className="text-sm text-gray-500 p-2 border rounded-md bg-gray-50">
+                      <div className="text-base text-gray-500 p-3 border rounded-md bg-gray-50">
                         Chưa có tài khoản ngân hàng. <a href="/finance/bank-accounts" className="text-blue-600 hover:underline">Thêm tài khoản</a>
                       </div>
                     )}
-                  </div>
+                  </FormField>
                 )}
 
-                <div className="space-y-2 col-span-2">
-                  <Label>Điều khoản hợp đồng</Label>
+                <FormField className="col-span-2">
+                  <FormLabel>Điều khoản hợp đồng</FormLabel>
                   <Textarea
                     placeholder="Các điều khoản chi tiết..."
                     rows={3}
                     value={formData.terms}
                     onChange={(e) => setFormData({ ...formData, terms: e.target.value })}
+                    className="text-base"
                   />
-                </div>
+                </FormField>
 
-                <div className="space-y-2 col-span-2">
-                  <Label>Ghi chú</Label>
+                <FormField className="col-span-2">
+                  <FormLabel>Ghi chú</FormLabel>
                   <Textarea
                     placeholder="Ghi chú thêm..."
                     rows={2}
                     value={formData.notes}
                     onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                    className="text-base"
                   />
-                </div>
-              </div>
-            </div>
+                </FormField>
+              </FormGrid>
+            </FormSection>
           </div>
 
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowCreateDialog(false)}>
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button variant="outline" onClick={() => setShowCreateDialog(false)} className="h-12 px-8 text-base sm:w-auto w-full">
               Hủy
             </Button>
-            <Button onClick={handleCreate} disabled={submitting}>
+            <Button onClick={handleCreate} disabled={submitting} className="h-12 px-8 text-base sm:w-auto w-full">
               {submitting ? 'Đang tạo...' : 'Tạo hợp đồng'}
             </Button>
           </DialogFooter>
@@ -1038,69 +1090,84 @@ export default function RentalContractsPage() {
 
       {/* Edit Dialog - Similar to Create but with pre-filled data */}
       <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Sửa Hợp đồng</DialogTitle>
-            <DialogDescription>
+            <DialogTitle className="text-xl">Sửa Hợp đồng</DialogTitle>
+            <DialogDescription className="text-base">
               Cập nhật thông tin hợp đồng cho thuê
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-4">
+          <div className="space-y-6">
             {/* Contract details */}
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>Giá thuê (VNĐ) *</Label>
-                <Input
-                  type="number"
-                  placeholder="0"
-                  value={formData.rentAmount}
-                  onChange={(e) => setFormData({ ...formData, rentAmount: e.target.value })}
-                />
-              </div>
+            <FormSection title="Thông tin Hợp đồng" icon={<FileSignature size={18} />}>
+              <FormGrid>
+                <FormField>
+                  <FormLabel required>Giá thuê (VNĐ)</FormLabel>
+                  <Input
+                    type="number"
+                    placeholder="0"
+                    value={formData.rentAmount}
+                    onChange={(e) => setFormData({ ...formData, rentAmount: e.target.value })}
+                    className="h-12 text-base"
+                  />
+                </FormField>
 
-              <div className="space-y-2">
-                <Label>Ngày kết thúc *</Label>
-                <Input
-                  type="date"
-                  value={formData.endDate}
-                  onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
-                />
-              </div>
-            </div>
+                <FormField>
+                  <FormLabel required>Ngày kết thúc</FormLabel>
+                  <Input
+                    type="date"
+                    value={formData.endDate}
+                    onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
+                    className="h-12 text-base"
+                  />
+                </FormField>
+              </FormGrid>
+            </FormSection>
 
             {/* Tenant bank info */}
-            <div className="border-t pt-4">
-              <h3 className="font-semibold mb-3">Thông tin Ngân hàng Bên thuê</h3>
-              <div className="grid grid-cols-3 gap-2">
-                <Input
-                  placeholder="Ngân hàng"
-                  value={formData.tenantBankName}
-                  onChange={(e) => setFormData({ ...formData, tenantBankName: e.target.value })}
-                />
-                <Input
-                  placeholder="Chi nhánh"
-                  value={formData.tenantBankBranch}
-                  onChange={(e) => setFormData({ ...formData, tenantBankBranch: e.target.value })}
-                />
-                <Input
-                  placeholder="Số tài khoản"
-                  value={formData.tenantBankAccount}
-                  onChange={(e) => setFormData({ ...formData, tenantBankAccount: e.target.value })}
-                />
-              </div>
-            </div>
+            <FormSection title="Thông tin Ngân hàng Bên thuê" icon={<Wallet size={18} />}>
+              <FormGrid cols={3}>
+                <FormField>
+                  <FormLabel>Ngân hàng</FormLabel>
+                  <Input
+                    placeholder="Ngân hàng"
+                    value={formData.tenantBankName}
+                    onChange={(e) => setFormData({ ...formData, tenantBankName: e.target.value })}
+                    className="h-12 text-base"
+                  />
+                </FormField>
+                <FormField>
+                  <FormLabel>Chi nhánh</FormLabel>
+                  <Input
+                    placeholder="Chi nhánh"
+                    value={formData.tenantBankBranch}
+                    onChange={(e) => setFormData({ ...formData, tenantBankBranch: e.target.value })}
+                    className="h-12 text-base"
+                  />
+                </FormField>
+                <FormField>
+                  <FormLabel>Số tài khoản</FormLabel>
+                  <Input
+                    placeholder="Số tài khoản"
+                    value={formData.tenantBankAccount}
+                    onChange={(e) => setFormData({ ...formData, tenantBankAccount: e.target.value })}
+                    className="h-12 text-base"
+                  />
+                </FormField>
+              </FormGrid>
+            </FormSection>
           </div>
 
-          <DialogFooter>
+          <DialogFooter className="gap-2 sm:gap-0">
             <Button variant="outline" onClick={() => {
               setShowEditDialog(false);
               setSelectedContract(null);
               resetForm();
-            }}>
+            }} className="h-12 px-8 text-base sm:w-auto w-full">
               Hủy
             </Button>
-            <Button onClick={handleUpdate} disabled={submitting}>
+            <Button onClick={handleUpdate} disabled={submitting} className="h-12 px-8 text-base sm:w-auto w-full">
               {submitting ? 'Đang lưu...' : 'Lưu thay đổi'}
             </Button>
           </DialogFooter>
@@ -1109,134 +1176,146 @@ export default function RentalContractsPage() {
 
       {/* Convert to Income Dialog */}
       <Dialog open={showConvertDialog} onOpenChange={setShowConvertDialog}>
-        <DialogContent>
+        <DialogContent className="max-w-2xl">
           <DialogHeader>
-            <DialogTitle>Tạo Giao dịch Thu từ Hợp đồng</DialogTitle>
-            <DialogDescription>
+            <DialogTitle className="text-xl">Tạo Giao dịch Thu từ Hợp đồng</DialogTitle>
+            <DialogDescription className="text-base">
               Hợp đồng: {selectedContract?.contractCode} - {selectedContract?.propertyName}
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label>Quỹ *</Label>
-              <Select
-                value={convertData.fundId}
-                onValueChange={(v) => setConvertData({ ...convertData, fundId: v })}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Chọn quỹ" />
-                </SelectTrigger>
-                <SelectContent>
-                  {funds.filter(f => f._id).map((f) => (
-                    <SelectItem key={f._id!.toString()} value={f._id!.toString()}>
-                      {f.fundName}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label>Số tiền (VNĐ) *</Label>
-              <Input
-                type="number"
-                placeholder="0"
-                value={convertData.amount}
-                onChange={(e) => setConvertData({ ...convertData, amount: e.target.value })}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label>Ngày thu *</Label>
-              <Input
-                type="date"
-                value={convertData.incomeDate}
-                onChange={(e) => setConvertData({ ...convertData, incomeDate: e.target.value })}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label>Kỳ thanh toán *</Label>
-              <Input
-                placeholder="VD: Tháng 01/2024, Quý 1/2024"
-                value={convertData.paymentPeriod}
-                onChange={(e) => setConvertData({ ...convertData, paymentPeriod: e.target.value })}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label>Người gửi (Đối tượng)</Label>
-              <ContactCombobox
-                value={convertData.contactId}
-                onChange={(v) => setConvertData({ ...convertData, contactId: v })}
-                onCreateNew={() => setShowQuickAddContact(true)}
-                contacts={contacts}
-                placeholder="Chọn người gửi..."
-              />
-              <p className="text-xs text-muted-foreground">
-                Mặc định: {selectedContract?.tenantName}
-              </p>
-            </div>
-
-            <div className="space-y-2">
-              <Label>Hình thức thanh toán</Label>
-              <Select
-                value={convertData.paymentMethod}
-                onValueChange={(v) => setConvertData({ ...convertData, paymentMethod: v, bankAccountId: '' })}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="offline">Tiền mặt</SelectItem>
-                  <SelectItem value="online">Chuyển khoản</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            {convertData.paymentMethod === 'online' && (
-              <div className="space-y-2">
-                <Label>Tài khoản ngân hàng (nhận tiền) *</Label>
-                {bankAccounts.filter(ba => ba.accountType === 'income' || ba.accountType === 'both').length > 0 ? (
+          <div className="space-y-6">
+            <FormSection title="Thông tin Giao dịch" icon={<Receipt size={18} />}>
+              <FormGrid>
+                <FormField>
+                  <FormLabel required>Quỹ</FormLabel>
                   <Select
-                    value={convertData.bankAccountId}
-                    onValueChange={(v) => setConvertData({ ...convertData, bankAccountId: v })}
+                    value={convertData.fundId}
+                    onValueChange={(v) => setConvertData({ ...convertData, fundId: v })}
                   >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Chọn tài khoản ngân hàng" />
+                    <SelectTrigger className="h-12 text-base">
+                      <SelectValue placeholder="Chọn quỹ" />
                     </SelectTrigger>
                     <SelectContent>
-                      {bankAccounts
-                        .filter(ba => ba.accountType === 'income' || ba.accountType === 'both')
-                        .map((ba) => (
-                          <SelectItem key={ba._id!.toString()} value={ba._id!.toString()}>
-                            {ba.accountNumber} - {ba.bankName}
-                            {ba.isDefault && ' ★'}
-                          </SelectItem>
-                        ))}
+                      {funds.filter(f => f._id).map((f) => (
+                        <SelectItem key={f._id!.toString()} value={f._id!.toString()} className="text-base py-3">
+                          {f.fundName}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
-                ) : (
-                  <div className="text-sm text-gray-500 p-2 border rounded-md bg-gray-50">
-                    Chưa có tài khoản ngân hàng. <a href="/finance/bank-accounts" className="text-blue-600 hover:underline">Thêm tài khoản</a>
-                  </div>
-                )}
-              </div>
-            )}
+                </FormField>
 
-            <div className="space-y-2">
-              <Label>Ghi chú</Label>
-              <Textarea
-                placeholder="Ghi chú thêm..."
-                rows={3}
-                value={convertData.notes}
-                onChange={(e) => setConvertData({ ...convertData, notes: e.target.value })}
-              />
-            </div>
+                <FormField>
+                  <FormLabel required>Số tiền (VNĐ)</FormLabel>
+                  <Input
+                    type="number"
+                    placeholder="0"
+                    value={convertData.amount}
+                    onChange={(e) => setConvertData({ ...convertData, amount: e.target.value })}
+                    className="h-12 text-base"
+                  />
+                </FormField>
+
+                <FormField>
+                  <FormLabel required>Ngày thu</FormLabel>
+                  <Input
+                    type="date"
+                    value={convertData.incomeDate}
+                    onChange={(e) => setConvertData({ ...convertData, incomeDate: e.target.value })}
+                    className="h-12 text-base"
+                  />
+                </FormField>
+
+                <FormField>
+                  <FormLabel required>Kỳ thanh toán</FormLabel>
+                  <Input
+                    placeholder="VD: Tháng 01/2024, Quý 1/2024"
+                    value={convertData.paymentPeriod}
+                    onChange={(e) => setConvertData({ ...convertData, paymentPeriod: e.target.value })}
+                    className="h-12 text-base"
+                  />
+                </FormField>
+
+                <FormField className="col-span-2">
+                  <FormLabel>Người gửi (Đối tượng)</FormLabel>
+                  <ContactCombobox
+                    value={convertData.contactId}
+                    onChange={(v) => setConvertData({ ...convertData, contactId: v })}
+                    onCreateNew={() => setShowQuickAddContact(true)}
+                    contacts={contacts}
+                    placeholder="Chọn người gửi..."
+                  />
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Mặc định: {selectedContract?.tenantName}
+                  </p>
+                </FormField>
+              </FormGrid>
+            </FormSection>
+
+            <FormSection title="Hình thức Thanh toán" icon={<Wallet size={18} />}>
+              <FormGrid>
+                <FormField>
+                  <FormLabel>Hình thức</FormLabel>
+                  <Select
+                    value={convertData.paymentMethod}
+                    onValueChange={(v) => setConvertData({ ...convertData, paymentMethod: v, bankAccountId: '' })}
+                  >
+                    <SelectTrigger className="h-12 text-base">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="offline" className="text-base py-3">Tiền mặt</SelectItem>
+                      <SelectItem value="online" className="text-base py-3">Chuyển khoản</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </FormField>
+
+                {convertData.paymentMethod === 'online' && (
+                  <FormField>
+                    <FormLabel required>Tài khoản ngân hàng (nhận tiền)</FormLabel>
+                    {bankAccounts.filter(ba => ba.accountType === 'income' || ba.accountType === 'both').length > 0 ? (
+                      <Select
+                        value={convertData.bankAccountId}
+                        onValueChange={(v) => setConvertData({ ...convertData, bankAccountId: v })}
+                      >
+                        <SelectTrigger className="h-12 text-base">
+                          <SelectValue placeholder="Chọn tài khoản ngân hàng" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {bankAccounts
+                            .filter(ba => ba.accountType === 'income' || ba.accountType === 'both')
+                            .map((ba) => (
+                              <SelectItem key={ba._id!.toString()} value={ba._id!.toString()} className="text-base py-3">
+                                {ba.accountNumber} - {ba.bankName}
+                                {ba.isDefault && ' ★'}
+                              </SelectItem>
+                            ))}
+                        </SelectContent>
+                      </Select>
+                    ) : (
+                      <div className="text-base text-gray-500 p-3 border rounded-md bg-gray-50">
+                        Chưa có tài khoản ngân hàng. <a href="/finance/bank-accounts" className="text-blue-600 hover:underline">Thêm tài khoản</a>
+                      </div>
+                    )}
+                  </FormField>
+                )}
+
+                <FormField className="col-span-2">
+                  <FormLabel>Ghi chú</FormLabel>
+                  <Textarea
+                    placeholder="Ghi chú thêm..."
+                    rows={3}
+                    value={convertData.notes}
+                    onChange={(e) => setConvertData({ ...convertData, notes: e.target.value })}
+                    className="text-base"
+                  />
+                </FormField>
+              </FormGrid>
+            </FormSection>
           </div>
 
-          <DialogFooter>
+          <DialogFooter className="gap-2 sm:gap-0">
             <Button variant="outline" onClick={() => {
               setShowConvertDialog(false);
               setConvertData({
@@ -1250,10 +1329,10 @@ export default function RentalContractsPage() {
                 contactId: '',
                 notes: ''
               });
-            }}>
+            }} className="h-12 px-8 text-base sm:w-auto w-full">
               Hủy
             </Button>
-            <Button onClick={handleConvertToIncome} disabled={submitting}>
+            <Button onClick={handleConvertToIncome} disabled={submitting} className="h-12 px-8 text-base sm:w-auto w-full">
               {submitting ? 'Đang xử lý...' : 'Tạo giao dịch'}
             </Button>
           </DialogFooter>
@@ -1274,8 +1353,8 @@ export default function RentalContractsPage() {
       <Dialog open={showDetailDialog} onOpenChange={setShowDetailDialog}>
         <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Chi tiết Hợp đồng</DialogTitle>
-            <DialogDescription>
+            <DialogTitle className="text-xl">Chi tiết Hợp đồng</DialogTitle>
+            <DialogDescription className="text-base">
               Xem thông tin chi tiết và các khoản thu phát sinh từ hợp đồng
             </DialogDescription>
           </DialogHeader>
@@ -1283,66 +1362,73 @@ export default function RentalContractsPage() {
           {selectedContract && (
             <div className="space-y-6">
               {/* Contract Info */}
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <p className="text-sm text-gray-500">Mã hợp đồng</p>
-                  <p className="font-semibold">{selectedContract.contractCode}</p>
+              <FormSection title="Thông tin Hợp đồng" icon={<FileSignature size={18} />}>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-sm text-gray-500 mb-1">Mã hợp đồng</p>
+                    <p className="text-base font-semibold">{selectedContract.contractCode}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500 mb-1">Trạng thái</p>
+                    <Badge className={`text-sm px-3 py-1 ${getStatusColor(selectedContract.status)}`}>
+                      {getStatusText(selectedContract.status)}
+                    </Badge>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500 mb-1">Tên tài sản</p>
+                    <p className="text-base font-semibold">{selectedContract.propertyName}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500 mb-1">Loại</p>
+                    <p className="text-base font-semibold">{getPropertyTypeText(selectedContract.propertyType)}</p>
+                  </div>
+                  <div className="col-span-2">
+                    <p className="text-sm text-gray-500 mb-1">Địa chỉ</p>
+                    <p className="text-base font-semibold">{selectedContract.propertyAddress}</p>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-sm text-gray-500">Trạng thái</p>
-                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(selectedContract.status)}`}>
-                    {getStatusText(selectedContract.status)}
-                  </span>
+              </FormSection>
+
+              <FormSection title="Thông tin Bên thuê" icon={<Users size={18} />}>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-sm text-gray-500 mb-1">Bên thuê</p>
+                    <p className="text-base font-semibold">{selectedContract.tenantName}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500 mb-1">Số điện thoại</p>
+                    <p className="text-base font-semibold">{selectedContract.tenantPhone || 'N/A'}</p>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-sm text-gray-500">Tên tài sản</p>
-                  <p className="font-semibold">{selectedContract.propertyName}</p>
+              </FormSection>
+
+              <FormSection title="Điều khoản Thanh toán" icon={<Wallet size={18} />}>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-sm text-gray-500 mb-1">Giá thuê</p>
+                    <p className="text-lg font-bold text-green-600">{formatCompactCurrency(selectedContract.rentAmount)}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500 mb-1">Chu kỳ</p>
+                    <p className="text-base font-semibold">{getPaymentCycleText(selectedContract.paymentCycle)}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500 mb-1">Ngày bắt đầu</p>
+                    <p className="text-base font-semibold">{formatDate(selectedContract.startDate)}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500 mb-1">Ngày kết thúc</p>
+                    <p className="text-base font-semibold">{formatDate(selectedContract.endDate)}</p>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-sm text-gray-500">Loại</p>
-                  <p className="font-semibold">{getPropertyTypeText(selectedContract.propertyType)}</p>
-                </div>
-                <div className="col-span-2">
-                  <p className="text-sm text-gray-500">Địa chỉ</p>
-                  <p className="font-semibold">{selectedContract.propertyAddress}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-500">Bên thuê</p>
-                  <p className="font-semibold">{selectedContract.tenantName}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-500">Số điện thoại</p>
-                  <p className="font-semibold">{selectedContract.tenantPhone || 'N/A'}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-500">Giá thuê</p>
-                  <p className="font-semibold text-green-600">{formatCompactCurrency(selectedContract.rentAmount)}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-500">Chu kỳ</p>
-                  <p className="font-semibold">{getPaymentCycleText(selectedContract.paymentCycle)}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-500">Ngày bắt đầu</p>
-                  <p className="font-semibold">{formatDate(selectedContract.startDate)}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-500">Ngày kết thúc</p>
-                  <p className="font-semibold">{formatDate(selectedContract.endDate)}</p>
-                </div>
-              </div>
+              </FormSection>
 
               {/* Contract Incomes Section */}
-              <div className="border-t pt-4">
+              <FormSection title="Các khoản thu phát sinh từ HĐ" icon={<Receipt size={18} />}>
                 <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-2">
-                    <Receipt size={18} className="text-green-600" />
-                    <h3 className="font-semibold">Các khoản thu phát sinh từ HĐ</h3>
-                  </div>
                   {selectedContract.status === 'active' && (
                     <Button
                       variant="outline"
-                      size="sm"
                       onClick={() => {
                         setConvertData({
                           ...convertData,
@@ -1354,8 +1440,9 @@ export default function RentalContractsPage() {
                         setShowDetailDialog(false);
                         setShowConvertDialog(true);
                       }}
+                      className="h-10 px-4 text-base"
                     >
-                      <ArrowRightCircle size={14} className="mr-1" />
+                      <ArrowRightCircle size={18} className="mr-2" />
                       Tạo khoản thu mới
                     </Button>
                   )}
@@ -1363,39 +1450,39 @@ export default function RentalContractsPage() {
 
                 {loadingIncomes ? (
                   <div className="flex items-center justify-center py-8">
-                    <Loader2 className="animate-spin mr-2" size={20} />
-                    <span className="text-gray-500">Đang tải...</span>
+                    <Loader2 className="animate-spin mr-2" size={24} />
+                    <span className="text-base text-gray-500">Đang tải...</span>
                   </div>
                 ) : contractIncomes.length === 0 ? (
-                  <div className="text-center py-8 text-gray-500 bg-gray-50 rounded-lg">
-                    <Receipt className="mx-auto mb-2 text-gray-400" size={32} />
-                    <p>Chưa có khoản thu nào từ hợp đồng này</p>
-                    <p className="text-sm mt-1">Bấm "Tạo khoản thu mới" để thêm</p>
+                  <div className="empty-state">
+                    <Receipt className="mx-auto mb-4 opacity-50" size={48} />
+                    <p className="empty-state-text">Chưa có khoản thu nào từ hợp đồng này</p>
+                    <p className="text-base text-gray-500 mt-2">Bấm "Tạo khoản thu mới" để thêm</p>
                   </div>
                 ) : (
-                  <div className="space-y-2">
+                  <div className="space-y-4">
                     {/* Summary */}
-                    <div className="grid grid-cols-3 gap-4 mb-4 p-3 bg-gray-50 rounded-lg">
+                    <div className="grid grid-cols-3 gap-4 p-4 bg-gray-50 rounded-lg">
                       <div>
-                        <p className="text-xs text-gray-500">Tổng số khoản thu</p>
-                        <p className="font-semibold">{contractIncomes.length}</p>
+                        <p className="text-sm text-gray-500">Tổng số khoản thu</p>
+                        <p className="text-lg font-semibold">{contractIncomes.length}</p>
                       </div>
                       <div>
-                        <p className="text-xs text-gray-500">Tổng tiền</p>
-                        <p className="font-semibold text-green-600">
+                        <p className="text-sm text-gray-500">Tổng tiền</p>
+                        <p className="text-lg font-semibold text-green-600">
                           {formatCompactCurrency(contractIncomes.reduce((sum, i) => sum + i.amount, 0))}
                         </p>
                       </div>
                       <div>
-                        <p className="text-xs text-gray-500">Đã duyệt</p>
-                        <p className="font-semibold">
+                        <p className="text-sm text-gray-500">Đã duyệt</p>
+                        <p className="text-lg font-semibold">
                           {contractIncomes.filter(i => i.status === 'approved').length} / {contractIncomes.length}
                         </p>
                       </div>
                     </div>
 
                     {/* Income List */}
-                    <Table>
+                    <Table className="table-lg">
                       <TableHeader>
                         <TableRow>
                           <TableHead>Mã</TableHead>
@@ -1407,24 +1494,24 @@ export default function RentalContractsPage() {
                       <TableBody>
                         {contractIncomes.map((income) => (
                           <TableRow key={income._id}>
-                            <TableCell className="font-mono text-sm">{income.incomeCode}</TableCell>
+                            <TableCell className="font-mono">{income.incomeCode}</TableCell>
                             <TableCell>{formatDate(income.incomeDate)}</TableCell>
                             <TableCell className="text-right font-semibold text-green-600">
                               {formatCompactCurrency(income.amount)}
                             </TableCell>
                             <TableCell>
                               {income.status === 'approved' ? (
-                                <Badge className="bg-green-100 text-green-700">
-                                  <CheckCircle size={12} className="mr-1" />
+                                <Badge className="text-sm px-3 py-1 bg-green-100 text-green-700">
+                                  <CheckCircle size={14} className="mr-1" />
                                   Đã duyệt
                                 </Badge>
                               ) : income.status === 'pending' ? (
-                                <Badge className="bg-yellow-100 text-yellow-700">
+                                <Badge className="text-sm px-3 py-1 bg-yellow-100 text-yellow-700">
                                   Chờ duyệt
                                 </Badge>
                               ) : (
-                                <Badge className="bg-red-100 text-red-700">
-                                  <XCircle size={12} className="mr-1" />
+                                <Badge className="text-sm px-3 py-1 bg-red-100 text-red-700">
+                                  <XCircle size={14} className="mr-1" />
                                   Từ chối
                                 </Badge>
                               )}
@@ -1435,12 +1522,12 @@ export default function RentalContractsPage() {
                     </Table>
                   </div>
                 )}
-              </div>
+              </FormSection>
             </div>
           )}
 
           <DialogFooter>
-            <Button onClick={() => setShowDetailDialog(false)}>Đóng</Button>
+            <Button onClick={() => setShowDetailDialog(false)} className="h-12 px-8 text-base">Đóng</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

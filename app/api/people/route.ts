@@ -16,15 +16,15 @@ export async function GET(request: NextRequest) {
     await verifyToken(token);
 
     const { searchParams } = new URL(request.url);
-    const familyId = searchParams.get('familyId');
+    const parishId = searchParams.get('parishId');
     const limit = parseInt(searchParams.get('limit') || '100');
 
     const peopleCollection = await getCollection('parishioners');
-    const familiesCollection = await getCollection('families');
+    const parishesCollection = await getCollection('parishes');
 
     const query: any = {};
-    if (familyId) {
-      query.familyId = new ObjectId(familyId);
+    if (parishId) {
+      query.parishId = new ObjectId(parishId);
     }
 
     const people = await peopleCollection
@@ -33,20 +33,20 @@ export async function GET(request: NextRequest) {
       .limit(limit)
       .toArray();
 
-    // Get family names for each person
-    const familyIds = [...new Set(people.map(p => p.familyId?.toString()).filter(Boolean))];
-    const families = await familiesCollection
-      .find({ _id: { $in: familyIds.map(id => new ObjectId(id)) } })
+    // Get parish names for each person
+    const parishIds = [...new Set(people.map(p => p.parishId?.toString()).filter(Boolean))];
+    const parishes = await parishesCollection
+      .find({ _id: { $in: parishIds.map(id => new ObjectId(id)) } })
       .toArray();
 
-    const familyMap = new Map(families.map(f => [f._id.toString(), f.familyName]));
+    const parishMap = new Map(parishes.map(p => [p._id.toString(), p.parishName]));
 
-    const peopleWithFamily = people.map(person => ({
+    const peopleWithParish = people.map(person => ({
       ...person,
-      familyName: person.familyId ? familyMap.get(person.familyId.toString()) : undefined,
+      parishName: person.parishId ? parishMap.get(person.parishId.toString()) : undefined,
     }));
 
-    return NextResponse.json({ data: peopleWithFamily });
+    return NextResponse.json({ data: peopleWithParish });
   } catch (error) {
     console.error('Error fetching people:', error);
     return NextResponse.json(
@@ -73,7 +73,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
 
     // Validation
-    if (!body.familyId || !body.fullName || !body.saintName || !body.gender || !body.dob || !body.relationship) {
+    if (!body.parishId || !body.fullName || !body.saintName || !body.gender || !body.dob || !body.relationship) {
       return NextResponse.json(
         { error: 'Missing required fields' },
         { status: 400 }
@@ -83,7 +83,7 @@ export async function POST(request: NextRequest) {
     const peopleCollection = await getCollection('parishioners');
 
     const person: Omit<Person, '_id'> = {
-      familyId: new ObjectId(body.familyId),
+      parishId: new ObjectId(body.parishId),
       saintName: body.saintName,
       fullName: body.fullName,
       gender: body.gender,
@@ -138,7 +138,7 @@ export async function PUT(request: NextRequest) {
       );
     }
 
-    if (!body.familyId || !body.fullName || !body.saintName || !body.gender || !body.dob || !body.relationship) {
+    if (!body.parishId || !body.fullName || !body.saintName || !body.gender || !body.dob || !body.relationship) {
       return NextResponse.json(
         { error: 'Missing required fields' },
         { status: 400 }
@@ -148,7 +148,7 @@ export async function PUT(request: NextRequest) {
     const peopleCollection = await getCollection('parishioners');
 
     const updateData: any = {
-      familyId: new ObjectId(body.familyId),
+      parishId: new ObjectId(body.parishId),
       saintName: body.saintName,
       fullName: body.fullName,
       gender: body.gender,
