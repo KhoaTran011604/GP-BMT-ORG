@@ -422,9 +422,8 @@ export default function DashboardPage() {
               key={tab.key}
               variant={isActive ? 'default' : 'outline'}
               onClick={() => setActiveTab(tab.key)}
-              className={`h-12 px-6 text-base font-medium ${
-                isActive ? `${tab.color} hover:opacity-90` : ''
-              }`}
+              className={`h-12 px-6 text-base font-medium ${isActive ? `${tab.color} hover:opacity-90` : ''
+                }`}
             >
               <Icon size={20} className="mr-2" />
               {tab.label}
