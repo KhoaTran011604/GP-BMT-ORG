@@ -125,9 +125,8 @@ export function FundVsTargetChart({ data }: { data: FundVsTargetData[] }) {
             variant={selectedGroup === group ? 'default' : 'outline'}
             size="sm"
             onClick={() => setSelectedGroup(group)}
-            className={`h-8 px-3 text-sm ${
-              selectedGroup === group ? 'bg-blue-600 hover:bg-blue-700' : ''
-            }`}
+            className={`h-8 px-3 text-sm ${selectedGroup === group ? 'bg-blue-600 hover:bg-blue-700' : ''
+              }`}
           >
             {FUND_GROUP_LABELS[group]}
             {group !== 'all' && (
@@ -149,14 +148,23 @@ export function FundVsTargetChart({ data }: { data: FundVsTargetData[] }) {
             <BarChart
               layout="vertical"
               data={filteredData}
-              margin={{ top: 5, right: 30, left: 80, bottom: 5 }}
+              margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
             >
               <CartesianGrid strokeDasharray="3 3" horizontal={false} />
               <XAxis
                 type="number"
-                tickFormatter={(value) => `${(value / 1000000).toFixed(0)}tr`}
+                tickFormatter={(value) => {
+                  if (value >= 1000000000) return `${(value / 1000000000).toFixed(1)} tỷ`;
+                  if (value >= 1000000) return `${(value / 1000000).toFixed(0)} tr`;
+                  return `${value.toLocaleString()}`;
+                }}
               />
-              <YAxis dataKey="fundName" type="category" width={80} tick={{ fontSize: 12 }} />
+              <YAxis
+                dataKey="fundName"
+                type="category"
+                width={100}
+                tick={{ fontSize: 11 }}
+              />
               <Tooltip
                 formatter={(value: number) => formatCompactCurrency(value)}
                 labelStyle={{ fontWeight: 'bold' }}
@@ -293,15 +301,22 @@ export function TopParishChart({ data }: { data: TopParishData[] }) {
     >
       <div className="h-[280px] mt-4">
         <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={data} margin={{ top: 5, right: 30, left: 0, bottom: 25 }}>
+          <BarChart data={data} margin={{ top: 5, right: 30, left: 20, bottom: 25 }}>
             <CartesianGrid strokeDasharray="3 3" vertical={false} />
             <XAxis
               dataKey="parishName"
-              tick={{ fontSize: 11, angle: -15 }}
+              tick={{ fontSize: 11 }}
               interval={0}
-              height={50}
+              height={60}
             />
-            <YAxis tickFormatter={(value) => `${(value / 1000000).toFixed(0)}tr`} />
+            <YAxis
+              tickFormatter={(value) => {
+                if (value >= 1000000000) return `${(value / 1000000000).toFixed(0)} tỷ`;
+                if (value >= 1000000) return `${(value / 1000000).toFixed(0)} tr`;
+                return `${value.toLocaleString()}`;
+              }}
+              width={80}
+            />
             <Tooltip formatter={(value: number) => formatCompactCurrency(value)} />
             <Bar dataKey="amount" name="Đóng góp" radius={[4, 4, 0, 0]}>
               {data.map((_, index) => (
