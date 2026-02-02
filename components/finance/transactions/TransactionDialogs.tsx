@@ -50,96 +50,118 @@ export function TransactionDetailDialog({
         return new Date(date).toLocaleDateString('vi-VN');
     };
 
+    const paymentMethodLabel = transaction.paymentMethod === 'online' ? 'Chuyển khoản' : 'Tiền mặt';
+
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-                <DialogHeader>
-                    <DialogTitle className="flex items-center gap-2">
-                        {transaction.type === 'income' ? (
-                            <Badge className="bg-green-100 text-green-700">
-                                <ArrowDownCircle size={14} className="mr-1" /> Khoản Thu
-                            </Badge>
-                        ) : (
-                            <Badge className="bg-red-100 text-red-700">
-                                <ArrowUpCircle size={14} className="mr-1" /> Khoản Chi
-                            </Badge>
-                        )}
-                        Chi tiết giao dịch
+            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto p-0">
+                {/* Accessible but visually styled header */}
+                <DialogHeader className="sr-only">
+                    <DialogTitle>
+                        Chi tiết {transaction.type === 'income' ? 'khoản thu' : 'khoản chi'} - {transaction.code}
                     </DialogTitle>
-                    <DialogDescription>
-                        Mã: {transaction.code}
-                    </DialogDescription>
                 </DialogHeader>
 
-                <div className="space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
-                        <div>
-                            <p className="text-sm font-medium text-gray-500">Ngày {transaction.type === 'income' ? 'thu' : 'chi'}</p>
-                            <p className="font-medium">{formatDate(transaction.date)}</p>
-                        </div>
-                        {transaction.submittedAt && (
+                {/* Visual header with large type indicator */}
+                <div className={`p-6 ${transaction.type === 'income' ? 'bg-green-50 border-b-4 border-green-500' : 'bg-red-50 border-b-4 border-red-500'}`}>
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                            {transaction.type === 'income' ? (
+                                <div className="w-14 h-14 rounded-full bg-green-100 flex items-center justify-center">
+                                    <ArrowDownCircle size={32} className="text-green-600" />
+                                </div>
+                            ) : (
+                                <div className="w-14 h-14 rounded-full bg-red-100 flex items-center justify-center">
+                                    <ArrowUpCircle size={32} className="text-red-600" />
+                                </div>
+                            )}
                             <div>
-                                <p className="text-sm font-medium text-gray-500">Ngày tạo</p>
-                                <p className="font-medium">{formatDate(transaction.submittedAt)}</p>
+                                <h2 className={`text-2xl font-bold ${transaction.type === 'income' ? 'text-green-700' : 'text-red-700'}`}>
+                                    {transaction.type === 'income' ? 'KHOẢN THU' : 'KHOẢN CHI'}
+                                </h2>
+                                <p className="text-lg text-gray-600">Mã: {transaction.code}</p>
                             </div>
-                        )}
-                        <div>
-                            <p className="text-sm font-medium text-gray-500">Số tiền</p>
-                            <p className={`text-xl font-bold ${transaction.type === 'income' ? 'text-green-600' : 'text-red-600'}`}>
-                                {transaction.type === 'expense' ? '-' : ''}{formatCompactCurrency(transaction.amount)}
+                        </div>
+                        <StatusBadge status={transaction.status} variant="lg" />
+                    </div>
+                </div>
+
+                {/* Main content with large fonts */}
+                <div className="p-6 space-y-6">
+                    {/* Amount - Most important, largest font */}
+                    <div className={`text-center p-6 rounded-xl ${transaction.type === 'income' ? 'bg-green-50' : 'bg-red-50'}`}>
+                        <p className="text-lg text-gray-600 mb-2">Số tiền</p>
+                        <p className={`text-4xl font-bold ${transaction.type === 'income' ? 'text-green-600' : 'text-red-600'}`}>
+                            {transaction.type === 'expense' ? '-' : '+'}{formatCompactCurrency(transaction.amount)}
+                        </p>
+                    </div>
+
+                    {/* Key info in large cards */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {/* Date */}
+                        <div className="bg-gray-50 p-4 rounded-xl">
+                            <p className="text-base text-gray-500 mb-1">Ngày {transaction.type === 'income' ? 'thu' : 'chi'}</p>
+                            <p className="text-xl font-semibold text-gray-900">{formatDate(transaction.date)}</p>
+                        </div>
+
+                        {/* Payment method */}
+                        <div className="bg-gray-50 p-4 rounded-xl">
+                            <p className="text-base text-gray-500 mb-1">Hình thức</p>
+                            <p className="text-xl font-semibold text-gray-900">{paymentMethodLabel}</p>
+                        </div>
+
+                        {/* Payer/Payee */}
+                        <div className="bg-gray-50 p-4 rounded-xl md:col-span-2">
+                            <p className="text-base text-gray-500 mb-1">
+                                {transaction.type === 'income' ? 'Người nộp tiền' : 'Người nhận tiền'}
                             </p>
+                            <p className="text-xl font-semibold text-gray-900">{transaction.payerPayee || 'Không có thông tin'}</p>
                         </div>
-                        <div>
-                            <p className="text-sm font-medium text-gray-500">Hình thức thanh toán</p>
-                            <p className="font-medium capitalize">{transaction.paymentMethod}</p>
-                        </div>
-                        <div>
-                            <p className="text-sm font-medium text-gray-500">
-                                {transaction.type === 'income' ? 'Người nộp' : 'Người nhận'}
-                            </p>
-                            <p className="font-medium">{transaction.payerPayee || 'N/A'}</p>
-                        </div>
+
+                        {/* Bank account if available */}
                         {transaction.bankAccount && (
-                            <div>
-                                <p className="text-sm font-medium text-gray-500">Tài khoản ngân hàng</p>
-                                <p className="font-medium">{transaction.bankAccount}</p>
+                            <div className="bg-blue-50 p-4 rounded-xl md:col-span-2">
+                                <p className="text-base text-blue-600 mb-1">Tài khoản ngân hàng</p>
+                                <p className="text-xl font-semibold text-blue-800">{transaction.bankAccount}</p>
                             </div>
                         )}
+
+                        {/* Bank info for online transactions */}
                         {transaction.paymentMethod === 'online' && (
                             <>
                                 {transaction.type === 'income' && (transaction.senderBankName || transaction.senderBankAccount) && (
-                                    <div className="col-span-2 bg-blue-50 p-3 rounded-md">
-                                        <p className="text-sm font-medium text-blue-700 mb-1">Thông tin ngân hàng người gửi</p>
-                                        <div className="grid grid-cols-2 gap-2">
+                                    <div className="bg-blue-50 p-4 rounded-xl md:col-span-2 border-2 border-blue-200">
+                                        <p className="text-base font-medium text-blue-700 mb-3">Thông tin ngân hàng người gửi</p>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                                             {transaction.senderBankName && (
                                                 <div>
-                                                    <p className="text-xs text-gray-500">Ngân hàng</p>
-                                                    <p className="font-medium">{transaction.senderBankName}</p>
+                                                    <p className="text-base text-gray-500">Ngân hàng</p>
+                                                    <p className="text-lg font-semibold">{transaction.senderBankName}</p>
                                                 </div>
                                             )}
                                             {transaction.senderBankAccount && (
                                                 <div>
-                                                    <p className="text-xs text-gray-500">Số tài khoản</p>
-                                                    <p className="font-mono font-medium">{transaction.senderBankAccount}</p>
+                                                    <p className="text-base text-gray-500">Số tài khoản</p>
+                                                    <p className="text-lg font-mono font-semibold">{transaction.senderBankAccount}</p>
                                                 </div>
                                             )}
                                         </div>
                                     </div>
                                 )}
                                 {transaction.type === 'expense' && (transaction.receiverBankName || transaction.receiverBankAccount) && (
-                                    <div className="col-span-2 bg-orange-50 p-3 rounded-md">
-                                        <p className="text-sm font-medium text-orange-700 mb-1">Thông tin ngân hàng người nhận</p>
-                                        <div className="grid grid-cols-2 gap-2">
+                                    <div className="bg-orange-50 p-4 rounded-xl md:col-span-2 border-2 border-orange-200">
+                                        <p className="text-base font-medium text-orange-700 mb-3">Thông tin ngân hàng người nhận</p>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                                             {transaction.receiverBankName && (
                                                 <div>
-                                                    <p className="text-xs text-gray-500">Ngân hàng</p>
-                                                    <p className="font-medium">{transaction.receiverBankName}</p>
+                                                    <p className="text-base text-gray-500">Ngân hàng</p>
+                                                    <p className="text-lg font-semibold">{transaction.receiverBankName}</p>
                                                 </div>
                                             )}
                                             {transaction.receiverBankAccount && (
                                                 <div>
-                                                    <p className="text-xs text-gray-500">Số tài khoản</p>
-                                                    <p className="font-mono font-medium">{transaction.receiverBankAccount}</p>
+                                                    <p className="text-base text-gray-500">Số tài khoản</p>
+                                                    <p className="text-lg font-mono font-semibold">{transaction.receiverBankAccount}</p>
                                                 </div>
                                             )}
                                         </div>
@@ -147,115 +169,109 @@ export function TransactionDetailDialog({
                                 )}
                             </>
                         )}
-                        {transaction.fiscalYear && (
-                            <div>
-                                <p className="text-sm font-medium text-gray-500">Năm tài chính</p>
-                                <p className="font-medium">{transaction.fiscalYear}</p>
-                            </div>
-                        )}
-                        {transaction.fiscalPeriod && (
-                            <div>
-                                <p className="text-sm font-medium text-gray-500">Kỳ tài chính</p>
-                                <p className="font-medium">Tháng {transaction.fiscalPeriod}</p>
-                            </div>
-                        )}
-                        <div>
-                            <p className="text-sm font-medium text-gray-500">Trạng thái</p>
-                            <StatusBadge status={transaction.status} variant="sm" />
-                        </div>
                     </div>
 
-                    {/* Source Information - for income transparency */}
+                    {/* Description */}
+                    {transaction.description && (
+                        <div className="bg-gray-50 p-4 rounded-xl">
+                            <p className="text-base text-gray-500 mb-2">Diễn giải</p>
+                            <p className="text-lg text-gray-900">{transaction.description}</p>
+                        </div>
+                    )}
+
+                    {/* Notes */}
+                    {transaction.notes && (
+                        <div className="bg-yellow-50 p-4 rounded-xl border-2 border-yellow-200">
+                            <p className="text-base text-yellow-700 mb-2">Ghi chú</p>
+                            <p className="text-lg text-gray-900">{transaction.notes}</p>
+                        </div>
+                    )}
+
+                    {/* Images - larger thumbnails */}
+                    {transaction.images.length > 0 && (
+                        <div>
+                            <p className="text-base text-gray-500 mb-3">Hình ảnh chứng từ ({transaction.images.length} ảnh)</p>
+                            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                                {transaction.images.map((img, idx) => (
+                                    <img
+                                        key={idx}
+                                        src={img}
+                                        alt={`Chứng từ ${idx + 1}`}
+                                        className="w-full h-32 object-cover rounded-xl cursor-pointer hover:opacity-80 transition-opacity border-2 border-gray-200"
+                                        onClick={onViewImages}
+                                    />
+                                ))}
+                            </div>
+                            <Button
+                                variant="outline"
+                                className="w-full mt-3 h-12 text-lg"
+                                onClick={onViewImages}
+                            >
+                                Xem ảnh đầy đủ
+                            </Button>
+                        </div>
+                    )}
+
+                    {/* Source type - simplified */}
                     {transaction.type === 'income' && (
-                        <div className={`p-3 rounded-md ${transaction.sourceType === 'rental_contract' ? 'bg-blue-50 border border-blue-200' : 'bg-gray-50 border border-gray-200'}`}>
-                            <p className="text-sm font-medium text-gray-500 mb-2">Nguồn giao dịch</p>
-                            <div className="flex items-center gap-2">
+                        <div className={`p-4 rounded-xl ${transaction.sourceType === 'rental_contract' ? 'bg-blue-50 border-2 border-blue-200' : 'bg-gray-100'}`}>
+                            <p className="text-base text-gray-500 mb-2">Nguồn giao dịch</p>
+                            <div className="flex items-center gap-3">
                                 {transaction.sourceType === 'rental_contract' ? (
                                     <>
-                                        <Badge className="bg-blue-100 text-blue-700 gap-1">
-                                            <Home size={14} />
-                                            Hợp đồng thuê BĐS
-                                        </Badge>
-                                        <span className="text-sm text-blue-700">
-                                            - Phát sinh từ hợp đồng cho thuê bất động sản
-                                        </span>
+                                        <Home size={24} className="text-blue-600" />
+                                        <span className="text-lg font-medium text-blue-700">Từ hợp đồng cho thuê BĐS</span>
                                     </>
                                 ) : (
                                     <>
-                                        <Badge className="bg-gray-100 text-gray-700 gap-1">
-                                            <User size={14} />
-                                            Nhập tay
-                                        </Badge>
-                                        <span className="text-sm text-gray-600">
-                                            - Giao dịch được tạo thủ công
-                                        </span>
+                                        <User size={24} className="text-gray-600" />
+                                        <span className="text-lg font-medium text-gray-700">Nhập thủ công</span>
                                     </>
                                 )}
                             </div>
                         </div>
                     )}
 
-                    {transaction.description && (
-                        <div>
-                            <p className="text-sm font-medium text-gray-500">Diễn giải</p>
-                            <p className="font-medium bg-gray-50 p-3 rounded-md">{transaction.description}</p>
-                        </div>
-                    )}
-
-                    {transaction.notes && (
-                        <div>
-                            <p className="text-sm font-medium text-gray-500">Ghi chú</p>
-                            <p className="font-medium bg-gray-50 p-3 rounded-md">{transaction.notes}</p>
-                        </div>
-                    )}
-
-                    {transaction.images.length > 0 && (
-                        <div>
-                            <p className="text-sm font-medium text-gray-500 mb-2">Hình ảnh chứng từ ({transaction.images.length})</p>
-                            <div className="grid grid-cols-4 gap-2">
-                                {transaction.images.map((img, idx) => (
-                                    <img
-                                        key={idx}
-                                        src={img}
-                                        alt={`Chứng từ ${idx + 1}`}
-                                        className="w-full h-24 object-cover rounded-md cursor-pointer hover:opacity-80 transition-opacity"
-                                        onClick={onViewImages}
-                                    />
-                                ))}
-                            </div>
+                    {/* Fiscal info - smaller, less prominent */}
+                    {(transaction.fiscalYear || transaction.fiscalPeriod) && (
+                        <div className="flex gap-4 text-base text-gray-500">
+                            {transaction.fiscalYear && <span>Năm tài chính: {transaction.fiscalYear}</span>}
+                            {transaction.fiscalPeriod && <span>• Tháng {transaction.fiscalPeriod}</span>}
                         </div>
                     )}
                 </div>
 
-                <DialogFooter className="flex gap-2">
+                {/* Footer with large, clear buttons */}
+                <div className="p-6 bg-gray-50 border-t space-y-3">
+                    {transaction.status === 'pending' && canManageApprovals && (
+                        <div className="grid grid-cols-2 gap-3 mb-3">
+                            <Button
+                                variant="outline"
+                                className="h-14 text-lg font-semibold text-red-600 border-2 border-red-300 hover:bg-red-50"
+                                onClick={onReject}
+                                disabled={submitting}
+                            >
+                                <XCircle size={24} className="mr-2" />
+                                Từ chối
+                            </Button>
+                            <Button
+                                className="h-14 text-lg font-semibold bg-green-600 hover:bg-green-700"
+                                onClick={onApprove}
+                                disabled={submitting}
+                            >
+                                <CheckCircle size={24} className="mr-2" />
+                                Duyệt
+                            </Button>
+                        </div>
+                    )}
                     <Button
                         variant="outline"
+                        className="w-full h-14 text-lg font-medium"
                         onClick={() => onOpenChange(false)}
                     >
                         Đóng
                     </Button>
-                    {transaction.status === 'pending' && canManageApprovals && (
-                        <>
-                            <Button
-                                variant="outline"
-                                className="text-red-600 border-red-200 hover:bg-red-50"
-                                onClick={onReject}
-                                disabled={submitting}
-                            >
-                                <XCircle size={16} className="mr-2" />
-                                Từ chối
-                            </Button>
-                            <Button
-                                className="bg-green-600 hover:bg-green-700"
-                                onClick={onApprove}
-                                disabled={submitting}
-                            >
-                                <CheckCircle size={16} className="mr-2" />
-                                Duyệt
-                            </Button>
-                        </>
-                    )}
-                </DialogFooter>
+                </div>
             </DialogContent>
         </Dialog>
     );

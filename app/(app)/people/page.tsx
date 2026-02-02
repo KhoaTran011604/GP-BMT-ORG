@@ -10,6 +10,7 @@ import { FormSection, FormField, FormLabel, FormGrid } from '@/components/ui/for
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Pencil, Trash2 } from 'lucide-react';
+import { useAuth } from '@/lib/auth-context';
 
 interface Person {
   _id: string;
@@ -37,6 +38,7 @@ interface Parish {
 }
 
 export default function PeoplePage() {
+  const { user } = useAuth();
   const [people, setPeople] = useState<Person[]>([]);
   const [parishes, setParishes] = useState<Parish[]>([]);
   const [loading, setLoading] = useState(true);
@@ -61,6 +63,13 @@ export default function PeoplePage() {
   useEffect(() => {
     fetchData();
   }, []);
+
+  // Set default parishId from user
+  useEffect(() => {
+    if (user?.parishId) {
+      setFormData(prev => ({ ...prev, parishId: user.parishId! }));
+    }
+  }, [user?.parishId]);
 
   const fetchData = async () => {
     try {
@@ -105,7 +114,7 @@ export default function PeoplePage() {
         setIsDialogOpen(false);
         setEditingPerson(null);
         setFormData({
-          parishId: '',
+          parishId: user?.parishId || '',
           saintName: '',
           fullName: '',
           gender: 'male',
@@ -164,7 +173,7 @@ export default function PeoplePage() {
     if (!open) {
       setEditingPerson(null);
       setFormData({
-        parishId: '',
+        parishId: user?.parishId || '',
         saintName: '',
         fullName: '',
         gender: 'male',

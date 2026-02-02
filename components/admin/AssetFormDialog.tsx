@@ -10,6 +10,7 @@ import { FormSection, FormField, FormLabel, FormGrid } from '@/components/ui/for
 import { ImageUpload } from '@/components/finance/ImageUpload';
 import { toast } from 'sonner';
 import { Loader2, Package, MapPin, Wallet, FileText, ImageIcon } from 'lucide-react';
+import { useAuth } from '@/lib/auth-context';
 
 interface Asset {
     _id?: string;
@@ -36,6 +37,7 @@ interface AssetFormDialogProps {
 }
 
 export function AssetFormDialog({ open, onOpenChange, asset, onSuccess }: AssetFormDialogProps) {
+    const { user } = useAuth();
     const [loading, setLoading] = useState(false);
     const [parishes, setParishes] = useState<any[]>([]);
     const [formData, setFormData] = useState<Asset>({
@@ -47,6 +49,13 @@ export function AssetFormDialog({ open, onOpenChange, asset, onSuccess }: AssetF
         status: 'active',
         images: [],
     });
+
+    // Set default parishId from user when component mounts
+    useEffect(() => {
+        if (user?.parishId && !asset) {
+            setFormData(prev => ({ ...prev, parishId: user.parishId! }));
+        }
+    }, [user?.parishId, asset]);
 
     useEffect(() => {
         fetchParishes();
@@ -64,13 +73,13 @@ export function AssetFormDialog({ open, onOpenChange, asset, onSuccess }: AssetF
                 assetCode: '',
                 assetName: '',
                 assetType: 'land',
-                parishId: '',
+                parishId: user?.parishId || '',
                 location: '',
                 status: 'active',
                 images: [],
             });
         }
-    }, [asset, open]);
+    }, [asset, open, user?.parishId]);
 
     const fetchParishes = async () => {
         try {

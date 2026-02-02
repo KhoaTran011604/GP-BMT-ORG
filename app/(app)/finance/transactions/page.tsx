@@ -188,6 +188,14 @@ export default function TransactionsPage() {
     fetchFundsAndParishes();
   }, []);
 
+  // Set default parishId from user
+  useEffect(() => {
+    if (user?.parishId) {
+      setFormData(prev => ({ ...prev, parishId: user.parishId! }));
+      setAdjustmentFormData(prev => ({ ...prev, parishId: user.parishId! }));
+    }
+  }, [user?.parishId]);
+
   const fetchFundsAndParishes = async () => {
     try {
       const [fundsRes, parishesRes, categoriesRes, bankAccountsRes, contactsRes] = await Promise.all([
@@ -348,7 +356,7 @@ export default function TransactionsPage() {
 
   const resetForm = () => {
     setFormData({
-      parishId: '',
+      parishId: user?.parishId || '',
       fundId: '',
       categoryId: '',
       amount: '',
@@ -367,7 +375,7 @@ export default function TransactionsPage() {
 
   const resetAdjustmentForm = () => {
     setAdjustmentFormData({
-      parishId: '',
+      parishId: user?.parishId || '',
       fundId: '',
       bankAccountId: '',
       adjustmentType: 'increase',

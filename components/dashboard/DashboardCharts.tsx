@@ -1,7 +1,8 @@
 'use client';
 
+import { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import {
   BarChart,
   Bar,
@@ -25,44 +26,22 @@ import { formatCompactCurrency } from '@/lib/utils';
 interface ChartCardProps {
   title: string;
   description?: string;
-  importance?: 'quan_trong' | 'can_thiet' | 'huu_ich';
-  reason?: string;
   children: React.ReactNode;
 }
 
-const importanceConfig = {
-  quan_trong: { label: 'Quan trọng', color: 'bg-red-100 text-red-700' },
-  can_thiet: { label: 'Cần thiết', color: 'bg-orange-100 text-orange-700' },
-  huu_ich: { label: 'Hữu ích', color: 'bg-blue-100 text-blue-700' },
-};
-
-export function ChartCard({ title, description, importance, reason, children }: ChartCardProps) {
+export function ChartCard({ title, description, children }: ChartCardProps) {
   return (
     <Card className="border-2 h-full">
       <CardHeader className="pb-2">
-        <div className="flex items-start justify-between">
-          <div>
-            <CardTitle className="text-lg font-bold text-gray-900">{title}</CardTitle>
-            {description && (
-              <CardDescription className="text-sm text-gray-500 mt-1">{description}</CardDescription>
-            )}
-          </div>
-          {importance && (
-            <Badge className={`${importanceConfig[importance].color} text-xs px-2 py-1`}>
-              {importanceConfig[importance].label}
-            </Badge>
+        <div>
+          <CardTitle className="text-lg font-bold text-gray-900">{title}</CardTitle>
+          {description && (
+            <CardDescription className="text-sm text-gray-500 mt-1">{description}</CardDescription>
           )}
         </div>
       </CardHeader>
       <CardContent className="pt-0">
         {children}
-        {reason && (
-          <p className="text-xs text-gray-500 mt-3 flex items-center gap-1">
-            <span className="text-yellow-500">💡</span>
-            <span className="font-medium">Lý do {importance === 'quan_trong' ? 'quan trọng' : importance === 'can_thiet' ? 'cần thiết' : 'hữu ích'}:</span>
-            {reason}
-          </p>
-        )}
       </CardContent>
     </Card>
   );
@@ -87,43 +66,107 @@ const COLORS = {
 const PIE_COLORS = ['#6366f1', '#a855f7', '#ec4899', '#f97316', '#6b7280'];
 const BAR_COLORS = ['#6366f1', '#3b82f6', '#22c55e', '#f97316', '#eab308'];
 
-// 1. Thu theo Quỹ vs Mục tiêu - Horizontal Bar Chart
+// 1. Thu theo Quỹ vs Mục tiêu - Horizontal Bar Chart with Group Filter
 interface FundVsTargetData {
   fundName: string;
   actual: number;
   target: number;
+  category?: 'A' | 'B' | 'C';
 }
 
+type FundGroupFilter = 'all' | 'A' | 'B' | 'C';
+
+const FUND_GROUP_LABELS: Record<FundGroupFilter, string> = {
+  all: 'Tất cả',
+  A: 'Quỹ A',
+  B: 'Quỹ B',
+  C: 'Quỹ C',
+};
+
 export function FundVsTargetChart({ data }: { data: FundVsTargetData[] }) {
+  const [selectedGroup, setSelectedGroup] = useState<FundGroupFilter>('all');
+
+  // Filter and sort data: filter by group, sort by actual (descending), take top 5
+  const filteredData = useMemo(() => {
+    let filtered = data;
+
+    // Filter by category if not "all"
+    if (selectedGroup !== 'all') {
+      filtered = data.filter(item => item.category === selectedGroup);
+    }
+
+    // Sort by actual income (descending) and take top 5
+    return filtered
+      .sort((a, b) => b.actual - a.actual)
+      .slice(0, 5);
+  }, [data, selectedGroup]);
+
+  // Get available groups (only show groups that have funds)
+  const availableGroups = useMemo(() => {
+    const groups = new Set<FundGroupFilter>(['all']);
+    data.forEach(item => {
+      if (item.category) {
+        groups.add(item.category);
+      }
+    });
+    return Array.from(groups);
+  }, [data]);
+
   return (
     <ChartCard
       title="1. Thu theo Quỹ vs Mục tiêu"
-      description="So sánh thực thu với chỉ tiêu từng quỹ"
-      importance="quan_trong"
-      reason="Cha Quản lý cần biết quỹ nào đang thiếu hụt để nhắc nhở GX"
+      description="So sánh thực thu với chỉ tiêu từng quỹ (Top 5)"
     >
-      <div className="h-[300px] mt-4">
-        <ResponsiveContainer width="100%" height="100%">
-          <BarChart
-            layout="vertical"
-            data={data}
-            margin={{ top: 5, right: 30, left: 80, bottom: 5 }}
+      {/* Group Filter Tabs */}
+      <div className="flex flex-wrap gap-2 mt-3 mb-2">
+        {availableGroups.map((group) => (
+          <Button
+            key={group}
+            variant={selectedGroup === group ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setSelectedGroup(group)}
+            className={`h-8 px-3 text-sm ${
+              selectedGroup === group ? 'bg-blue-600 hover:bg-blue-700' : ''
+            }`}
           >
-            <CartesianGrid strokeDasharray="3 3" horizontal={false} />
-            <XAxis
-              type="number"
-              tickFormatter={(value) => `${(value / 1000000).toFixed(0)}tr`}
-            />
-            <YAxis dataKey="fundName" type="category" width={80} tick={{ fontSize: 12 }} />
-            <Tooltip
-              formatter={(value: number) => formatCompactCurrency(value)}
-              labelStyle={{ fontWeight: 'bold' }}
-            />
-            <Legend />
-            <Bar dataKey="actual" fill={COLORS.green} name="Thực thu" radius={[0, 4, 4, 0]} />
-            <Bar dataKey="target" fill="#e5e7eb" name="Mục tiêu" radius={[0, 4, 4, 0]} />
-          </BarChart>
-        </ResponsiveContainer>
+            {FUND_GROUP_LABELS[group]}
+            {group !== 'all' && (
+              <span className="ml-1 text-xs opacity-75">
+                ({data.filter(d => d.category === group).length})
+              </span>
+            )}
+          </Button>
+        ))}
+      </div>
+
+      <div className="h-[280px]">
+        {filteredData.length === 0 ? (
+          <div className="h-full flex items-center justify-center text-gray-500">
+            Không có dữ liệu cho nhóm quỹ này
+          </div>
+        ) : (
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart
+              layout="vertical"
+              data={filteredData}
+              margin={{ top: 5, right: 30, left: 80, bottom: 5 }}
+            >
+              <CartesianGrid strokeDasharray="3 3" horizontal={false} />
+              <XAxis
+                type="number"
+                tickFormatter={(value) => `${(value / 1000000).toFixed(0)}tr`}
+              />
+              <YAxis dataKey="fundName" type="category" width={80} tick={{ fontSize: 12 }} />
+              <Tooltip
+                formatter={(value: number) => formatCompactCurrency(value)}
+                labelStyle={{ fontWeight: 'bold' }}
+              />
+              <Legend />
+              <Bar dataKey="actual" fill={COLORS.green} name="Thực thu" radius={[0, 4, 4, 0]} />
+              <Bar dataKey="target" fill="#e5e7eb" name="Mục tiêu" radius={[0, 4, 4, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
+        )}
       </div>
     </ChartCard>
   );
@@ -141,8 +184,6 @@ export function MonthlyTrendChart({ data }: { data: MonthlyTrendData[] }) {
     <ChartCard
       title="2. Xu hướng Thu - Chi theo tháng"
       description="Biến động thu chi qua các tháng trong năm"
-      importance="quan_trong"
-      reason="Nhận biết xu hướng, mùa cao điểm, lập kế hoạch tài chính"
     >
       <div className="h-[300px] mt-4">
         <ResponsiveContainer width="100%" height="100%">
@@ -199,8 +240,6 @@ export function ExpenseCategoryChart({ data }: { data: ExpenseCategoryData[] }) 
     <ChartCard
       title="3. Cơ cấu Chi tiêu theo Danh mục"
       description="Tỷ lệ % chi tiêu cho từng mục đích"
-      importance="can_thiet"
-      reason="Kiểm soát chi tiêu, phát hiện bất thường"
     >
       <div className="h-[280px] mt-4 flex items-center">
         <div className="w-1/2">
@@ -251,8 +290,6 @@ export function TopParishChart({ data }: { data: TopParishData[] }) {
     <ChartCard
       title="5. Top 5 Giáo xứ đóng góp nhiều nhất"
       description="Xếp hạng GX theo tổng số tiền đóng góp"
-      importance="huu_ich"
-      reason="Ghi nhận, tri ân GX đóng góp tích cực"
     >
       <div className="h-[280px] mt-4">
         <ResponsiveContainer width="100%" height="100%">
@@ -289,8 +326,6 @@ export function ParishByDeaneryChart({ data }: { data: ParishByDeaneryData[] }) 
     <ChartCard
       title="1. Số lượng Giáo xứ theo Giáo hạt"
       description="Phân bố giáo xứ trong từng giáo hạt"
-      importance="can_thiet"
-      reason="Cái nhìn tổng quan về cơ cấu Giáo phận"
     >
       <div className="h-[280px] mt-4">
         <ResponsiveContainer width="100%" height="100%">
@@ -318,8 +353,6 @@ export function ParishionerByParishChart({ data }: { data: ParishionerByParishDa
     <ChartCard
       title="2. Top 10 Giáo xứ đông giáo dân nhất"
       description="Xếp hạng giáo xứ theo số lượng giáo dân"
-      importance="quan_trong"
-      reason="Hỗ trợ phân bổ nguồn lực mục vụ"
     >
       <div className="h-[300px] mt-4">
         <ResponsiveContainer width="100%" height="100%">
@@ -352,8 +385,6 @@ export function AssetByTypeChart({ data }: { data: AssetByTypeData[] }) {
     <ChartCard
       title="3. Tài sản theo Loại"
       description="Phân bố tài sản theo từng loại hình"
-      importance="can_thiet"
-      reason="Quản lý tài sản hiệu quả"
     >
       <div className="h-[280px] mt-4 flex items-center">
         <div className="w-1/2">
@@ -404,8 +435,6 @@ export function ParishionerGrowthChart({ data }: { data: GrowthData[] }) {
     <ChartCard
       title="4. Tăng trưởng giáo dân theo năm"
       description="Xu hướng biến động số lượng giáo dân"
-      importance="huu_ich"
-      reason="Theo dõi sự phát triển của Giáo phận"
     >
       <div className="h-[280px] mt-4">
         <ResponsiveContainer width="100%" height="100%">
@@ -440,8 +469,6 @@ export function AssetValueByParishChart({ data }: { data: AssetValueByParishData
     <ChartCard
       title="5. Giá trị tài sản theo Giáo xứ"
       description="Top giáo xứ có tổng giá trị tài sản cao nhất"
-      importance="can_thiet"
-      reason="Đánh giá tài sản của từng đơn vị"
     >
       <div className="h-[280px] mt-4">
         <ResponsiveContainer width="100%" height="100%">

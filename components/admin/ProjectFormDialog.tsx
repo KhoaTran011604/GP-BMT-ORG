@@ -10,6 +10,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { ImageUpload } from '@/components/finance/ImageUpload';
 import { toast } from 'sonner';
 import { Loader2 } from 'lucide-react';
+import { useAuth } from '@/lib/auth-context';
 
 interface Project {
     _id?: string;
@@ -36,6 +37,7 @@ interface ProjectFormDialogProps {
 }
 
 export function ProjectFormDialog({ open, onOpenChange, project, onSuccess }: ProjectFormDialogProps) {
+    const { user } = useAuth();
     const [loading, setLoading] = useState(false);
     const [parishes, setParishes] = useState<any[]>([]);
     const [formData, setFormData] = useState<Project>({
@@ -48,6 +50,13 @@ export function ProjectFormDialog({ open, onOpenChange, project, onSuccess }: Pr
         status: 'planning',
         images: [],
     });
+
+    // Set default parishId from user when component mounts
+    useEffect(() => {
+        if (user?.parishId && !project) {
+            setFormData(prev => ({ ...prev, parishId: user.parishId! }));
+        }
+    }, [user?.parishId, project]);
 
     useEffect(() => {
         fetchParishes();
@@ -65,7 +74,7 @@ export function ProjectFormDialog({ open, onOpenChange, project, onSuccess }: Pr
         } else {
             setFormData({
                 projectName: '',
-                parishId: '',
+                parishId: user?.parishId || '',
                 projectType: 'construction',
                 budget: 0,
                 permitStatus: 'pending',
@@ -74,7 +83,7 @@ export function ProjectFormDialog({ open, onOpenChange, project, onSuccess }: Pr
                 images: [],
             });
         }
-    }, [project, open]);
+    }, [project, open, user?.parishId]);
 
     const fetchParishes = async () => {
         try {

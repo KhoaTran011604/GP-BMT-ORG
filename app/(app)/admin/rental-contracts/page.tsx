@@ -159,6 +159,13 @@ export default function RentalContractsPage() {
     fetchParishesAndFunds();
   }, [statusFilter]);
 
+  // Set default parishId from user
+  useEffect(() => {
+    if (user?.parishId) {
+      setFormData(prev => ({ ...prev, parishId: user.parishId! }));
+    }
+  }, [user?.parishId]);
+
   const fetchParishesAndFunds = async () => {
     try {
       const [fundsRes, bankAccountsRes, assetsRes, contactsRes] = await Promise.all([

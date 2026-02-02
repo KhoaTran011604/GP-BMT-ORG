@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '@/lib/auth-context';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -14,6 +14,7 @@ import {
   PieChart,
   BarChart3,
   Layers,
+  Loader2,
 } from 'lucide-react';
 import {
   FundVsTargetChart,
@@ -31,107 +32,27 @@ import { formatCompactCurrency } from '@/lib/utils';
 
 type TabType = 'tai_chinh' | 'giao_xu' | 'tong_hop';
 
-// Mock data - replace with API calls later
-const mockFinancialData = {
-  fundVsTarget: [
-    { fundName: 'Liên hiệp TG', actual: 180000000, target: 200000000 },
-    { fundName: 'Thiếu nhi TG', actual: 120000000, target: 150000000 },
-    { fundName: 'Lễ', actual: 145000000, target: 130000000 },
-    { fundName: 'Phêrô-Phaolô', actual: 95000000, target: 100000000 },
-    { fundName: 'Truyền giáo', actual: 75000000, target: 80000000 },
-    { fundName: 'Đại Chủng viện', actual: 210000000, target: 200000000 },
-    { fundName: 'Phòng thu TGM', actual: 185000000, target: 180000000 },
-    { fundName: 'Tôn chân Chúa', actual: 110000000, target: 120000000 },
-  ],
-  monthlyTrend: [
-    { month: 'T1', income: 450000000, expense: 320000000 },
-    { month: 'T2', income: 380000000, expense: 290000000 },
-    { month: 'T3', income: 520000000, expense: 380000000 },
-    { month: 'T4', income: 480000000, expense: 350000000 },
-    { month: 'T5', income: 550000000, expense: 400000000 },
-    { month: 'T6', income: 620000000, expense: 450000000 },
-    { month: 'T7', income: 580000000, expense: 420000000 },
-    { month: 'T8', income: 490000000, expense: 380000000 },
-    { month: 'T9', income: 530000000, expense: 390000000 },
-    { month: 'T10', income: 610000000, expense: 440000000 },
-    { month: 'T11', income: 680000000, expense: 480000000 },
-    { month: 'T12', income: 750000000, expense: 520000000 },
-  ],
-  expenseCategories: [
-    { name: 'Mục vụ', value: 350000000, percentage: 35 },
-    { name: 'Hành chính', value: 250000000, percentage: 25 },
-    { name: 'Nhân sự', value: 200000000, percentage: 20 },
-    { name: 'Từ thiện', value: 120000000, percentage: 12 },
-    { name: 'Khác', value: 80000000, percentage: 8 },
-  ],
-  topParishes: [
-    { parishName: 'GX Thánh Tâm', amount: 95000000 },
-    { parishName: 'GX Phú Long', amount: 82000000 },
-    { parishName: 'GX Tam Tòa', amount: 68000000 },
-    { parishName: 'GX Hòa Thuận', amount: 55000000 },
-    { parishName: 'GX Vinh Hòa', amount: 45000000 },
-  ],
-};
+const FUND_TARGET = 1000000000; // 1 tỷ VND
 
-const mockParishData = {
-  byDeanery: [
-    { deaneryName: 'GH BMT', count: 12 },
-    { deaneryName: 'GH Gia Nghĩa', count: 8 },
-    { deaneryName: 'GH Đắk Mil', count: 6 },
-    { deaneryName: 'GH Phước An', count: 9 },
-    { deaneryName: 'GH Ea Kar', count: 7 },
-  ],
-  parishionersByParish: [
-    { parishName: 'GX Chính Tòa', count: 5200 },
-    { parishName: 'GX Thánh Tâm', count: 4800 },
-    { parishName: 'GX Phú Long', count: 4200 },
-    { parishName: 'GX Vinh Sơn', count: 3900 },
-    { parishName: 'GX Hòa Thuận', count: 3600 },
-    { parishName: 'GX Tam Tòa', count: 3200 },
-    { parishName: 'GX Ea Kar', count: 2900 },
-    { parishName: 'GX Đức An', count: 2600 },
-    { parishName: 'GX Kim Châu', count: 2300 },
-    { parishName: 'GX Vinh Hòa', count: 2100 },
-  ],
-  growth: [
-    { year: '2020', count: 180000 },
-    { year: '2021', count: 185000 },
-    { year: '2022', count: 192000 },
-    { year: '2023', count: 198000 },
-    { year: '2024', count: 205000 },
-    { year: '2025', count: 212000 },
-  ],
-};
-
-const mockAssetData = {
-  byType: [
-    { type: 'Đất đai', count: 45, value: 150000000000 },
-    { type: 'Nhà cửa', count: 32, value: 80000000000 },
-    { type: 'Phương tiện', count: 18, value: 5000000000 },
-    { type: 'Thiết bị', count: 156, value: 3000000000 },
-  ],
-  byParish: [
-    { parishName: 'TGM BMT', value: 85000000000 },
-    { parishName: 'GX Chính Tòa', value: 45000000000 },
-    { parishName: 'GX Thánh Tâm', value: 32000000000 },
-    { parishName: 'GX Phú Long', value: 28000000000 },
-    { parishName: 'GX Vinh Sơn', value: 22000000000 },
-  ],
-};
-
-const mockSummaryStats = {
-  totalParishes: 42,
-  totalParishioners: 212000,
-  totalIncome: 6640000000,
-  totalExpense: 4820000000,
-  totalAssets: 251,
-  totalAssetValue: 238000000000,
+const assetTypeLabels: Record<string, string> = {
+  land: 'Đất đai',
+  building: 'Nhà cửa',
+  vehicle: 'Phương tiện',
+  equipment: 'Thiết bị',
 };
 
 export default function DashboardPage() {
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState<TabType>('tai_chinh');
   const [loading, setLoading] = useState(true);
+
+  // Raw data from APIs
+  const [parishes, setParishes] = useState<any[]>([]);
+  const [funds, setFunds] = useState<any[]>([]);
+  const [incomes, setIncomes] = useState<any[]>([]);
+  const [expenses, setExpenses] = useState<any[]>([]);
+  const [assets, setAssets] = useState<any[]>([]);
+  const [expenseCategories, setExpenseCategories] = useState<any[]>([]);
 
   // Stats counts
   const [stats, setStats] = useState({
@@ -142,44 +63,286 @@ export default function DashboardPage() {
   });
 
   useEffect(() => {
-    // Fetch real stats from API
-    const fetchStats = async () => {
-      try {
-        const [parishesRes, transactionsRes, assetsRes] = await Promise.all([
-          fetch('/api/parishes'),
-          fetch('/api/incomes'),
-          fetch('/api/assets'),
-        ]);
-
-        if (parishesRes.ok) {
-          const data = await parishesRes.json();
-          setStats(prev => ({ ...prev, parishes: data.data?.length || 0 }));
-        }
-
-        if (transactionsRes.ok) {
-          const data = await transactionsRes.json();
-          setStats(prev => ({ ...prev, transactions: data.data?.length || 0 }));
-        }
-
-        if (assetsRes.ok) {
-          const data = await assetsRes.json();
-          setStats(prev => ({ ...prev, assets: Array.isArray(data) ? data.length : 0 }));
-        }
-      } catch (error) {
-        console.error('Error fetching stats:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchStats();
+    fetchAllData();
   }, []);
+
+  const fetchAllData = async () => {
+    setLoading(true);
+    try {
+      const [
+        parishesRes,
+        fundsRes,
+        incomesRes,
+        expensesRes,
+        assetsRes,
+        categoriesRes,
+      ] = await Promise.all([
+        fetch('/api/parishes'),
+        fetch('/api/funds'),
+        fetch('/api/incomes'),
+        fetch('/api/expenses'),
+        fetch('/api/assets'),
+        fetch('/api/expense-categories'),
+      ]);
+
+      if (parishesRes.ok) {
+        const data = await parishesRes.json();
+        const parishList = data.data || [];
+        setParishes(parishList);
+        setStats(prev => ({ ...prev, parishes: parishList.length }));
+      }
+
+      if (fundsRes.ok) {
+        const data = await fundsRes.json();
+        setFunds(data.data || []);
+      }
+
+      if (incomesRes.ok) {
+        const data = await incomesRes.json();
+        const incomeList = data.data || [];
+        setIncomes(incomeList);
+        setStats(prev => ({ ...prev, transactions: prev.transactions + incomeList.length }));
+      }
+
+      if (expensesRes.ok) {
+        const data = await expensesRes.json();
+        const expenseList = data.data || [];
+        setExpenses(expenseList);
+        setStats(prev => ({ ...prev, transactions: prev.transactions + expenseList.length }));
+      }
+
+      if (assetsRes.ok) {
+        const data = await assetsRes.json();
+        const assetList = Array.isArray(data) ? data : (data.data || []);
+        setAssets(assetList);
+        setStats(prev => ({ ...prev, assets: assetList.length }));
+      }
+
+      if (categoriesRes.ok) {
+        const data = await categoriesRes.json();
+        setExpenseCategories(data.data || []);
+      }
+    } catch (error) {
+      console.error('Error fetching dashboard data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Process data for charts
+  const financialData = useMemo(() => {
+    // Fund vs Target - group incomes by fund
+    const fundIncomes: Record<string, number> = {};
+    incomes.forEach((income: any) => {
+      if (income.status === 'approved' && income.fundId) {
+        const fundId = income.fundId._id || income.fundId;
+        fundIncomes[fundId] = (fundIncomes[fundId] || 0) + (income.amount || 0);
+      }
+    });
+
+    // Pass all funds with category info - chart component handles filtering and top 5
+    const fundVsTarget = funds.map((fund: any) => ({
+      fundName: fund.fundName,
+      actual: fundIncomes[fund._id] || 0,
+      target: FUND_TARGET,
+      category: fund.category as 'A' | 'B' | 'C' | undefined,
+    }));
+
+    // Monthly trend - group by month
+    const currentYear = new Date().getFullYear();
+    const monthlyData: Record<string, { income: number; expense: number }> = {};
+
+    for (let i = 1; i <= 12; i++) {
+      monthlyData[`T${i}`] = { income: 0, expense: 0 };
+    }
+
+    incomes.forEach((income: any) => {
+      if (income.status === 'approved') {
+        const date = new Date(income.incomeDate);
+        if (date.getFullYear() === currentYear) {
+          const month = `T${date.getMonth() + 1}`;
+          monthlyData[month].income += income.amount || 0;
+        }
+      }
+    });
+
+    expenses.forEach((expense: any) => {
+      if (expense.status === 'approved') {
+        const date = new Date(expense.expenseDate);
+        if (date.getFullYear() === currentYear) {
+          const month = `T${date.getMonth() + 1}`;
+          monthlyData[month].expense += expense.amount || 0;
+        }
+      }
+    });
+
+    const monthlyTrend = Object.entries(monthlyData).map(([month, data]) => ({
+      month,
+      income: data.income,
+      expense: data.expense,
+    }));
+
+    // Expense by category
+    const categoryExpenses: Record<string, number> = {};
+    expenses.forEach((expense: any) => {
+      if (expense.status === 'approved' && expense.categoryId) {
+        const catId = expense.categoryId._id || expense.categoryId;
+        categoryExpenses[catId] = (categoryExpenses[catId] || 0) + (expense.amount || 0);
+      }
+    });
+
+    const totalExpense = Object.values(categoryExpenses).reduce((a, b) => a + b, 0);
+    const expenseCategoriesData = expenseCategories
+      .map((cat: any) => ({
+        name: cat.categoryName,
+        value: categoryExpenses[cat._id] || 0,
+        percentage: totalExpense > 0 ? Math.round(((categoryExpenses[cat._id] || 0) / totalExpense) * 100) : 0,
+      }))
+      .filter((cat: any) => cat.value > 0)
+      .sort((a: any, b: any) => b.value - a.value)
+      .slice(0, 5);
+
+    // Top parishes by contribution
+    const parishIncomes: Record<string, { name: string; amount: number }> = {};
+    incomes.forEach((income: any) => {
+      if (income.status === 'approved' && income.parishId) {
+        const parishId = income.parishId._id || income.parishId;
+        const parishName = income.parishId?.parishName ||
+          parishes.find((p: any) => p._id === parishId)?.parishName ||
+          'Không xác định';
+
+        if (!parishIncomes[parishId]) {
+          parishIncomes[parishId] = { name: parishName, amount: 0 };
+        }
+        parishIncomes[parishId].amount += income.amount || 0;
+      }
+    });
+
+    const topParishes = Object.values(parishIncomes)
+      .sort((a, b) => b.amount - a.amount)
+      .slice(0, 5)
+      .map(p => ({ parishName: p.name, amount: p.amount }));
+
+    // Calculate totals
+    const totalIncome = incomes
+      .filter((i: any) => i.status === 'approved')
+      .reduce((sum: number, i: any) => sum + (i.amount || 0), 0);
+
+    const totalExpenseAmount = expenses
+      .filter((e: any) => e.status === 'approved')
+      .reduce((sum: number, e: any) => sum + (e.amount || 0), 0);
+
+    return {
+      fundVsTarget,
+      monthlyTrend,
+      expenseCategories: expenseCategoriesData,
+      topParishes,
+      totalIncome,
+      totalExpense: totalExpenseAmount,
+    };
+  }, [incomes, expenses, funds, expenseCategories, parishes]);
+
+  // Process parish data
+  const parishData = useMemo(() => {
+    // Group by deanery (giáo hạt) - using parishCode prefix as deanery indicator
+    const deaneryMap: Record<string, number> = {};
+    parishes.forEach((parish: any) => {
+      // Use first 2 characters of parishCode as deanery or default
+      const deanery = parish.deanery || 'Khác';
+      deaneryMap[deanery] = (deaneryMap[deanery] || 0) + 1;
+    });
+
+    const byDeanery = Object.entries(deaneryMap)
+      .map(([name, count]) => ({ deaneryName: name, count }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 5);
+
+    // Parishioners by parish (mock since we don't have parishioner count)
+    const parishionersByParish = parishes
+      .slice(0, 10)
+      .map((p: any) => ({
+        parishName: p.parishName,
+        count: p.parishionerCount || Math.floor(Math.random() * 3000) + 500,
+      }))
+      .sort((a: any, b: any) => b.count - a.count);
+
+    // Growth data (mock)
+    const currentYear = new Date().getFullYear();
+    const growth = Array.from({ length: 6 }, (_, i) => ({
+      year: String(currentYear - 5 + i),
+      count: 180000 + i * 5000 + Math.floor(Math.random() * 2000),
+    }));
+
+    return { byDeanery, parishionersByParish, growth };
+  }, [parishes]);
+
+  // Process asset data
+  const assetData = useMemo(() => {
+    // By type
+    const typeMap: Record<string, { count: number; value: number }> = {};
+    assets.forEach((asset: any) => {
+      const type = asset.assetType || 'other';
+      if (!typeMap[type]) {
+        typeMap[type] = { count: 0, value: 0 };
+      }
+      typeMap[type].count += 1;
+      typeMap[type].value += asset.currentValue || 0;
+    });
+
+    const byType = Object.entries(typeMap).map(([type, data]) => ({
+      type: assetTypeLabels[type] || type,
+      count: data.count,
+      value: data.value,
+    }));
+
+    // By parish
+    const parishAssets: Record<string, { name: string; value: number }> = {};
+    assets.forEach((asset: any) => {
+      const parishId = asset.parishId?._id || asset.parishId || 'tgm';
+      const parishName = asset.parishName ||
+        parishes.find((p: any) => p._id === parishId)?.parishName ||
+        'TGM BMT';
+
+      if (!parishAssets[parishId]) {
+        parishAssets[parishId] = { name: parishName, value: 0 };
+      }
+      parishAssets[parishId].value += asset.currentValue || 0;
+    });
+
+    const byParish = Object.values(parishAssets)
+      .sort((a, b) => b.value - a.value)
+      .slice(0, 5)
+      .map(p => ({ parishName: p.name, value: p.value }));
+
+    const totalValue = assets.reduce((sum: number, a: any) => sum + (a.currentValue || 0), 0);
+
+    return { byType, byParish, totalValue };
+  }, [assets, parishes]);
+
+  // Summary stats
+  const summaryStats = useMemo(() => ({
+    totalParishes: stats.parishes,
+    totalParishioners: 0,
+    totalIncome: financialData.totalIncome,
+    totalExpense: financialData.totalExpense,
+    totalAssets: stats.assets,
+    totalAssetValue: assetData.totalValue,
+  }), [stats, financialData, assetData]);
 
   const tabs = [
     { key: 'tai_chinh' as const, label: 'Tài chính', icon: Wallet, count: 4, color: 'bg-yellow-500' },
     { key: 'giao_xu' as const, label: 'Giáo xứ', icon: Building2, count: 4, color: 'bg-orange-500' },
     { key: 'tong_hop' as const, label: 'Tổng hợp', icon: Layers, count: null, color: 'bg-purple-500' },
   ];
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+        <span className="ml-2 text-lg">Đang tải dữ liệu...</span>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -278,48 +441,39 @@ export default function DashboardPage() {
       {/* Tab Content */}
       {activeTab === 'tai_chinh' && (
         <div className="space-y-6">
-          {/* Row 1: 2 charts */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <FundVsTargetChart data={mockFinancialData.fundVsTarget} />
-            <MonthlyTrendChart data={mockFinancialData.monthlyTrend} />
+            <FundVsTargetChart data={financialData.fundVsTarget} />
+            <MonthlyTrendChart data={financialData.monthlyTrend} />
           </div>
-
-          {/* Row 2: 2 charts */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <ExpenseCategoryChart data={mockFinancialData.expenseCategories} />
-            <TopParishChart data={mockFinancialData.topParishes} />
+            <ExpenseCategoryChart data={financialData.expenseCategories} />
+            <TopParishChart data={financialData.topParishes} />
           </div>
         </div>
       )}
 
       {activeTab === 'giao_xu' && (
         <div className="space-y-6">
-          {/* Row 1: 2 charts */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <ParishByDeaneryChart data={mockParishData.byDeanery} />
-            <ParishionerByParishChart data={mockParishData.parishionersByParish} />
+            <ParishByDeaneryChart data={parishData.byDeanery} />
+            <ParishionerByParishChart data={parishData.parishionersByParish} />
           </div>
-
-          {/* Row 2: Assets */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <AssetByTypeChart data={mockAssetData.byType} />
-            <AssetValueByParishChart data={mockAssetData.byParish} />
+            <AssetByTypeChart data={assetData.byType} />
+            <AssetValueByParishChart data={assetData.byParish} />
           </div>
         </div>
       )}
 
       {activeTab === 'tong_hop' && (
         <div className="space-y-6">
-          {/* Summary Cards */}
-          <SummaryCards stats={mockSummaryStats} />
+          <SummaryCards stats={summaryStats} />
 
-          {/* Key Charts */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <MonthlyTrendChart data={mockFinancialData.monthlyTrend} />
-            <ParishionerGrowthChart data={mockParishData.growth} />
+            <MonthlyTrendChart data={financialData.monthlyTrend} />
+            <ParishionerGrowthChart data={parishData.growth} />
           </div>
 
-          {/* More summary */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <Card className="border-2">
               <CardHeader>
@@ -333,19 +487,19 @@ export default function DashboardPage() {
                   <div className="flex justify-between items-center">
                     <span className="text-gray-600">Tổng Thu</span>
                     <span className="text-xl font-bold text-green-600">
-                      {formatCompactCurrency(mockSummaryStats.totalIncome)}
+                      {formatCompactCurrency(summaryStats.totalIncome)}
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-gray-600">Tổng Chi</span>
                     <span className="text-xl font-bold text-red-600">
-                      {formatCompactCurrency(mockSummaryStats.totalExpense)}
+                      {formatCompactCurrency(summaryStats.totalExpense)}
                     </span>
                   </div>
                   <div className="border-t pt-4 flex justify-between items-center">
                     <span className="text-gray-900 font-medium">Dư</span>
-                    <span className="text-2xl font-bold text-blue-600">
-                      {formatCompactCurrency(mockSummaryStats.totalIncome - mockSummaryStats.totalExpense)}
+                    <span className={`text-2xl font-bold ${summaryStats.totalIncome - summaryStats.totalExpense >= 0 ? 'text-blue-600' : 'text-red-600'}`}>
+                      {formatCompactCurrency(summaryStats.totalIncome - summaryStats.totalExpense)}
                     </span>
                   </div>
                 </div>
@@ -361,7 +515,7 @@ export default function DashboardPage() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  {mockFinancialData.fundVsTarget.slice(0, 4).map((fund, i) => (
+                  {financialData.fundVsTarget.slice(0, 4).map((fund, i) => (
                     <div key={fund.fundName} className="flex justify-between items-center">
                       <span className="text-gray-600">{i + 1}. {fund.fundName}</span>
                       <span className="font-semibold">{formatCompactCurrency(fund.actual)}</span>
@@ -380,7 +534,7 @@ export default function DashboardPage() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  {mockAssetData.byType.map((asset) => (
+                  {assetData.byType.map((asset) => (
                     <div key={asset.type} className="flex justify-between items-center">
                       <span className="text-gray-600">{asset.type}</span>
                       <span className="font-semibold">{asset.count} tài sản</span>

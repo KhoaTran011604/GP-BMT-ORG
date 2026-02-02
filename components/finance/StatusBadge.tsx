@@ -5,7 +5,7 @@ import { Clock, CheckCircle, XCircle } from 'lucide-react';
 
 interface StatusBadgeProps {
   status: 'pending' | 'approved' | 'rejected';
-  variant?: 'default' | 'sm';
+  variant?: 'default' | 'sm' | 'lg';
 }
 
 export function StatusBadge({ status, variant = 'default' }: StatusBadgeProps) {
@@ -28,14 +28,21 @@ export function StatusBadge({ status, variant = 'default' }: StatusBadgeProps) {
   };
 
   const { label, color, icon: Icon } = config[status];
-  const iconSize = variant === 'sm' ? 12 : 14;
+
+  const sizeConfig = {
+    sm: { iconSize: 12, className: 'text-xs px-2 py-0.5' },
+    default: { iconSize: 14, className: '' },
+    lg: { iconSize: 20, className: 'text-lg px-4 py-2 font-semibold' }
+  };
+
+  const { iconSize, className } = sizeConfig[variant];
 
   return (
     <Badge
-      className={`${color} ${variant === 'sm' ? 'text-xs px-2 py-0.5' : ''}`}
+      className={`${color} ${className}`}
       variant="outline"
     >
-      <Icon size={iconSize} className="mr-1" />
+      <Icon size={iconSize} className="mr-1.5" />
       {label}
     </Badge>
   );

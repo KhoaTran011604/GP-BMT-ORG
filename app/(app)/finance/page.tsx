@@ -68,6 +68,13 @@ export default function FinancePage() {
     fetchData();
   }, []);
 
+  // Set default parishId from user
+  useEffect(() => {
+    if (user?.parishId) {
+      setFormData(prev => ({ ...prev, parishId: user.parishId! }));
+    }
+  }, [user?.parishId]);
+
   const fetchData = async () => {
     try {
       setLoading(true);
@@ -118,7 +125,7 @@ export default function FinancePage() {
       if (response.ok) {
         setShowDialog(false);
         setFormData({
-          parishId: '',
+          parishId: user?.parishId || '',
           fundId: '',
           amount: '',
           receiptNo: '',
