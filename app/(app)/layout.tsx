@@ -37,6 +37,7 @@ import {
   Shield,
   History,
   User,
+  Search,
 } from 'lucide-react';
 
 interface MenuItem {
@@ -80,6 +81,7 @@ const menuData: MenuItem[] = [
       { id: 'bank-accounts', label: 'Tài khoản Ngân hàng', icon: <Landmark size={22} />, href: '/finance/bank-accounts' },
       { id: 'contacts', label: 'Đối tượng Nhận gửi', icon: <Users size={22} />, href: '/admin/contacts' },
       { id: 'transactions', label: 'Quản lý Giao dịch', icon: <Receipt size={22} />, href: '/finance/transactions' },
+      { id: 'lookup', label: 'Tra cứu Thu Chi', icon: <Search size={22} />, href: '/finance/lookup' },
     ],
     roles: ['super_admin', 'cha_quan_ly', 'cha_xu', 'ke_toan'], // All roles except thu_ky
   },
